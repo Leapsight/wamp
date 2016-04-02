@@ -5,7 +5,7 @@
 %% =============================================================================
 %% @doc
 %% A Realm is a WAMP routing and administrative domain, optionally
-%% protected by authentication and authorization.  WAMP messages are
+%% protected by authentication and authorization. WAMP messages are
 %% only routed within a Realm.
 %% @end
 %% =============================================================================
