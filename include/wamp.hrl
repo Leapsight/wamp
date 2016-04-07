@@ -215,6 +215,30 @@
                         | #interrupt{}
                         | #yield{}.
 
+-type match_policy()            ::  exact | prefix | wildcard.
+-type invocation_policy()       ::  single | roundrobin | random | first | last.
+-type subscribe_options()       ::  match
+                                    | nkey
+                                    | disclose_caller.
+-type register_options()        ::  match | invoke | disclose_caller.
+-type call_runmode()            ::  partition.
+-type call_options()            ::  disclose_me
+                                    | runmode
+                                    | rkey
+                                    | receive_progress
+                                    | timeout.
+-type cancel_options()          ::  mode.
+-type yeild_options()           ::  progress.
+-type publish_options()         ::  acknowledge
+                                    | exclude
+                                    | exclude_authid
+                                    | exclude_authrole
+                                    | exclude_me
+                                    | disclose_me
+                                    | eligible
+                                    | eligible_authid
+                                    | eligible_authrole
+                                    | rkey.
 
 -define(WAMP_ERROR_AUTHORIZATION_FAILED, <<"wamp.error.authorization_failed">>).
 -define(WAMP_ERROR_CANCELED, <<"wamp.error.canceled">>).
