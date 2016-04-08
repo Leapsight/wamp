@@ -215,6 +215,41 @@
                         | #interrupt{}
                         | #yield{}.
 
+-type subscriber_features()     ::  event_history
+                                    | pattern_based_subscription
+                                    | pattern_based_subscription
+                                    | publication_trustlevels
+                                    | publisher_identification
+                                    | sharded_registration
+                                    | sharded_subscription
+                                    | subscriber_blackwhite_listing.
+-type publisher_features()      ::  publisher_exclusion
+                                    | publisher_identification
+                                    | sharded_subscription
+                                    | subscriber_blackwhite_listing.
+-type broker_features()         ::  subscriber_features()
+                                    | publisher_features()
+                                    | session_meta_api
+                                    | subscription_meta_api.
+-type caller_features()         ::  call_cancelling
+                                    | call_timeout
+                                    | caller_identification
+                                    | progressive_call_results
+                                    | sharded_registration
+                                    | sharded_registration.
+-type callee_features()         ::  caller_features()
+                                    | call_trustlevels
+                                    | pattern_based_registration.
+-type dealer_features()         ::  callee_features() | session_meta_api.
+-type hello_details()           ::  roles
+                                    | agent
+                                    | transport
+                                    | authmethods
+                                    | authid.
+-type result_details()          ::  progress.
+-type challenge_details()       ::  challenge | salt | keylen | iterations.
+-type invocation_details()      ::  caller | trustlevel | procedure.
+-type event_details()           ::  publisher | trustlevel | topic.
 -type match_policy()            ::  exact | prefix | wildcard.
 -type invocation_policy()       ::  single | roundrobin | random | first | last.
 -type subscribe_options()       ::  match
