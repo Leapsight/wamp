@@ -8,9 +8,11 @@
 %% @end
 %% =============================================================================
 -module (wamp_uri).
+-include("wamp.hrl").
 
--export ([parse/1]).
--export ([is_valid/1]).
+-export([parse/1]).
+-export([is_valid/1]).
+-export([components/1]).
 
 %% URI components SHOULD only contain letters, digits and "_".
 %% and allow empty uri components
@@ -39,4 +41,23 @@ is_valid(Uri) ->
     case parse(Uri) of
         {ok, _} -> true;
         _ -> false
+    end.
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% Example:
+%% components(<<"com.mycompany.foo.bar">>) ->
+%% [<<"com.mycompany">>, <<"foo">>, <<"bar">>].
+%% @end
+%% -----------------------------------------------------------------------------
+-spec components(uri()) -> [binary()].
+components(Uri) ->
+    case binary:split(Uri, <<".">>, [global]) of
+        [TopLevelDomain, AppName | Rest] when length(Rest) > 0 ->
+            Domain = <<TopLevelDomain/binary, $., AppName/binary>>,
+            [Domain | Rest];
+        _Other ->
+            %% Invalid Uri
+            error({badarg, Uri})
     end.

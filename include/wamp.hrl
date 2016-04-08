@@ -230,10 +230,12 @@
 -type broker_features()         ::  subscriber_features()
                                     | publisher_features()
                                     | session_meta_api
-                                    | subscription_meta_api.
+                                    | subscription_meta_api
+                                    | topic_reflection.
 -type caller_features()         ::  call_cancelling
                                     | call_timeout
                                     | caller_identification
+                                    | procedure_reflection
                                     | progressive_call_results
                                     | sharded_registration
                                     | sharded_registration.
