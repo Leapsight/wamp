@@ -252,8 +252,13 @@
 -type challenge_details()       ::  challenge | salt | keylen | iterations.
 -type invocation_details()      ::  caller | trustlevel | procedure.
 -type event_details()           ::  publisher | trustlevel | topic.
--type match_policy()            ::  exact | prefix | wildcard.
--type invocation_policy()       ::  single | roundrobin | random | first | last.
+
+%% <<"exact">> | <<"prefix">> | <<"wildcard">>.
+-type match_policy()            ::  binary().
+
+%% <<"single">> | <<"roundrobin">> | <<"random">> | <<"first">> | <<"last">>.
+-type invocation_policy()       ::  binary().
+
 -type subscribe_options()       ::  match
                                     | nkey
                                     | disclose_caller.

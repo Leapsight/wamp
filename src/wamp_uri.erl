@@ -33,8 +33,10 @@
 %% protocol itself.
 
 parse(URI) when is_list(URI) ->
+    %% TODO
     {ok, URI};
 parse(URI) when is_binary(URI) ->
+    %% TODO
     {ok, URI}.
 
 is_valid(Uri) ->
