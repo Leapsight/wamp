@@ -10,30 +10,57 @@
 -module(wamp_message).
 -include("wamp.hrl").
 
--export([hello/2]).
--export([welcome/2]).
 -export([abort/2]).
--export([challenge/2]).
 -export([authenticate/2]).
--export([goodbye/2]).
--export([error/4, error/5, error/6]).
--export([publish/3, publish/4, publish/5]).
--export([published/2]).
--export([subscribe/3]).
--export([subscribed/2]).
--export([unsubscribe/2]).
--export([unsubscribed/1]).
--export([event/3, event/4, event/5]).
 -export([call/3, call/4, call/5]).
 -export([cancel/2]).
--export([result/2, result/3, result/4]).
+-export([challenge/2]).
+-export([error/4, error/5, error/6]).
+-export([event/3, event/4, event/5]).
+-export([goodbye/2]).
+-export([hello/2]).
+-export([interrupt/2]).
+-export([invocation/3, invocation/4, invocation/5]).
+-export([is_message/1]).
+-export([publish/3, publish/4, publish/5]).
+-export([published/2]).
 -export([register/3]).
 -export([registered/2]).
+-export([result/2, result/3, result/4]).
+-export([subscribe/3]).
+-export([subscribed/2]).
 -export([unregister/2]).
 -export([unregistered/1]).
--export([invocation/3, invocation/4, invocation/5]).
--export([interrupt/2]).
+-export([unsubscribe/2]).
+-export([unsubscribed/1]).
+-export([welcome/2]).
 -export([yield/2, yield/3, yield/4]).
+
+
+-spec is_message(any()) -> boolean().
+is_message(Term) when is_record(Term, hello) -> true;
+is_message(Term) when is_record(Term, welcome) -> true;
+is_message(Term) when is_record(Term, abort) -> true;
+is_message(Term) when is_record(Term, challenge) -> true;
+is_message(Term) when is_record(Term, authenticate) -> true;
+is_message(Term) when is_record(Term, goodbye) -> true;
+is_message(Term) when is_record(Term, error) -> true;
+is_message(Term) when is_record(Term, publish) -> true;
+is_message(Term) when is_record(Term, published) -> true;
+is_message(Term) when is_record(Term, subscribe) -> true;
+is_message(Term) when is_record(Term, subscribed) -> true;
+is_message(Term) when is_record(Term, unsubscribe) -> true;
+is_message(Term) when is_record(Term, unsubscribed) -> true;
+is_message(Term) when is_record(Term, event) -> true;
+is_message(Term) when is_record(Term, call) -> true;
+is_message(Term) when is_record(Term, result) -> true;
+is_message(Term) when is_record(Term, register) -> true;
+is_message(Term) when is_record(Term, registered) -> true;
+is_message(Term) when is_record(Term, unregister) -> true;
+is_message(Term) when is_record(Term, unregistered) -> true;
+is_message(Term) when is_record(Term, invocation) -> true;
+is_message(Term) when is_record(Term, yield) -> true;
+is_message(_) -> false.
 
 
 
