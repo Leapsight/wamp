@@ -24,8 +24,8 @@
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec decode(Data :: binary(), Format :: atom(), Messages :: list()) ->
-    {ok, Messages :: list(tuple()), Rest :: binary()}.
+-spec decode(Data :: binary(), Type :: atom(), Format :: atom()) ->
+    {Messages :: list(message()), Rest :: binary()}.
 decode(Data, text, json) ->
     decode_text(Data, json, []);
 decode(Data, text, erl) ->
@@ -57,6 +57,7 @@ decode_binary(_Data, _, _) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
+-spec encode(any(), atom()) -> binary() | no_return().
 encode(Message, Encoding) when is_tuple(Message) ->
     encode(pack(Message), Encoding);
 encode(Message, erl) when is_list(Message) ->

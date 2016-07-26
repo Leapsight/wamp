@@ -40,7 +40,7 @@ parse(URI) when is_binary(URI) ->
     {ok, URI}.
 
 is_valid(Uri) ->
-    case parse(Uri) of
+    case catch parse(Uri) of
         {ok, _} -> true;
         _ -> false
     end.

@@ -1,10 +1,6 @@
 
 
-%% Adictionary describing *features* supported by the peer for that role.
-%% This MUST be empty for WAMP Basic Profile implementations, and MUST
-%% be used by implementations implementing parts of the Advanced Profile
-%% to list the specific set of features they support.
--type role_features() :: dict().
+
 -define(JUNO_VERSION_STRING, <<"JUNO-0.0.1">>).
 -define(WS_SUBPROTOCOL_HEADER_NAME, <<"sec-websocket-protocol">>).
 -define(WAMP2_JSON, <<"wamp.2.json">>).
@@ -13,6 +9,11 @@
 -define(WAMP2_JSON_BATCHED,<<"wamp.2.json.batched">>).
 -define(MAX_ID, 9007199254740993).
 
+%% Adictionary describing *features* supported by the peer for that role.
+%% This MUST be empty for WAMP Basic Profile implementations, and MUST
+%% be used by implementations implementing parts of the Advanced Profile
+%% to list the specific set of features they support.
+-type role_features() :: dict().
 -type dict()    ::  map().
 -type uri()     ::  binary().
 -type id()      ::  0..9007199254740993.
@@ -89,7 +90,7 @@
 }).
 
 -record (error, {
-    request_type    ::  non_neg_integer(),
+    request_type    ::  binary(),
     request_id      ::  id(),
     details         ::  map(),
     error_uri       ::  uri(),
