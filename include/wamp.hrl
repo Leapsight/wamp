@@ -90,7 +90,7 @@
 }).
 
 -record (error, {
-    request_type    ::  binary(),
+    request_type    ::  pos_integer(),
     request_id      ::  id(),
     details         ::  map(),
     error_uri       ::  uri(),

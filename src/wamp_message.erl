@@ -112,7 +112,7 @@ goodbye(Details, ReasonUri) ->
     }.
 
 
--spec error(binary(), id(), map(), uri()) -> #error{}.
+-spec error(pos_integer(), id(), map(), uri()) -> #error{}.
 error(ReqType, ReqId, Details, ErrorUri) ->
     #error{
         request_type = ReqType,
@@ -122,7 +122,7 @@ error(ReqType, ReqId, Details, ErrorUri) ->
     }.
 
 
--spec error(binary(), id(), map(), uri(), list()) -> #error{}.
+-spec error(pos_integer(), id(), map(), uri(), list()) -> #error{}.
 error(ReqType, ReqId, Details, ErrorUri, Args) ->
     #error{
         request_type = ReqType,
@@ -133,7 +133,7 @@ error(ReqType, ReqId, Details, ErrorUri, Args) ->
     }.
 
 
--spec error(binary(), id(), map(), uri(), list(), map()) -> #error{}.
+-spec error(pos_integer(), id(), map(), uri(), list(), map()) -> #error{}.
 error(ReqType, ReqId, Details, ErrorUri, Args, Payload) ->
     #error{
         request_type = ReqType,
