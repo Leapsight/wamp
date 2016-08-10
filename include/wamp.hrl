@@ -10,11 +10,11 @@
 -define(MAX_ID, 9007199254740993).
 
 -define(WAMP_AUTH_METHODS, [
-    [<<"anonymous">>],
-    [<<"cookie">>],
-    [<<"ticket">>],
-    [<<"tls">>],
-    [<<"wampcra">>]
+    <<"anonymous">>,
+    <<"cookie">>,
+    <<"ticket">>,
+    <<"tls">>,
+    <<"wampcra">>
 ]).
 
 %% Adictionary describing *features* supported by the peer for that role.
