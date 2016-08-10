@@ -71,31 +71,37 @@
     realm_uri       ::  uri(),
     details         ::  map()
 }).
+-type wamp_hello()       ::  #hello{}.
 
 -record (challenge, {
     auth_method      ::  binary(),
     extra            ::  map()
 }).
+-type wamp_challenge()       ::  #challenge{}.
 
 -record (authenticate, {
     signature       ::  binary(),
     extra           ::  map()
 }).
+-type wamp_authenticate()       ::  #authenticate{}.
 
 -record (welcome, {
     session_id      ::  id(),
     details         ::  map()
 }).
+-type wamp_welcome()       ::  #welcome{}.
 
 -record (abort, {
     details         ::  map(),
     reason_uri      ::  uri()
 }).
+-type wamp_abort()       ::  #abort{}.
 
 -record (goodbye, {
     details         ::  map(),
     reason_uri      ::  uri()
 }).
+-type wamp_goodbye()       ::  #goodbye{}.
 
 -record (error, {
     request_type    ::  pos_integer(),
@@ -105,6 +111,7 @@
     arguments       ::  list(),
     payload         ::  map()
 }).
+-type wamp_error()       ::  #error{}.
 
 -record (publish, {
     request_id      ::  id(),
@@ -113,31 +120,37 @@
     arguments       ::  list(),
     payload         ::  map()
 }).
+-type wamp_publish()       ::  #publish{}.
 
 -record (published, {
     request_id      ::  id(),
     publication_id  ::  id()
 }).
+-type wamp_published()       ::  #published{}.
 
 -record (subscribe, {
     request_id      ::  id(),
     options         ::  map(),
     topic_uri       ::  uri()
 }).
+-type wamp_subscribe()       ::  #subscribe{}.
 
 -record (subscribed, {
     request_id      ::  id(),
     subscription_id ::  id()
 }).
+-type wamp_subscribed()       ::  #subscribed{}.
 
 -record (unsubscribe, {
     request_id      ::  id(),
     subscription_id ::  id()
 }).
+-type wamp_unsubscribe()       ::  #unsubscribe{}.
 
 -record (unsubscribed, {
     request_id      ::  id()
 }).
+-type wamp_unsubscribed()       ::  #unsubscribed{}.
 
 -record (event, {
     subscription_id ::  id(),
@@ -146,6 +159,7 @@
     arguments       ::  list(),
     payload         ::  map()
 }).
+-type wamp_event()       ::  #event{}.
 
 -record (call, {
     request_id      ::  id(),
@@ -154,11 +168,13 @@
     arguments       ::  list(),
     payload         ::  map()
 }).
+-type wamp_call()       ::  #call{}.
 
 -record (cancel, {
     request_id      ::  id(),
     options         ::  map()
 }).
+-type wamp_cancel()       ::  #cancel{}.
 
 -record (result, {
     request_id      ::  id(),
@@ -166,26 +182,31 @@
     arguments       ::  list(),
     payload         ::  map()
 }).
+-type wamp_result()       ::  #result{}.
 
 -record (register, {
     request_id      ::  id(),
     options         ::  map(),
     procedure_uri   ::  uri()
 }).
+-type wamp_register()       ::  #register{}.
 
 -record (registered, {
     request_id      ::  id(),
     registration_id ::  id()
 }).
+-type wamp_registered()       ::  #registered{}.
 
 -record (unregister, {
     request_id      ::  id(),
     registration_id ::  id()
 }).
+-type wamp_unregister()       ::  #unregister{}.
 
 -record (unregistered, {
     request_id      ::  id()
 }).
+-type wamp_unregistered()       ::  #unregistered{}.
 
 -record (invocation, {
     request_id      ::  id(),
@@ -194,11 +215,13 @@
     arguments       ::  list(),
     payload         ::  map()
 }).
+-type wamp_invocation()       ::  #invocation{}.
 
 -record (interrupt, {
     request_id      ::  id(),
     options         ::  map()
 }).
+-type wamp_interrupt()       ::  #interrupt{}.
 
 -record (yield, {
     request_id      ::  id(),
@@ -206,23 +229,32 @@
     arguments       ::  list(),
     payload         ::  map()
 }).
+-type wamp_yield()       ::  #yield{}.
 
--type message()     ::  #hello{} | #challenge{} | #authenticate{} | #welcome{}
-                        | #abort{}
-                        | #goodbye{}
-                        | #error{}
-                        | #publish{} | #published{}
-                        | #subscribe{} | #subscribed{}
-                        | #unsubscribe{} | #unsubscribed{}
-                        | #event{}
-                        | #call{}
-                        | #cancel{}
-                        | #result{}
-                        | #register{} | #registered{}
-                        | #unregister{} | #unregistered{}
-                        | #invocation{}
-                        | #interrupt{}
-                        | #yield{}.
+-type message()     ::  wamp_hello() 
+                        | wamp_challenge() 
+                        | wamp_authenticate() 
+                        | wamp_welcome()
+                        | wamp_abort()
+                        | wamp_goodbye()
+                        | wamp_error()
+                        | wamp_publish() 
+                        | wamp_published()
+                        | wamp_subscribe() 
+                        | wamp_subscribed()
+                        | wamp_unsubscribe() 
+                        | wamp_unsubscribed()
+                        | wamp_event()
+                        | wamp_call()
+                        | wamp_cancel()
+                        | wamp_result()
+                        | wamp_register() 
+                        | wamp_registered()
+                        | wamp_unregister() 
+                        | wamp_unregistered()
+                        | wamp_invocation()
+                        | wamp_interrupt()
+                        | wamp_yield().
 
 -type subscriber_features()     ::  event_history
                                     | pattern_based_subscription
