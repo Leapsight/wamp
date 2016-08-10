@@ -9,6 +9,14 @@
 -define(WAMP2_JSON_BATCHED,<<"wamp.2.json.batched">>).
 -define(MAX_ID, 9007199254740993).
 
+-define(WAMP_AUTH_METHODS, [
+    [<<"anonymous">>],
+    [<<"cookie">>],
+    [<<"ticket">>],
+    [<<"tls">>],
+    [<<"wampcra">>]
+]).
+
 %% Adictionary describing *features* supported by the peer for that role.
 %% This MUST be empty for WAMP Basic Profile implementations, and MUST
 %% be used by implementations implementing parts of the Advanced Profile
@@ -286,12 +294,12 @@
 -define(WAMP_ERROR_AUTHORIZATION_FAILED, <<"wamp.error.authorization_failed">>).
 -define(WAMP_ERROR_CANCELED, <<"wamp.error.canceled">>).
 -define(WAMP_ERROR_CLOSE_REALM, <<"wamp.error.close_realm">>).
--define(WAMP_ERROR_DISCLOSE_ME_NOT_ALLOWED,
-    <<"wamp.error.disclose_me.not_allowed">>).
+-define(WAMP_ERROR_DISCLOSE_ME_NOT_ALLOWED, <<"wamp.error.disclose_me.not_allowed">>).
 -define(WAMP_ERROR_GOODBYE_AND_OUT, <<"wamp.error.goodbye_and_out">>).
 -define(WAMP_ERROR_INVALID_ARGUMENT, <<"wamp.error.invalid_argument">>).
 -define(WAMP_ERROR_INVALID_URI, <<"wamp.error.invalid_uri">>).
 -define(WAMP_ERROR_NET_FAILURE, <<"wamp.error.network_failure">>).
+-define(WAMP_ERROR_NOT_AUTHORIZED, <<"wamp.error.not_authorized">>).
 -define(WAMP_ERROR_NO_ELIGIBLE_CALLE, <<"wamp.error.no_eligible_callee">>).
 -define(WAMP_ERROR_NO_SUCH_PROCEDURE, <<"wamp.error.no_such_procedure">>).
 -define(WAMP_ERROR_NO_SUCH_REALM, <<"wamp.error.no_such_realm">>).
@@ -299,12 +307,9 @@
 -define(WAMP_ERROR_NO_SUCH_ROLE, <<"wamp.error.no_such_role">>).
 -define(WAMP_ERROR_NO_SUCH_SESSION, <<"wamp.error.no_such_session">>).
 -define(WAMP_ERROR_NO_SUCH_SUBSCRIPTION, <<"wamp.error.no_such_subscription">>).
--define(WAMP_ERROR_NOT_AUTHORIZED, <<"wamp.error.not_authorized">>).
--define(WAMP_ERROR_OPTION_DISALLOWED_DISCLOSE_ME,
-    <<"wamp.error.option_disallowed.disclose_me">>).
+-define(WAMP_ERROR_OPTION_DISALLOWED_DISCLOSE_ME, <<"wamp.error.option_disallowed.disclose_me">>).
 -define(WAMP_ERROR_OPTION_NOT_ALLOWED, <<"wamp.error.option_not_allowed">>).
--define(WAMP_ERROR_PROCEDURE_ALREADY_EXISTS,
-    <<"wamp.error.procedure_already_exists">>).
+-define(WAMP_ERROR_PROCEDURE_ALREADY_EXISTS, <<"wamp.error.procedure_already_exists">>).
 -define(WAMP_ERROR_SYSTEM_SHUTDOWN, <<"wamp.error.system_shutdown">>).
 
 -define(JUNO_ERROR_NOT_IN_SESSION, <<"juno.error.not_in_session">>).
