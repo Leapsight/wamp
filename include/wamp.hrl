@@ -331,7 +331,7 @@
                                     | rkey.
 
 -define(WAMP_ERROR_AUTHORIZATION_FAILED, <<"wamp.error.authorization_failed">>).
--define(WAMP_ERROR_CANCELED, <<"wamp.error.canceled">>).
+-define(WAMP_ERROR_CANCELLED, <<"wamp.error.cancelled">>).
 -define(WAMP_ERROR_CLOSE_REALM, <<"wamp.error.close_realm">>).
 -define(WAMP_ERROR_DISCLOSE_ME_NOT_ALLOWED, <<"wamp.error.disclose_me.not_allowed">>).
 -define(WAMP_ERROR_GOODBYE_AND_OUT, <<"wamp.error.goodbye_and_out">>).
