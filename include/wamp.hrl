@@ -9,13 +9,20 @@
 -define(WAMP2_JSON_BATCHED,<<"wamp.2.json.batched">>).
 -define(MAX_ID, 9007199254740993).
 
+-define(ANON_AUTH, <<"anonymous">>).
+-define(COOKIE_AUTH, <<"cookie">>).
+-define(TICKET_AUTH, <<"ticket">>).
+-define(TLS_AUTH, <<"tls">>).
+-define(WAMPCRA_AUTH, <<"wampcra">>).
+
 -define(WAMP_AUTH_METHODS, [
-    <<"anonymous">>,
-    <<"cookie">>,
-    <<"ticket">>,
-    <<"tls">>,
-    <<"wampcra">>
+    ?ANON_AUTH,
+    ?COOKIE_AUTH,
+    ?TICKET_AUTH,
+    ?TLS_AUTH,
+    ?WAMPCRA_AUTH
 ]).
+
 
 %% Adictionary describing *features* supported by the peer for that role.
 %% This MUST be empty for WAMP Basic Profile implementations, and MUST
