@@ -1,5 +1,5 @@
 %% -----------------------------------------------------------------------------
-%% Copyright (C) Ngineo Limited 2015 - 2016. All rights reserved.
+%% Copyright (C) Ngineo Limited 2015 - 2017. All rights reserved.
 %% -----------------------------------------------------------------------------
 
 %% =============================================================================
@@ -37,6 +37,20 @@
 -export([yield/2, yield/3, yield/4]).
 
 
+
+
+
+
+%% =============================================================================
+%% API
+%% =============================================================================
+
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
 -spec is_message(any()) -> boolean().
 is_message(Term) when is_record(Term, hello) -> true;
 is_message(Term) when is_record(Term, welcome) -> true;
@@ -63,32 +77,48 @@ is_message(Term) when is_record(Term, yield) -> true;
 is_message(_) -> false.
 
 
-
--spec hello(uri(), map()) -> #hello{}.
-hello(RealmUri, Details) ->
+%% -----------------------------------------------------------------------------
+%% @doc
+%% If Details argument is not valid fails with an exception
+%% @end
+%% -----------------------------------------------------------------------------
+-spec hello(uri(), map()) -> #hello{} | no_return().
+hello(RealmUri, Details) when is_binary(RealmUri) ->
     #hello{
         realm_uri = RealmUri,
-        details = Details
+        details = validate_map(Details, ?HELLO_DETAILS_SPEC)
     }.
 
 
--spec welcome(id(), map()) -> #welcome{}.
-welcome(SessionId, Details) ->
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec welcome(id(), map()) -> #welcome{} | no_return().
+welcome(SessionId, Details)   ->
     #welcome{
         session_id = SessionId,
-        details = Details
+        details = validate_map(Details, ?WELCOME_DETAILS_SPEC)
     }.
 
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
 %% "ABORT" gets sent only _before_ a _Session_ is established, while
--spec abort(map(), uri()) -> #abort{}.
+-spec abort(map(), uri()) -> #abort{} | no_return().
 abort(Details, ReasonUri) ->
     #abort{
-        details = Details,
+        details = validate_map(Details, ?ABORT_DETAILS_SPEC),
         reason_uri = ReasonUri
     }.
 
 
--spec challenge(binary(), map()) -> #challenge{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec challenge(binary(), map()) -> #challenge{} | no_return().
 challenge(AuthMethod, Extra) ->
     #challenge{
         auth_method = AuthMethod,
@@ -96,86 +126,103 @@ challenge(AuthMethod, Extra) ->
     }.
 
 
--spec authenticate(binary(), map()) -> #authenticate{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec authenticate(binary(), map()) -> #authenticate{} | no_return().
 authenticate(Signature, Extra) ->
     #authenticate{
         signature = Signature,
         extra = Extra
     }.
 
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
 %% "GOODBYE" is sent only _after_ a _Session_ is already established.
--spec goodbye(map(), uri()) -> #goodbye{}.
+-spec goodbye(map(), uri()) -> #goodbye{} | no_return().
 goodbye(Details, ReasonUri) ->
     #goodbye{
-        details = Details,
+        details = validate_map(Details, ?GOODBYE_DETAILS_SPEC),
         reason_uri = ReasonUri
     }.
 
 
--spec error(pos_integer(), id(), map(), uri()) -> #error{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec error(pos_integer(), id(), map(), uri()) -> #error{} | no_return().
 error(ReqType, ReqId, Details, ErrorUri) ->
-    #error{
-        request_type = ReqType,
-        request_id = ReqId,
-        details = Details,
-        error_uri = ErrorUri
-    }.
+    error(ReqType, ReqId, Details, ErrorUri, undefined, undefined).
 
 
--spec error(pos_integer(), id(), map(), uri(), list()) -> #error{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec error(pos_integer(), id(), map(), uri(), list()) -> #error{} | no_return().
 error(ReqType, ReqId, Details, ErrorUri, Args) ->
-    #error{
-        request_type = ReqType,
-        request_id = ReqId,
-        details = Details,
-        error_uri = ErrorUri,
-        arguments = Args
-    }.
+    error(ReqType, ReqId, Details, ErrorUri, Args, undefined).
 
 
--spec error(pos_integer(), id(), map(), uri(), list(), map()) -> #error{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec error(pos_integer(), id(), map(), uri(), list(), map()) -> #error{} | no_return().
 error(ReqType, ReqId, Details, ErrorUri, Args, Payload) ->
     #error{
         request_type = ReqType,
         request_id = ReqId,
-        details = Details,
+        details = Details, % any
         error_uri = ErrorUri,
         arguments = Args,
         payload = Payload
     }.
 
 
--spec publish(id(), map(), uri()) -> #publish{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec publish(id(), map(), uri()) -> #publish{} | no_return().
 publish(ReqId, Options, TopicUri) ->
-    #publish{
-        request_id = ReqId,
-        options = Options,
-        topic_uri = TopicUri
-    }.
+    publish(ReqId, Options, TopicUri, undefined, undefined).
 
 
--spec publish(id(), map(), uri(), list()) -> #publish{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec publish(id(), map(), uri(), list()) -> #publish{} | no_return().
 publish(ReqId, Options, TopicUri, Args) ->
-    #publish{
-        request_id = ReqId,
-        options = Options,
-        topic_uri = TopicUri,
-        arguments = Args
-    }.
+    publish(ReqId, Options, TopicUri, Args, undefined).
 
 
--spec publish(id(), map(), uri(), list(), map()) -> #publish{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec publish(id(), map(), uri(), list(), map()) -> #publish{} | no_return().
 publish(ReqId, Options, TopicUri, Args, Payload) ->
     #publish{
         request_id = ReqId,
-        options = Options,
+        options = validate_map(Options, ?PUBLISH_OPTS_SPEC),
         topic_uri = TopicUri,
         arguments = Args,
         payload = Payload
     }.
 
 
--spec published(id(), id()) -> #published{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec published(id(), id()) -> #published{} | no_return().
 published(ReqId, PubId) ->
     #published{
         request_id = ReqId,
@@ -183,7 +230,11 @@ published(ReqId, PubId) ->
     }.
 
 
--spec subscribe(id(), map(), uri()) -> #subscribe{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec subscribe(id(), map(), uri()) -> #subscribe{} | no_return().
 subscribe(ReqId, Options, TopicUri) ->
     #subscribe{
         request_id = ReqId,
@@ -192,7 +243,11 @@ subscribe(ReqId, Options, TopicUri) ->
     }.
 
 
--spec subscribed(id(), id()) -> #subscribed{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec subscribed(id(), id()) -> #subscribed{} | no_return().
 subscribed(ReqId, SubsId) ->
     #subscribed{
         request_id = ReqId,
@@ -200,7 +255,11 @@ subscribed(ReqId, SubsId) ->
     }.
 
 
--spec unsubscribe(id(), id()) -> #unsubscribe{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec unsubscribe(id(), id()) -> #unsubscribe{} | no_return().
 unsubscribe(ReqId, SubsId) ->
     #unsubscribe{
         request_id = ReqId,
@@ -208,33 +267,40 @@ unsubscribe(ReqId, SubsId) ->
     }.
 
 
--spec unsubscribed(id()) -> #unsubscribed{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec unsubscribed(id()) -> #unsubscribed{} | no_return().
 unsubscribed(ReqId) ->
     #unsubscribed{
         request_id = ReqId
     }.
 
 
--spec event(id(), id(), map()) -> #event{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec event(id(), id(), map()) -> #event{} | no_return().
 event(SubsId, PubId, Details) ->
-    #event{
-        subscription_id = SubsId,
-        publication_id = PubId,
-        details = Details
-    }.
+    event(SubsId, PubId, Details, undefined, undefined).
 
 
--spec event(id(), id(), map(), list()) -> #event{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec event(id(), id(), map(), list()) -> #event{} | no_return().
 event(SubsId, PubId, Details, Args) ->
-    #event{
-        subscription_id = SubsId,
-        publication_id = PubId,
-        details = Details,
-        arguments = Args
-    }.
+    event(SubsId, PubId, Details, Args, undefined).
 
 
--spec event(id(), id(), map(), list(), map()) -> #event{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec event(id(), id(), map(), list(), map()) -> #event{} | no_return().
 event(SubsId, PubId, Details, Args, Payload) ->
     #event{
         subscription_id = SubsId,
@@ -245,62 +311,74 @@ event(SubsId, PubId, Details, Args, Payload) ->
     }.
 
 
--spec call(id(), map(), uri()) -> #call{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec call(id(), map(), uri()) -> #call{} | no_return().
 call(ReqId, Options, ProcedureUri) ->
-    #call{
-        request_id = ReqId,
-        options = Options,
-        procedure_uri = ProcedureUri
-    }.
+    call(ReqId, Options, ProcedureUri, undefined, undefined).
 
 
--spec call(id(), map(), uri(), list()) -> #call{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec call(id(), map(), uri(), list()) -> #call{} | no_return().
 call(ReqId, Options, ProcedureUri, Args) ->
-    #call{
-        request_id = ReqId,
-        options = Options,
-        procedure_uri = ProcedureUri,
-        arguments = Args
-    }.
+    call(ReqId, Options, ProcedureUri, Args, undefined).
 
 
--spec call(id(), map(), uri(), list(), map()) -> #call{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec call(id(), map(), uri(), list(), map()) -> #call{} | no_return().
 call(ReqId, Options, ProcedureUri, Args, Payload) ->
     #call{
         request_id = ReqId,
-        options = Options,
+        options = validate_map(Options, ?CALL_OPTS_SPEC),
         procedure_uri = ProcedureUri,
         arguments = Args,
         payload = Payload
     }.
 
 
--spec cancel(id(), map()) -> #cancel{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec cancel(id(), map()) -> #cancel{} | no_return().
 cancel(ReqId, Options) ->
     #cancel{
         request_id = ReqId,
-        options = Options
+        options = validate_map(Options, ?CALL_CANCELLING_OPTS_SPEC)
     }.
 
 
--spec result(id(), map()) -> #result{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec result(id(), map()) -> #result{} | no_return().
 result(ReqId, Details) ->
-    #result{
-        request_id = ReqId,
-        details = Details
-    }.
+    result(ReqId, Details, undefined, undefined).
 
 
--spec result(id(), map(), list()) -> #result{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec result(id(), map(), list()) -> #result{} | no_return().
 result(ReqId, Details, Args) ->
-    #result{
-        request_id = ReqId,
-        details = Details,
-        arguments = Args
-    }.
+    result(ReqId, Details, Args, undefined).
 
 
--spec result(id(), map(), list(), map()) -> #result{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec result(id(), map(), list(), map()) -> #result{} | no_return().
 result(ReqId, Details, Args, Payload) ->
     #result{
         request_id = ReqId,
@@ -310,16 +388,24 @@ result(ReqId, Details, Args, Payload) ->
     }.
 
 
--spec register(id(), map(), uri()) -> #register{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec register(id(), map(), uri()) -> #register{} | no_return().
 register(ReqId, Options, ProcedureUri) ->
     #register{
         request_id = ReqId,
-        options = Options,
+        options = validate_map(Options, ?REGISTER_OPTS_SPEC),
         procedure_uri = ProcedureUri
     }.
 
 
--spec registered(id(), id()) -> #registered{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec registered(id(), id()) -> #registered{} | no_return().
 registered(ReqId, RegId) ->
     #registered{
         request_id = ReqId,
@@ -327,7 +413,11 @@ registered(ReqId, RegId) ->
     }.
 
 
--spec unregister(id(), id()) -> #unregister{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec unregister(id(), id()) -> #unregister{} | no_return().
 unregister(ReqId, RegId) ->
     #unregister{
         request_id = ReqId,
@@ -335,69 +425,85 @@ unregister(ReqId, RegId) ->
     }.
 
 
--spec unregistered(id()) -> #unregistered{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec unregistered(id()) -> #unregistered{} | no_return().
 unregistered(ReqId) ->
     #unregistered{
         request_id = ReqId
     }.
 
 
--spec invocation(id(), id(), map()) -> #invocation{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec invocation(id(), id(), map()) -> #invocation{} | no_return().
 invocation(ReqId, RegId, Details) ->
-    #invocation{
-        request_id = ReqId,
-        registration_id = RegId,
-        details = Details
-    }.
+    invocation(ReqId, RegId, Details, undefined, undefined).
 
 
--spec invocation(id(), id(), map(), list()) -> #invocation{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec invocation(id(), id(), map(), list()) -> #invocation{} | no_return().
 invocation(ReqId, RegId, Details, Args) ->
-    #invocation{
-        request_id = ReqId,
-        registration_id = RegId,
-        details = Details,
-        arguments = Args
-    }.
+    invocation(ReqId, RegId, Details, Args, undefined).
 
 
--spec invocation(id(), id(), map(), list(), map()) -> #invocation{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec invocation(id(), id(), map(), list(), map()) -> #invocation{} | no_return().
 invocation(ReqId, RegId, Details, Args, Payload) ->
     #invocation{
         request_id = ReqId,
         registration_id = RegId,
-        details = Details,
+        details = validate_map(Details, ?INVOCATION_DETAILS_SPEC),
         arguments = Args,
         payload = Payload
     }.
 
 
--spec interrupt(id(), map()) -> #interrupt{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec interrupt(id(), map()) -> #interrupt{} | no_return().
 interrupt(ReqId, Options) ->
     #interrupt{
         request_id = ReqId,
-        options = Options
+        options = validate_map(Options, ?CALL_CANCELLING_OPTS_SPEC)
     }.
 
 
--spec yield(id(), map()) -> #yield{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec yield(id(), map()) -> #yield{} | no_return().
 yield(ReqId, Options) ->
-    #yield{
-        request_id = ReqId,
-        options = Options
-    }.
+    yield(ReqId, Options, undefined, undefined).
 
 
--spec yield(id(), map(), list()) -> #yield{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec yield(id(), map(), list()) -> #yield{} | no_return().
 yield(ReqId, Options, Args) ->
-    #yield{
-        request_id = ReqId,
-        options = Options,
-        arguments = Args
-    }.
+    yield(ReqId, Options, Args, undefined).
 
 
--spec yield(id(), map(), list(), map()) -> #yield{}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec yield(id(), map(), list(), map()) -> #yield{} | no_return().
 yield(ReqId, Options, Args, Payload) ->
     #yield{
         request_id = ReqId,
@@ -405,3 +511,23 @@ yield(ReqId, Options, Args, Payload) ->
         arguments = Args,
         payload = Payload
     }.
+
+
+
+
+
+%% =============================================================================
+%% PRIVATE
+%% =============================================================================
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% Calls maps_utils with options:
+%%
+%% * atomic = true
+%%
+%% @end
+%% -----------------------------------------------------------------------------
+validate_map(Map, Spec) ->
+    maps_utils:validate(Map, Spec, #{atomic => true}).

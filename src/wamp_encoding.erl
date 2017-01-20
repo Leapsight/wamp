@@ -20,6 +20,14 @@
 
 
 
+
+%% =============================================================================
+%% API
+%% =============================================================================
+
+
+
+
 %% -----------------------------------------------------------------------------
 %% @doc
 %% @end
@@ -28,29 +36,15 @@
     {Messages :: list(message()), Rest :: binary()}.
 decode(Data, text, json) ->
     decode_text(Data, json, []);
+
 decode(Data, text, erl) ->
     decode_text(Data, erl, []);
+
 decode(Data, binary, json) ->
     decode_binary(Data, json, []);
+
 decode(Data, binary, erl) ->
     decode_binary(Data, erl, []).
-
-%% @private
-decode_text(Data, erl, Acc) ->
-    Term = binary_to_term(Data),
-    M = unpack(Term),
-    {[M | Acc], <<>>};
-decode_text(Data, json, Acc) ->
-    Term = jsx:decode(Data, [return_maps, {labels, attempt_atom}]),
-    M = unpack(Term),
-    {[M | Acc], <<>>}.
-
-%% @private
-decode_binary(_Data, erl, _Acc) ->
-    error(not_yet_implemented);
-
-decode_binary(_Data, _, _) ->
-    error(not_yet_implemented).
 
 
 %% -----------------------------------------------------------------------------
@@ -60,12 +54,16 @@ decode_binary(_Data, _, _) ->
 -spec encode(any(), atom()) -> binary() | no_return().
 encode(Message, Encoding) when is_tuple(Message) ->
     encode(pack(Message), Encoding);
+
 encode(Message, erl) when is_list(Message) ->
     term_to_binary(Message);
+
 encode(Message, json) when is_list(Message) ->
     jsx:encode(Message);
+
 encode(Message, msgpack) when is_list(Message) ->
     msgpack:pack(Message, [{format, map}]);
+
 encode(Message, Format) when is_list(Message) ->
     error({not_yet_implemented, Format}).
 
@@ -378,6 +376,26 @@ unpack([?YIELD, ReqId, Options, Args, Payload]) ->
 %% =============================================================================
 
 %% @private
+decode_text(Data, erl, Acc) ->
+    Term = binary_to_term(Data),
+    M = unpack(Term),
+    {[M | Acc], <<>>};
+
+decode_text(Data, json, Acc) ->
+    Term = jsx:decode(Data, [return_maps, {labels, attempt_atom}]),
+    M = unpack(Term),
+    {[M | Acc], <<>>}.
+
+
+%% @private
+decode_binary(_Data, erl, _Acc) ->
+    error(not_yet_implemented);
+
+decode_binary(_Data, _, _) ->
+    error(not_yet_implemented).
+
+
+%% @private
 pack_optionals(undefined, undefined) -> [];
 pack_optionals(Args, undefined) -> [Args];
 pack_optionals(Args, Payload) -> [Args, Payload].
@@ -398,7 +416,7 @@ is_invalid_dict_key(_Key) ->
 
 %% @private
 validate_id(Id) ->
-    wamp_id:is_valid(Id) == true orelse error({invalid_id, Id}),
+    wamp_utils:is_valid_id(Id) == true orelse error({invalid_id, Id}),
     Id.
 
 

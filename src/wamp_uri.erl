@@ -53,7 +53,7 @@ is_valid(Uri) ->
 %% [<<"com.mycompany">>, <<"foo">>, <<"bar">>].
 %% @end
 %% -----------------------------------------------------------------------------
--spec components(uri()) -> [binary()].
+-spec components(uri()) -> [binary()] | no_return().
 components(Uri) ->
     case binary:split(Uri, <<".">>, [global]) of
         [TopLevelDomain, AppName | Rest] when length(Rest) > 0 ->
@@ -61,5 +61,5 @@ components(Uri) ->
             [Domain | Rest];
         _Other ->
             %% Invalid Uri
-            error({badarg, Uri})
+            error({?WAMP_ERROR_INVALID_URI, Uri})
     end.

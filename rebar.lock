@@ -1,1 +1,14 @@
-[{<<"jsx">>,{pkg,<<"jsx">>,<<"2.8.0">>},0}].
+{"1.1.0",
+[{<<"eunit_formatters">>,
+  {git,"git://github.com/seancribbs/eunit_formatters",
+       {ref,"6818dc14fe5d90d2561b1fa8ab8aea523a900128"}},
+  1},
+ {<<"jsx">>,{pkg,<<"jsx">>,<<"2.8.0">>},0},
+ {<<"utils">>,
+  {git,"git@gitlab.com:leapsight/utils.git",
+       {ref,"247a82bb67eb5ee793a9bfe101f9830bc5ee6d02"}},
+  0}]}.
+[
+{pkg_hash,[
+ {<<"jsx">>, <<"749BEC6D205C694AE1786D62CEA6CC45A390437E24835FD16D12D74F07097727">>}]}
+].
