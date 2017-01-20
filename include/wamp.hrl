@@ -659,7 +659,7 @@
                         | wamp_interrupt()
                         | wamp_yield().
 
--type subscriber_features()     ::  event_history
+-type subscriber_feature()     ::  event_history
                                     | pattern_based_subscription
                                     | pattern_based_subscription
                                     | publication_trustlevels
@@ -667,27 +667,29 @@
                                     | sharded_registration
                                     | sharded_subscription
                                     | subscriber_blackwhite_listing.
--type publisher_features()      ::  publisher_exclusion
+-type publisher_feature()      ::  publisher_exclusion
                                     | publisher_identification
                                     | sharded_subscription
                                     | subscriber_blackwhite_listing.
--type broker_features()         ::  subscriber_features()
-                                    | publisher_features()
+-type broker_feature()         ::  subscriber_feature()
+                                    | publisher_feature()
                                     | session_meta_api
                                     | subscription_meta_api
                                     | topic_reflection.
--type caller_features()         ::  call_cancelling
+-type caller_feature()         ::  call_cancelling
                                     | call_timeout
                                     | caller_identification
                                     | procedure_reflection
                                     | progressive_call_results
                                     | sharded_registration
                                     | sharded_registration.
--type callee_features()         ::  caller_features()
+-type callee_feature()         ::  caller_feature()
                                     | call_trustlevels
                                     | pattern_based_registration.
--type dealer_features()         ::  callee_features() 
+-type dealer_feature()         ::  callee_feature() 
                                     | session_meta_api.
+
+                                    
 -type hello_details()           ::  roles
                                     | agent
                                     | transport
