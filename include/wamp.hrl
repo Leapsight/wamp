@@ -719,10 +719,6 @@
 
 
 
-
--type wamp_realm()   :: map().
--type wamp_session() :: map().
-
 %% Adictionary describing *features* supported by the peer for that role.
 %% This MUST be empty for WAMP Basic Profile implementations, and MUST
 %% be used by implementations implementing parts of the Advanced Profile
