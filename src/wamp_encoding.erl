@@ -33,7 +33,7 @@
 %% @end
 %% -----------------------------------------------------------------------------
 -spec decode(Data :: binary(), Type :: atom(), Format :: atom()) ->
-    {Messages :: list(message()), Rest :: binary()}.
+    {Messages :: list(wamp_message()), Rest :: binary()}.
 decode(Data, text, json) ->
     decode_text(Data, json, []);
 
@@ -43,6 +43,9 @@ decode(Data, text, erl) ->
 decode(Data, binary, json) ->
     decode_binary(Data, json, []);
 
+decode(Data, binary, msgpack) ->
+    decode_binary(Data, msgpack, []);
+
 decode(Data, binary, erl) ->
     decode_binary(Data, erl, []).
 
@@ -51,7 +54,7 @@ decode(Data, binary, erl) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec encode(any(), atom()) -> binary() | no_return().
+-spec encode(wamp_message(), atom()) -> binary() | no_return().
 encode(Message, Encoding) when is_tuple(Message) ->
     encode(pack(Message), Encoding);
 
@@ -62,7 +65,7 @@ encode(Message, json) when is_list(Message) ->
     jsx:encode(Message);
 
 encode(Message, msgpack) when is_list(Message) ->
-    msgpack:pack(Message, [{format, map}]);
+    msgpack:pack(Message, [{map_format, map}]);
 
 encode(Message, Format) when is_list(Message) ->
     error({not_yet_implemented, Format}).
@@ -74,7 +77,7 @@ encode(Message, Format) when is_list(Message) ->
 %% Returns a message in WAMP list format.
 %% @end
 %% -----------------------------------------------------------------------------
--spec pack(message()) -> list().
+-spec pack(wamp_message()) -> list().
 pack(#error{} = M) ->
     #error{
         request_type = ReqType,
@@ -159,16 +162,17 @@ pack(M) when is_tuple(M) ->
 
 %% -----------------------------------------------------------------------------
 %% @doc
-%% Converts a message from a WAMP list format to an erlang record.
+%% Converts a message from a WAMP list external format to 
+%% an internal format (erlang record).
 %% See {@link wamp_message} for all message types.
 %% @end
 %% -----------------------------------------------------------------------------
--spec unpack(list()) -> message().
+-spec unpack(list()) -> wamp_message().
 unpack([?HELLO, RealmUri, Details]) ->
-    wamp_message:hello(validate_uri(RealmUri), validate_dict(Details));
+    wamp_message:hello(RealmUri, Details);
 
 unpack([?WELCOME, SessionId, Details]) ->
-    wamp_message:welcome(validate_id(SessionId), validate_dict(Details));
+    wamp_message:welcome(SessionId, Details);
 
 unpack([?CHALLENGE, AuthMethod, Extra]) ->
     wamp_message:challenge(AuthMethod, Extra);
@@ -177,25 +181,25 @@ unpack([?AUTHENTICATE, Signature, Extra]) ->
     wamp_message:authenticate(Signature, Extra);
 
 unpack([?ABORT, Details, ReasonUri]) ->
-    wamp_message:abort(validate_dict(Details), validate_uri(ReasonUri));
+    wamp_message:abort(Details, ReasonUri);
 
 unpack([?GOODBYE, Details, ReasonUri]) ->
-    wamp_message:goodbye(validate_dict(Details), validate_uri(ReasonUri));
+    wamp_message:goodbye(Details, ReasonUri);
 
 unpack([?ERROR, ReqType, ReqId, Details, ErrorUri]) ->
     wamp_message:error(
         ReqType,
-        validate_id(ReqId),
-        validate_dict(Details),
-        validate_uri(ErrorUri)
+        ReqId,
+        Details,
+        ErrorUri
     );
 
 unpack([?ERROR, ReqType, ReqId, Details, ErrorUri, Args]) when is_list(Args) ->
     wamp_message:error(
         ReqType,
-        validate_id(ReqId),
-        validate_dict(Details),
-        validate_uri(ErrorUri),
+        ReqId,
+        Details,
+        ErrorUri,
         Args
     );
 
@@ -203,169 +207,169 @@ unpack([?ERROR, ReqType, ReqId, Details, ErrorUri, Args, Payload])
  when is_list(Args), is_map(Payload) ->
     wamp_message:error(
         ReqType,
-        validate_id(ReqId),
-        validate_dict(Details),
-        validate_uri(ErrorUri),
+        ReqId,
+        Details,
+        ErrorUri,
         Args,
         Payload
     );
 
 unpack([?PUBLISH, ReqId, Options, TopicUri]) ->
     wamp_message:publish(
-        validate_id(ReqId), validate_dict(Options), validate_uri(TopicUri));
+        ReqId, Options, TopicUri);
 
 unpack([?PUBLISH, ReqId, Options, TopicUri, Args]) ->
     wamp_message:publish(
-        validate_id(ReqId),
-        validate_dict(Options),
-        validate_uri(TopicUri),
+        ReqId,
+        Options,
+        TopicUri,
         Args
     );
 
 unpack([?PUBLISH, ReqId, Options, TopicUri, Args, Payload]) ->
     wamp_message:publish(
-        validate_id(ReqId),
-        validate_dict(Options),
-        validate_uri(TopicUri),
+        ReqId,
+        Options,
+        TopicUri,
         Args,
         Payload
     );
 
 unpack([?PUBLISHED, ReqId, PubId]) ->
-    wamp_message:published(validate_id(ReqId), validate_id(PubId));
+    wamp_message:published(ReqId, PubId);
 
 unpack([?SUBSCRIBE, ReqId, Options, TopicUri]) ->
     wamp_message:subscribe(
-        validate_id(ReqId), validate_dict(Options), validate_uri(TopicUri));
+        ReqId, Options, TopicUri);
 
 unpack([?SUBSCRIBED, ReqId, SubsId]) ->
-    wamp_message:subscribed(validate_id(ReqId), validate_id(SubsId));
+    wamp_message:subscribed(ReqId, SubsId);
 
 unpack([?UNSUBSCRIBE, ReqId, SubsId]) ->
-    wamp_message:unsubscribe(validate_id(ReqId), validate_id(SubsId));
+    wamp_message:unsubscribe(ReqId, SubsId);
 
 unpack([?UNSUBSCRIBED, ReqId]) ->
-    wamp_message:unsubscribed(validate_id(ReqId));
+    wamp_message:unsubscribed(ReqId);
 
 unpack([?EVENT, SubsId, PubId, Details]) ->
     wamp_message:event(
-        validate_id(SubsId),
-        validate_id(PubId),
-        validate_dict(Details)
+        SubsId,
+        PubId,
+        Details
     );
 
 unpack([?EVENT, SubsId, PubId, Details, Args]) ->
     wamp_message:event(
-        validate_id(SubsId),
-        validate_id(PubId),
-        validate_dict(Details),
+        SubsId,
+        PubId,
+        Details,
         Args
     );
 
 unpack([?EVENT, SubsId, PubId, Details, Args, Payload]) ->
     wamp_message:event(
-        validate_id(SubsId),
-        validate_id(PubId),
-        validate_dict(Details),
+        SubsId,
+        PubId,
+        Details,
         Args,
         Payload
     );
 
 unpack([?CALL, ReqId, Options, ProcedureUri]) ->
     wamp_message:call(
-        validate_id(ReqId),
-        validate_dict(Options),
-        validate_uri(ProcedureUri)
+        ReqId,
+        Options,
+        ProcedureUri
     );
 
 unpack([?CALL, ReqId, Options, ProcedureUri, Args]) ->
     wamp_message:call(
-        validate_id(ReqId),
-        validate_dict(Options),
-        validate_uri(ProcedureUri),
+        ReqId,
+        Options,
+        ProcedureUri,
         Args
     );
 
 unpack([?CALL, ReqId, Options, ProcedureUri, Args, Payload]) ->
     wamp_message:call(
-        validate_id(ReqId),
-        validate_dict(Options),
-        validate_uri(ProcedureUri),
+        ReqId,
+        Options,
+        ProcedureUri,
         Args,
         Payload
     );
 
 unpack([?CANCEL, ReqId, Options]) ->
-    wamp_message:cancel(validate_id(ReqId), validate_dict(Options));
+    wamp_message:cancel(ReqId, Options);
 
 unpack([?INTERRUPT, ReqId, Options]) ->
-    wamp_message:interrupt(validate_id(ReqId), validate_dict(Options));
+    wamp_message:interrupt(ReqId, Options);
 
 unpack([?RESULT, ReqId, Details]) ->
-    wamp_message:result(validate_id(ReqId), validate_dict(Details));
+    wamp_message:result(ReqId, Details);
 
 unpack([?RESULT, ReqId, Details, Args]) ->
-    wamp_message:result(validate_id(ReqId), validate_dict(Details), Args);
+    wamp_message:result(ReqId, Details, Args);
 
 unpack([?RESULT, ReqId, Details, Args, Payload]) ->
     wamp_message:result(
-        validate_id(ReqId), validate_dict(Details), Args, Payload);
+        ReqId, Details, Args, Payload);
 
 
 unpack([?REGISTER, ReqId, Options, ProcedureUri]) ->
     wamp_message:register(
-        validate_id(ReqId), validate_dict(Options), ProcedureUri);
+        ReqId, Options, ProcedureUri);
 
 unpack([?REGISTERED, ReqId, RegId]) ->
-    wamp_message:registered(validate_id(ReqId), validate_id(RegId));
+    wamp_message:registered(ReqId, RegId);
 
 unpack([?UNREGISTER, ReqId, RegId]) ->
-    wamp_message:unregister(validate_id(ReqId), validate_id(RegId));
+    wamp_message:unregister(ReqId, RegId);
 
 unpack([?UNREGISTERED, ReqId]) ->
-    wamp_message:unregistered(validate_id(ReqId));
+    wamp_message:unregistered(ReqId);
 
 unpack([?INVOCATION, ReqId, RegId, Details]) ->
     wamp_message:invocation(
-        validate_id(ReqId),
-        validate_id(RegId),
-        validate_dict(Details)
+        ReqId,
+        RegId,
+        Details
     );
 
 unpack([?INVOCATION, ReqId, RegId, Details, Args]) ->
     wamp_message:invocation(
-        validate_id(ReqId),
-        validate_id(RegId),
-        validate_dict(Details),
+        ReqId,
+        RegId,
+        Details,
         Args
     );
 
 unpack([?INVOCATION, ReqId, RegId, Details, Args, Payload]) ->
     wamp_message:invocation(
-        validate_id(ReqId),
-        validate_id(RegId),
-        validate_dict(Details),
+        ReqId,
+        RegId,
+        Details,
         Args,
         Payload
     );
 
 unpack([?YIELD, ReqId, Options]) ->
     wamp_message:yield(
-        validate_id(ReqId),
-        validate_dict(Options)
+        ReqId,
+        Options
     );
 
 unpack([?YIELD, ReqId, Options, Args]) ->
     wamp_message:yield(
-        validate_id(ReqId),
-        validate_dict(Options),
+        ReqId,
+        Options,
         Args
     );
 
 unpack([?YIELD, ReqId, Options, Args, Payload]) ->
     wamp_message:yield(
-        validate_id(ReqId),
-        validate_dict(Options),
+        ReqId,
+        Options,
         Args,
         Payload
     ).
@@ -382,12 +386,16 @@ decode_text(Data, erl, Acc) ->
     {[M | Acc], <<>>};
 
 decode_text(Data, json, Acc) ->
-    Term = jsx:decode(Data, [return_maps, {labels, attempt_atom}]),
+    Term = jsx:decode(Data, [return_maps]),
     M = unpack(Term),
     {[M | Acc], <<>>}.
 
 
 %% @private
+decode_binary(Data, msgpack, Acc) ->
+    {ok, M} = msgpack:unpack(Data, [{map_format, map}]),
+    {[M | Acc], <<>>};
+
 decode_binary(_Data, erl, _Acc) ->
     error(not_yet_implemented);
 
@@ -400,30 +408,6 @@ pack_optionals(undefined, undefined) -> [];
 pack_optionals(Args, undefined) -> [Args];
 pack_optionals(Args, Payload) -> [Args, Payload].
 
-
-%% @private
-validate_dict(Map) ->
-    lists:any(fun is_invalid_dict_key/1, maps:keys(Map)) == false
-    orelse error({invalid_dict, Map}),
-    Map.
-
-
-%% @private
-is_invalid_dict_key(_Key) ->
-    %% TODO
-    false.
-
-
-%% @private
-validate_id(Id) ->
-    wamp_utils:is_valid_id(Id) == true orelse error({invalid_id, Id}),
-    Id.
-
-
-%% @private
-validate_uri(Uri) ->
-    wamp_uri:is_valid(Uri) == true orelse error({invalid_uri, Uri}),
-    Uri.
 
 
 %% @private

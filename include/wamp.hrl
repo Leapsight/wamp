@@ -3,6 +3,7 @@
 %% -----------------------------------------------------------------------------
 
 
+
 -define(WS_SUBPROTOCOL_HEADER_NAME, <<"sec-websocket-protocol">>).
 -define(WAMP2_JSON, <<"wamp.2.json">>).
 -define(WAMP2_MSGPACK, <<"wamp.2.msgpack">>).
@@ -25,18 +26,6 @@
 ]).
 
 
-%% Adictionary describing *features* supported by the peer for that role.
-%% This MUST be empty for WAMP Basic Profile implementations, and MUST
-%% be used by implementations implementing parts of the Advanced Profile
-%% to list the specific set of features they support.
--type role_features()   ::  map().
--type uri()             ::  binary().
--type id()              ::  0..?MAX_ID.
--type payload()         ::  map().
-
-%% A _Client_ can support any combination of the following roles 
-%% but must support at least one role.
--type client_role() ::  caller | callee | subscriber | publisher.
 
 -define(WAMP_ENCODINGS, [
     json,
@@ -82,59 +71,59 @@
 
 
 -define(DEALER_FEATURES_SPEC, #{
-    progressive_call_results => #{
+    <<"progressive_call_results">> => #{
         required => false, datatype => boolean},
-    progressive_calls => #{
+    <<"progressive_calls">> => #{
         required => false, datatype => boolean},
-    call_timeout => #{
+    <<"call_timeout">> => #{
         required => false, datatype => boolean},
-    call_canceling => #{
+    <<"call_canceling">> => #{
         required => false, datatype => boolean},
-    caller_identification => #{
+    <<"caller_identification">>=> #{
         required => false, datatype => boolean},
-    call_trustlevels => #{
+    <<"call_trustlevels">> => #{
         required => false, datatype => boolean},
-    registration_meta_api => #{
+    <<"registration_meta_api">> => #{
         required => false, datatype => boolean},
-    registration_revocation => #{
+    <<"registration_revocation">> => #{
         required => false, datatype => boolean},
-    session_meta_api => #{
+    <<"session_meta_api">> => #{
         required => false, datatype => boolean},
-    pattern_based_registration => #{
+    <<"pattern_based_registration">> => #{
         required => false, datatype => boolean},
-    procedure_reflection => #{
+    <<"procedure_reflection">> => #{
         required => false, datatype => boolean},
-    shared_registration => #{
+    <<"shared_registration">> => #{
         required => false, datatype => boolean},
-    sharded_registration => #{
+    <<"sharded_registration">> => #{
         required => false, datatype => boolean}
 }).
 
 -define(BROKER_FEATURES_SPEC, #{
-    event_history => #{
+    <<"event_history">> => #{
         required => false, datatype => boolean},
-    pattern_based_subscription => #{
+    <<"pattern_based_subscription">> => #{
         required => false, datatype => boolean},
-    publication_trustlevels => #{
+    <<"publication_trustlevels">> => #{
         required => false, datatype => boolean},
-    publisher_exclusion => #{
+    <<"publisher_exclusion">> => #{
         required => false, datatype => boolean},
-    publisher_identification => #{
+    <<"publisher_identification">> => #{
         required => false, datatype => boolean},
-    session_meta_api => #{
+    <<"session_meta_api">> => #{
         required => false, datatype => boolean},
-    sharded_subscription => #{
+    <<"sharded_subscription">> => #{
         required => false, datatype => boolean},
-    subscriber_blackwhite_listing => #{
+    <<"subscriber_blackwhite_listing">> => #{
         required => false, datatype => boolean},
-    subscription_meta_api => #{
+    <<"subscription_meta_api">> => #{
         required => false, datatype => boolean},
-    topic_reflection => #{
+    <<"topic_reflection">> => #{
         required => false, datatype => boolean}
 }).
 
 -define(BROKER_ROLE_SPEC, #{
-    features => #{
+    <<"features">> => #{
         required => false,
         datatype => map,
         validator => ?BROKER_FEATURES_SPEC
@@ -142,7 +131,7 @@
 }).
 
 -define(DEALER_ROLE_SPEC, #{
-    features => #{
+    <<"features">> => #{
         required => false,
         datatype => map,
         validator => ?DEALER_FEATURES_SPEC
@@ -150,11 +139,11 @@
 }).
 
 -define(ROUTER_ROLES_SPEC, #{
-    broker => #{
+    <<"broker">> => #{
         required => false, 
         datatype => map,
         validator => ?BROKER_ROLE_SPEC},
-    dealer => #{
+    <<"dealer">> => #{
         required => false, 
         datatype => map,
         validator => ?DEALER_ROLE_SPEC}
@@ -162,67 +151,67 @@
 
 
 -define(CALLEE_FEATURES_SPEC, #{
-    progressive_call_results => #{
+    <<"progressive_call_results">> => #{
         required => false, datatype => boolean},
-    progressive_calls => #{
+    <<"progressive_calls">> => #{
         required => false, datatype => boolean},
-    call_timeout => #{
+    <<"call_timeout">> => #{
         required => false, datatype => boolean},
-    call_canceling => #{
+    <<"call_canceling">> => #{
         required => false, datatype => boolean},
-    caller_identification => #{
+    <<"caller_identification">> => #{
         required => false, datatype => boolean},
-    call_trustlevels => #{
+    <<"call_trustlevels">> => #{
         required => false, datatype => boolean},
-    registration_revocation => #{
+    <<"registration_revocation">> => #{
         required => false, datatype => boolean},
-    session_meta_api => #{
+    <<"session_meta_api">> => #{
         required => false, datatype => boolean},
-    pattern_based_registration => #{
+    <<"pattern_based_registration">> => #{
         required => false, datatype => boolean},
-    shared_registration => #{
+    <<"shared_registration">> => #{
         required => false, datatype => boolean},
-    sharded_registration => #{
+    <<"sharded_registration">> => #{
         required => false, datatype => boolean}
 }).
 
 -define(CALLER_FEATURES_SPEC, #{
-    progressive_call_results => #{
+    <<"progressive_call_results">> => #{
         required => false, datatype => boolean},
-    progressive_calls => #{
+    <<"progressive_calls">> => #{
         required => false, datatype => boolean},
-    call_timeout => #{
+    <<"call_timeout">> => #{
         required => false, datatype => boolean},
-    call_canceling => #{
+    <<"call_canceling">> => #{
         required => false, datatype => boolean},
-    caller_identification => #{
+    <<"caller_identification">>=> #{
         required => false, datatype => boolean}
 }).
 
 -define(SUBSCRIBER_FEATURES_SPEC, #{
-    event_history => #{
+    <<"event_history">> => #{
         required => false, datatype => boolean},
-    pattern_based_subscription => #{
+    <<"pattern_based_subscription">> => #{
         required => false, datatype => boolean},
-    publication_trustlevels => #{
+    <<"publication_trustlevels">> => #{
         required => false, datatype => boolean},
-    publisher_identification => #{
+    <<"publisher_identification">> => #{
         required => false, datatype => boolean},
-    sharded_subscription => #{
+    <<"sharded_subscription">> => #{
         required => false, datatype => boolean}
 }).
 
 -define(PUBLISHER_FEATURES_SPEC, #{
-    publisher_exclusion => #{
+    <<"publisher_exclusion">> => #{
         required => false, datatype => boolean},
-    publisher_identification => #{
+    <<"publisher_identification">> => #{
         required => false, datatype => boolean},
-    subscriber_blackwhite_listing => #{
+    <<"subscriber_blackwhite_listing">> => #{
         required => false, datatype => boolean}
 }).
 
 -define(PUBLISHER_ROLE_SPEC, #{
-    features => #{
+    <<"features">> => #{
         required => false,
         datatype => map,
         validator => ?PUBLISHER_FEATURES_SPEC
@@ -230,7 +219,7 @@
 }).
 
 -define(SUBSCRIBER_ROLE_SPEC, #{
-    features => #{
+    <<"features">> => #{
         required => false,
         datatype => map,
         validator => ?SUBSCRIBER_FEATURES_SPEC
@@ -238,7 +227,7 @@
 }).
 
 -define(CALLER_ROLE_SPEC, #{
-    features => #{
+    <<"features">> => #{
         required => false,
         datatype => map,
         validator => ?CALLER_FEATURES_SPEC
@@ -246,7 +235,7 @@
 }).
 
 -define(CALLEE_ROLE_SPEC, #{
-    features => #{
+    <<"features">> => #{
         required => false,
         datatype => map,
         validator => ?CALLEE_FEATURES_SPEC
@@ -255,19 +244,19 @@
 
 
 -define(CLIENT_ROLES_SPEC, #{
-    publisher => #{
+    <<"publisher">> => #{
         required => false, 
         datatype => map,
         validator => ?PUBLISHER_ROLE_SPEC},
-    subscriber => #{
+    <<"subscriber">> => #{
         required => false, 
         datatype => map,
         validator => ?SUBSCRIBER_ROLE_SPEC},
-    caller => #{
+    <<"caller">> => #{
         required => false, 
         datatype => map,
         validator => ?CALLER_ROLE_SPEC},
-    callee => #{
+    <<"callee">> => #{
         required => false, 
         datatype => map,
         validator => ?CALLEE_ROLE_SPEC}
@@ -277,24 +266,24 @@
 
 
 -define(HELLO_DETAILS_SPEC, #{
-    roles => #{
+    <<"roles">> => #{
         required => true,
         datatype => map,
         validator => ?CLIENT_ROLES_SPEC
     },
-    agent => #{
+    <<"agent">> => #{
         required => false,
         datatype => binary
     },
-    authid => #{
+    <<"authid">> => #{
         required => false,
         datatype => binary
     },
-    authmethods => #{
+    <<"authmethods">> => #{
         required => false, 
         datatype => {in, ?WAMP_AUTH_METHODS}
     },
-    transport => #{
+    <<"transport">> => #{
         required => false,
         datatype => map,
         validator => #{
@@ -304,19 +293,19 @@
 }).
 
 -define(CHALLENGE_DETAILS_SPEC, #{
-    challenge => #{
+    <<"challenge">> => #{
         required => false,
         datatype => binary
     },
-    salt => #{
+    <<"salt">> => #{
         required => false,
         datatype => binary
     },
-    keylen => #{
+    <<"keylen">> => #{
         required => false,
         datatype => integer
     },
-    iterations => #{
+    <<"iterations">> => #{
         required => false,
         datatype => integer
     }
@@ -324,19 +313,19 @@
 
 
 -define(WELCOME_DETAILS_SPEC, #{
-    roles => #{
+    <<"roles">> => #{
         required => true,
         datatype => map,
         validator => ?ROUTER_ROLES_SPEC
     },
-    agent => #{
+    <<"agent">> => #{
         required => false,
         datatype => binary
     }
 }).
 
 -define(GOODBYE_DETAILS_SPEC, #{
-    message => #{
+    <<"message">> => #{
         required => false,
         datatype => binary
     }
@@ -345,40 +334,40 @@
 -define(ABORT_DETAILS_SPEC, ?GOODBYE_DETAILS_SPEC).
 
 -define(CALL_CANCELLING_OPTS_SPEC, #{
-    mode => #{
+    <<"mode">> => #{
         required => false,
         datatype => {in, [<<"skip">>, <<"kill">>, <<"killnowait">>]}
     }
 }).
 
 -define(CALL_OPTS_SPEC, #{
-    disclose_me => #{
+    <<"disclose_me">> => #{
         required => false,
         datatype => boolean
     },
-    runmode => #{
+    <<"runmode">> => #{
         required => false,
         datatype => {in, [<<"partition">>]}
     },
-    rkey => #{
+    <<"rkey">> => #{
         required => false,
         datatype => binary
     }
 }).
 
 -define(REGISTER_OPTS_SPEC, #{
-    disclose_caller => #{
+    <<"disclose_caller">> => #{
         required => false,
         datatype => boolean
     },
-    match => #{
+    <<"match">> => #{
         required => false,
         datatype => {in, [
             <<"prefix">>, 
             <<"wildcard">>
         ]}
     },
-    invoque => #{
+    <<"invoque">> => #{
         required => false,
         default => <<"single">>,
         datatype => {in, [
@@ -392,7 +381,7 @@
 }).
 
 -define(SUBSCRIBE_OPTS_SPEC, #{
-    match => #{
+    <<"match">> => #{
         required => false,
         datatype => {in, [
             <<"prefix">>, 
@@ -404,53 +393,53 @@
 
 -define(PUBLISH_OPTS_SPEC, #{
     %% resource key
-    rkey => #{
+   <<"rkey">> => #{
         required => false,
         datatype => binary
     },
     %% node key
-    nkey => #{
+    <<"nkey">> => #{
         required => false,
         datatype => binary
     },
-    disclose_me => #{
+    <<"disclose_me">> => #{
         required => false,
         datatype => boolean
     },
-    exclude_me => #{
+    <<"exclude_me">> => #{
         required => false,
         datatype => boolean
     },
     %% blacklisting
-    exclude => #{
+    <<"exclude">> => #{
         required => false,
         datatype => {list, integer}
     },
-    exclude_authid => #{
+    <<"exclude_authid">> => #{
         required => false,
         datatype => {list, binary}
     },
-    exclude_authrole => #{
+    <<"exclude_authrole">> => #{
         required => false,
         datatype => {list, binary}
     },
     %% whitelisting
-    eligible => #{
+    <<"eligible">> => #{
         required => false,
         datatype => {list, integer}
     },
-    eligible_authid => #{
+    <<"eligible_authid">> => #{
         required => false,
         datatype => {list, binary}
     },
-    eligible_authrole => #{
+    <<"eligible_authrole">> => #{
         required => false,
         datatype => {list, binary}
     }
 }).
 
 -define(INVOCATION_DETAILS_SPEC, #{
-    trustlevel => #{
+    <<"trustlevel">> => #{
         required => false,
         datatype => integer
     }
@@ -632,9 +621,9 @@
     arguments       ::  list(),
     payload         ::  map()
 }).
--type wamp_yield()       ::  #yield{}.
+-type wamp_yield()  ::  #yield{}.
 
--type message()     ::  wamp_hello() 
+-type wamp_message()     ::  wamp_hello() 
                         | wamp_challenge() 
                         | wamp_authenticate() 
                         | wamp_welcome()
@@ -659,80 +648,52 @@
                         | wamp_interrupt()
                         | wamp_yield().
 
--type subscriber_feature()     ::  event_history
-                                    | pattern_based_subscription
-                                    | pattern_based_subscription
-                                    | publication_trustlevels
-                                    | publisher_identification
-                                    | sharded_registration
-                                    | sharded_subscription
-                                    | subscriber_blackwhite_listing.
--type publisher_feature()      ::  publisher_exclusion
-                                    | publisher_identification
-                                    | sharded_subscription
-                                    | subscriber_blackwhite_listing.
--type broker_feature()         ::  subscriber_feature()
-                                    | publisher_feature()
-                                    | session_meta_api
-                                    | subscription_meta_api
-                                    | topic_reflection.
--type caller_feature()         ::  call_cancelling
-                                    | call_timeout
-                                    | caller_identification
-                                    | procedure_reflection
-                                    | progressive_call_results
-                                    | sharded_registration
-                                    | sharded_registration.
--type callee_feature()         ::  caller_feature()
-                                    | call_trustlevels
-                                    | pattern_based_registration.
--type dealer_feature()         ::  callee_feature() 
-                                    | session_meta_api.
+
 
                                     
--type hello_details()           ::  roles
-                                    | agent
-                                    | transport
-                                    | authmethods
-                                    | authid.
--type result_details()          ::  progress.
--type challenge_details()       ::  challenge 
-                                    | salt 
-                                    | keylen 
-                                    | iterations.
--type invocation_details()      ::  caller
-                                    | trustlevel | procedure.
--type event_details()           ::  publisher 
-                                    | trustlevel | topic.
+% -type hello_details()           ::  roles
+%                                     | agent
+%                                     | transport
+%                                     | authmethods
+%                                     | authid.
+% -type result_details()          ::  progress.
+% -type challenge_details()       ::  challenge 
+%                                     | salt 
+%                                     | keylen 
+%                                     | iterations.
+% -type invocation_details()      ::  caller
+%                                     | trustlevel | procedure.
+% -type event_details()           ::  publisher 
+%                                     | trustlevel | topic.
 
-%% <<"exact">> | <<"prefix">> | <<"wildcard">>.
--type match_policy()            ::  binary().
+% %% <<"exact">> | <<"prefix">> | <<"wildcard">>.
+% -type match_policy()            ::  binary().
 
-%% <<"single">> | <<"roundrobin">> | <<"random">> | <<"first">> | <<"last">>.
--type invocation_policy()       ::  binary().
+% %% <<"single">> | <<"roundrobin">> | <<"random">> | <<"first">> | <<"last">>.
+% -type invocation_policy()       ::  binary().
 
--type subscribe_options()       ::  match
-                                    | nkey
-                                    | disclose_caller.
--type register_options()        ::  match | invoke | disclose_caller.
--type call_runmode()            ::  partition.
--type call_options()            ::  disclose_me
-                                    | runmode
-                                    | rkey
-                                    | receive_progress
-                                    | timeout.
--type cancel_options()          ::  mode.
--type yeild_options()           ::  progress.
--type publish_options()         ::  acknowledge
-                                    | exclude
-                                    | exclude_authid
-                                    | exclude_authrole
-                                    | exclude_me
-                                    | disclose_me
-                                    | eligible
-                                    | eligible_authid
-                                    | eligible_authrole
-                                    | rkey.
+% -type subscribe_options()       ::  match
+%                                     | nkey
+%                                     | disclose_caller.
+% -type register_options()        ::  match | invoke | disclose_caller.
+% -type call_runmode()            ::  partition.
+% -type call_options()            ::  disclose_me
+%                                     | runmode
+%                                     | rkey
+%                                     | receive_progress
+%                                     | timeout.
+% -type cancel_options()          ::  mode.
+% -type yeild_options()           ::  progress.
+% -type publish_options()         ::  acknowledge
+%                                     | exclude
+%                                     | exclude_authid
+%                                     | exclude_authrole
+%                                     | exclude_me
+%                                     | disclose_me
+%                                     | eligible
+%                                     | eligible_authid
+%                                     | eligible_authrole
+%                                     | rkey.
 
 -define(WAMP_ERROR_AUTHORIZATION_FAILED, <<"wamp.error.authorization_failed">>).
 -define(WAMP_ERROR_CANCELLED, <<"wamp.error.cancelled">>).
@@ -756,5 +717,18 @@
 -define(WAMP_ERROR_SYSTEM_SHUTDOWN, <<"wamp.error.system_shutdown">>).
 
 
+
+
+
 -type wamp_realm()   :: map().
 -type wamp_session() :: map().
+
+%% Adictionary describing *features* supported by the peer for that role.
+%% This MUST be empty for WAMP Basic Profile implementations, and MUST
+%% be used by implementations implementing parts of the Advanced Profile
+%% to list the specific set of features they support.
+-type uri()             ::  binary().
+-type id()              ::  0..?MAX_ID.
+
+
+
