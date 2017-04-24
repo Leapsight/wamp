@@ -7,7 +7,7 @@
  {<<"msgpack">>,{pkg,<<"msgpack">>,<<"0.6.0">>},0},
  {<<"utils">>,
   {git,"git@gitlab.com:leapsight/utils.git",
-       {ref,"247a82bb67eb5ee793a9bfe101f9830bc5ee6d02"}},
+       {ref,"928df92a9b01831355f8cca608f739d9c9d4c5d3"}},
   0}]}.
 [
 {pkg_hash,[
