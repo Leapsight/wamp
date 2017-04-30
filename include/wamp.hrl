@@ -4,7 +4,6 @@
 
 
 
--define(WS_SUBPROTOCOL_HEADER_NAME, <<"sec-websocket-protocol">>).
 -define(WAMP2_JSON, <<"wamp.2.json">>).
 -define(WAMP2_MSGPACK, <<"wamp.2.msgpack">>).
 -define(WAMP2_MSGPACK_BATCHED,<<"wamp.2.msgpack.batched">>).
