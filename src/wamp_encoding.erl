@@ -167,7 +167,7 @@ pack(M) when is_tuple(M) ->
 %% See {@link wamp_message} for all message types.
 %% @end
 %% -----------------------------------------------------------------------------
--spec unpack(list()) -> wamp_message().
+-spec unpack(list()) -> wamp_message() | no_return().
 unpack([?HELLO, RealmUri, Details]) ->
     wamp_message:hello(RealmUri, Details);
 

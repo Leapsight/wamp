@@ -25,5 +25,3 @@ is_valid_id(N) when is_integer(N) andalso N >= 0 andalso N =< ?MAX_ID ->
     true;
 is_valid_id(_) ->
     false.
-
-

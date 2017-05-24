@@ -499,8 +499,8 @@
     request_id      ::  id(),
     details         ::  map(),
     error_uri       ::  uri(),
-    arguments       ::  list(),
-    payload         ::  map()
+    arguments       ::  list() | undefined,
+    payload         ::  map() | undefined
 }).
 -type wamp_error()       ::  #error{}.
 
@@ -508,8 +508,8 @@
     request_id      ::  id(),
     options         ::  map(),
     topic_uri       ::  uri(),
-    arguments       ::  list(),
-    payload         ::  map()
+    arguments       ::  list() | undefined,
+    payload         ::  map() | undefined
 }).
 -type wamp_publish()       ::  #publish{}.
 
@@ -547,8 +547,8 @@
     subscription_id ::  id(),
     publication_id  ::  id(),
     details         ::  map(),
-    arguments       ::  list(),
-    payload         ::  map()
+    arguments       ::  list() | undefined,
+    payload         ::  map() | undefined
 }).
 -type wamp_event()       ::  #event{}.
 
@@ -556,8 +556,8 @@
     request_id      ::  id(),
     options         ::  map(),
     procedure_uri   ::  uri(),
-    arguments       ::  list(),
-    payload         ::  map()
+    arguments       ::  list() | undefined,
+    payload         ::  map() | undefined
 }).
 -type wamp_call()       ::  #call{}.
 
@@ -570,8 +570,8 @@
 -record(result, {
     request_id      ::  id(),
     details         ::  map(),
-    arguments       ::  list(),
-    payload         ::  map()
+    arguments       ::  list() | undefined,
+    payload         ::  map() | undefined
 }).
 -type wamp_result()       ::  #result{}.
 
@@ -603,8 +603,8 @@
     request_id      ::  id(),
     registration_id ::  id(),
     details         ::  map(),
-    arguments       ::  list(),
-    payload         ::  map()
+    arguments       ::  list() | undefined,
+    payload         ::  map() | undefined
 }).
 -type wamp_invocation()       ::  #invocation{}.
 
@@ -617,8 +617,8 @@
 -record(yield, {
     request_id      ::  id(),
     options         ::  map(),
-    arguments       ::  list(),
-    payload         ::  map()
+    arguments       ::  list() | undefined,
+    payload         ::  map() | undefined
 }).
 -type wamp_yield()  ::  #yield{}.
 
