@@ -37,14 +37,11 @@
 decode(Data, text, json) ->
     decode_text(Data, json, []);
 
-decode(Data, text, erl) ->
-    decode_text(Data, erl, []);
-
-decode(Data, binary, json) ->
-    decode_binary(Data, json, []);
-
 decode(Data, binary, msgpack) ->
     decode_binary(Data, msgpack, []);
+
+decode(Data, binary, bert) ->
+    decode_binary(Data, bert, []);
 
 decode(Data, binary, erl) ->
     decode_binary(Data, erl, []).
@@ -67,8 +64,11 @@ encode(Message, json) when is_list(Message) ->
 encode(Message, msgpack) when is_list(Message) ->
     msgpack:pack(Message, [{map_format, map}]);
 
+encode(Message, bert) when is_list(Message) ->
+    bert:encode(Message);
+
 encode(Message, Format) when is_list(Message) ->
-    error({not_yet_implemented, Format}).
+    error({unsupported_encoding, Format}).
 
 
 
@@ -380,11 +380,6 @@ unpack([?YIELD, ReqId, Options, Args, Payload]) ->
 %% =============================================================================
 
 %% @private
-decode_text(Data, erl, Acc) ->
-    Term = binary_to_term(Data),
-    M = unpack(Term),
-    {[M | Acc], <<>>};
-
 decode_text(Data, json, Acc) ->
     Term = jsx:decode(Data, [return_maps]),
     M = unpack(Term),
@@ -394,13 +389,13 @@ decode_text(Data, json, Acc) ->
 %% @private
 decode_binary(Data, msgpack, Acc) ->
     {ok, M} = msgpack:unpack(Data, [{map_format, map}]),
-    {[M | Acc], <<>>};
+    {[unpack(M) | Acc], <<>>};
 
-decode_binary(_Data, erl, _Acc) ->
-    error(not_yet_implemented);
+decode_binary(Data, bert, Acc) ->
+    {[unpack(bert:decode(Data)) | Acc], <<>>};
 
-decode_binary(_Data, _, _) ->
-    error(not_yet_implemented).
+decode_binary(Bin, erl, Acc) ->
+    {[unpack(binary_to_term(Bin)) | Acc], <<>>}.
 
 
 %% @private

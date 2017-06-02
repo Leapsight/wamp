@@ -1,16 +1,20 @@
 {"1.1.0",
-[{<<"eunit_formatters">>,
+[{<<"bert">>,
+  {git,"git@github.com:aramallo/bert.erl.git",
+       {ref,"c23574428b24c276fe9b662e3bc2a8cb9bea6da5"}},
+  0},
+ {<<"eunit_formatters">>,
   {git,"git://github.com/seancribbs/eunit_formatters",
        {ref,"6818dc14fe5d90d2561b1fa8ab8aea523a900128"}},
   1},
- {<<"jsx">>,{pkg,<<"jsx">>,<<"2.8.0">>},0},
- {<<"msgpack">>,{pkg,<<"msgpack">>,<<"0.6.0">>},0},
+ {<<"jsx">>,{pkg,<<"jsx">>,<<"2.8.2">>},0},
+ {<<"msgpack">>,{pkg,<<"msgpack">>,<<"0.7.0">>},0},
  {<<"utils">>,
   {git,"git@gitlab.com:leapsight/utils.git",
-       {ref,"928df92a9b01831355f8cca608f739d9c9d4c5d3"}},
+       {ref,"921257baad6320eba420239de7ef834d0ea54972"}},
   0}]}.
 [
 {pkg_hash,[
- {<<"jsx">>, <<"749BEC6D205C694AE1786D62CEA6CC45A390437E24835FD16D12D74F07097727">>},
- {<<"msgpack">>, <<"E6B40E87C2233174B4C7CEDA3BC6231DD0BCE39BF9D7E18226875EA821C624D5">>}]}
+ {<<"jsx">>, <<"7ACC7D785B5ABE8A6E9ADBDE926A24E481F29956DD8B4DF49E3E4E7BCC92A018">>},
+ {<<"msgpack">>, <<"128AE0A2227C7E7A2847C0F0F73551C268464F8C1EE96BFFB920BC0A5712B295">>}]}
 ].
