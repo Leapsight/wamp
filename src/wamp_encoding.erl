@@ -394,7 +394,7 @@ decode_text(_Data, json_batched, _Acc) ->
 
 
 %% @private
--spec decode_binary(binary(), atom(), Acc0 :: list()) -> 
+-spec decode_binary(binary(), wamp_encoding(), Acc0 :: list()) -> 
     {Acc1 :: list(), Buffer :: binary()}.
 
 decode_binary(Data, msgpack, Acc) ->

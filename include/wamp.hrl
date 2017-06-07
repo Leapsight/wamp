@@ -30,8 +30,13 @@
     json,
     msgpack,
     json_batched,
-    msgpack_batched
+    msgpack_batched,
+    bert,
+    erl
 ]).
+
+-type wamp_encoding()   ::  json | msgpack | bert | erl 
+                            | json_batched | msgpack.
 
 
 
