@@ -155,6 +155,7 @@ pack(#yield{} = M) ->
     [?YIELD, ReqId, Options | T];
 
 pack(M) when is_tuple(M) ->
+    %% All other message types are straight forward
     [_H|T] = tuple_to_list(M),
     [pack_message_type(element(1, M)) | T].
 
@@ -380,16 +381,28 @@ unpack([?YIELD, ReqId, Options, Args, Payload]) ->
 %% =============================================================================
 
 %% @private
+-spec decode_text(binary(), atom(), Acc0 :: list()) -> 
+    {Acc1 :: list(), Buffer :: binary()}.
+
 decode_text(Data, json, Acc) ->
     Term = jsx:decode(Data, [return_maps]),
     M = unpack(Term),
-    {[M | Acc], <<>>}.
+    {[M | Acc], <<>>};
+
+decode_text(_Data, json_batched, _Acc) ->
+    error(not_yet_implemented).
 
 
 %% @private
+-spec decode_binary(binary(), atom(), Acc0 :: list()) -> 
+    {Acc1 :: list(), Buffer :: binary()}.
+
 decode_binary(Data, msgpack, Acc) ->
     {ok, M} = msgpack:unpack(Data, [{map_format, map}]),
     {[unpack(M) | Acc], <<>>};
+
+decode_binary(_Data, msgpack_batched, _Acc) ->
+    error(not_yet_implemented);
 
 decode_binary(Data, bert, Acc) ->
     {[unpack(bert:decode(Data)) | Acc], <<>>};
