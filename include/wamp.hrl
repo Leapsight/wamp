@@ -6,8 +6,12 @@
 
 -define(WAMP2_JSON, <<"wamp.2.json">>).
 -define(WAMP2_MSGPACK, <<"wamp.2.msgpack">>).
+-define(WAMP2_BERT, <<"wamp.2.bert">>).
+-define(WAMP2_ERL, <<"wamp.2.erl">>).
 -define(WAMP2_MSGPACK_BATCHED,<<"wamp.2.msgpack.batched">>).
 -define(WAMP2_JSON_BATCHED,<<"wamp.2.json.batched">>).
+-define(WAMP2_BERT_BATCHED,<<"wamp.2.bert.batched">>).
+-define(WAMP2_ERL_BATCHED,<<"wamp.2.erl.batched">>).
 -define(MAX_ID, 9007199254740993).
 
 -define(ANON_AUTH, <<"anonymous">>).
@@ -32,7 +36,8 @@
     json_batched,
     msgpack_batched,
     bert,
-    erl
+    bert_batched,
+    erl_batched
 ]).
 
 -type wamp_encoding()   ::  json | msgpack | bert | erl 
