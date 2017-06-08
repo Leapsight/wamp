@@ -31,9 +31,6 @@
 
 
 -define(WAMP_ENCODINGS, [
-    json,
-    msgpack,
-    json_batched,
     msgpack_batched,
     bert,
     bert_batched,
@@ -42,7 +39,6 @@
 
 -type wamp_encoding()   ::  json | msgpack | bert | erl 
                             | json_batched | msgpack.
-
 
 
 -define(HELLO, 1).
@@ -275,29 +271,56 @@
 
 
 -define(HELLO_DETAILS_SPEC, #{
+    <<"authmethods">> => #{
+        % description => <<"Used by the client to announce the authentication methods it is prepared to perform.">>,
+        required => false, 
+        datatype => {in, ?WAMP_AUTH_METHODS}
+    },
+    <<"authid">> => #{
+        % description => <<"Te authentication ID (e.g. username) the client wishes to authenticate as.">>,
+        required => false,
+        datatype => binary
+    },
+    <<"authrole">> => #{
+        required => false,
+        datatype => binary
+    },
+    <<"authextra">> => #{
+        % description => <<"Not in RFC">>,
+        required => false
+    },
     <<"roles">> => #{
         required => true,
         datatype => map,
         validator => ?CLIENT_ROLES_SPEC
     },
     <<"agent">> => #{
+        % description => <<"When a software agent operates in a network protocol, it often identifies itself, its application type, operating system, software vendor, or software revision, by submitting a characteristic identification string to its operating peer. Similar to what browsers do with the User-Agent HTTP header, both the HELLO and the WELCOME message MAY disclose the WAMP implementation in use to its peer">>,
         required => false,
         datatype => binary
-    },
-    <<"authid">> => #{
-        required => false,
-        datatype => binary
-    },
-    <<"authmethods">> => #{
-        required => false, 
-        datatype => {in, ?WAMP_AUTH_METHODS}
     },
     <<"transport">> => #{
+        % description => <<"When running WAMP over a TLS (either secure WebSocket
+        % or raw TCP) transport, a peer may authenticate to the other via the TLS certificate mechanism. A server might authenticate to the client, and a client may authenticate to the server (TLS client-certificate based authentication). This transport-level authentication information may be forward to the WAMP level within HELLO.Details.transport.auth|any in both directions (if available).">>,
         required => false,
         datatype => map,
         validator => #{
             auth => #{required => true}
         }
+    },
+    <<"resumable">> => #{
+        required => false,
+        datatype => boolean
+    },
+    <<"resume_session">> => #{
+        % description => <<"The session ID the client would like to resume.">>,
+        required => false,
+        datatype => binary
+    },
+    <<"resume_token">> => #{
+        % description => <<"The secure token required to resume the session defined in 'resume_session'.">>,
+        required => false,
+        datatype => binary
     }
 }).
 
@@ -322,12 +345,47 @@
 
 
 -define(WELCOME_DETAILS_SPEC, #{
+    <<"authmethod">> => #{
+        required => false,
+        datatype => binary
+    },
+    <<"authid">> => #{
+        % description => <<"The authentication ID (e.g. username) the client is authenticate as.">>,
+        required => false,
+        datatype => binary
+    },
+    <<"authrole">> => #{
+        required => false,
+        datatype => binary
+    },
+    <<"authprovider">> => #{
+        % description => <<"Not in RFC">>,
+        required => false,
+        datatype => binary
+    },
+    <<"authextra">> => #{
+        % description => <<"Not in RFC">>,
+        required => false
+    },
     <<"roles">> => #{
         required => true,
         datatype => map,
         validator => ?ROUTER_ROLES_SPEC
     },
     <<"agent">> => #{
+        required => false,
+        datatype => binary
+    },
+    <<"resumed">> => #{
+        required => false,
+        datatype => boolean
+    },
+    <<"resumable">> => #{
+        required => false,
+        datatype => boolean
+    },
+    <<"resume_token">> => #{
+        % description => <<"The secure token required to resume the session defined in 'resume_session'.">>,
         required => false,
         datatype => binary
     }
