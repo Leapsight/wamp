@@ -37,9 +37,14 @@
     erl_batched
 ]).
 
--type wamp_encoding()   ::  json | msgpack | bert | erl 
-                            | json_batched | msgpack.
 
+-type frame_type()          ::  text | binary.
+-type transport()           ::  ws | raw.
+-type encoding()            ::  json 
+                                | msgpack 
+                                | json_batched 
+                                | msgpack_batched
+                                | bert.
 
 -define(HELLO, 1).
 -define(WELCOME, 2).

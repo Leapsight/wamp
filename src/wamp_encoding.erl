@@ -32,8 +32,9 @@
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec decode(Data :: binary(), Type :: atom(), Format :: atom()) ->
-    {Messages :: list(wamp_message()), Rest :: binary()}.
+-spec decode(Data :: binary(), Type :: frame_type(), Format :: encoding()) ->
+    {Messages :: [wamp_message()], Rest :: binary()}.
+
 decode(Data, text, json) ->
     decode_text(Data, json, []);
 
@@ -51,7 +52,7 @@ decode(Data, binary, erl) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec encode(wamp_message(), atom()) -> binary() | no_return().
+-spec encode(wamp_message(), encoding()) -> binary() | no_return().
 encode(Message, Encoding) when is_tuple(Message) ->
     encode(pack(Message), Encoding);
 
@@ -381,7 +382,7 @@ unpack([?YIELD, ReqId, Options, Args, Payload]) ->
 %% =============================================================================
 
 %% @private
--spec decode_text(binary(), atom(), Acc0 :: list()) -> 
+-spec decode_text(binary(), encoding(), Acc0 :: list()) -> 
     {Acc1 :: list(), Buffer :: binary()}.
 
 decode_text(Data, json, Acc) ->
@@ -394,7 +395,7 @@ decode_text(_Data, json_batched, _Acc) ->
 
 
 %% @private
--spec decode_binary(binary(), wamp_encoding(), Acc0 :: list()) -> 
+-spec decode_binary(binary(), encoding(), Acc0 :: list()) -> 
     {Acc1 :: list(), Buffer :: binary()}.
 
 decode_binary(Data, msgpack, Acc) ->
