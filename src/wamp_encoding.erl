@@ -63,7 +63,11 @@ encode(Message, json) when is_list(Message) ->
     jsx:encode(Message);
 
 encode(Message, msgpack) when is_list(Message) ->
-    msgpack:pack(Message, [{map_format, map}]);
+    Opts = [
+        {map_format, map},
+        {pack_str, from_binary}
+    ],
+    msgpack:pack(Message, Opts);
 
 encode(Message, bert) when is_list(Message) ->
     bert:encode(Message);
@@ -399,7 +403,11 @@ decode_text(_Data, json_batched, _Acc) ->
     {Acc1 :: list(), Buffer :: binary()}.
 
 decode_binary(Data, msgpack, Acc) ->
-    {ok, M} = msgpack:unpack(Data, [{map_format, map}]),
+    Opts = [
+        {map_format, map}, 
+        {unpack_str, as_binary}
+    ],
+    {ok, M} = msgpack:unpack(Data, Opts),
     {[unpack(M) | Acc], <<>>};
 
 decode_binary(_Data, msgpack_batched, _Acc) ->
