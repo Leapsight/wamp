@@ -31,20 +31,29 @@
 
 
 -define(WAMP_ENCODINGS, [
-    msgpack_batched,
+    json,
+    msgpack,
     bert,
+    erl,
+    json_batched,
+    msgpack_batched,
     bert_batched,
     erl_batched
 ]).
 
+-type encoding()        ::  json
+                            | msgpack
+                            | bert
+                            | erl
+                            | json_batched
+                            | msgpack_batched
+                            | bert_batched
+                            | erl_batched.
+
 
 -type frame_type()          ::  text | binary.
 -type transport()           ::  ws | raw.
--type encoding()            ::  json 
-                                | msgpack 
-                                | json_batched 
-                                | msgpack_batched
-                                | bert.
+
 
 -define(HELLO, 1).
 -define(WELCOME, 2).
