@@ -7,7 +7,6 @@
     stdlib,
     lager,
     exometer_core,
-    tuplespace,
     jsx,
     msgpack
    ]},
