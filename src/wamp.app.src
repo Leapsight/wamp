@@ -5,7 +5,11 @@
   {applications,
    [kernel,
     stdlib,
-    jsx
+    lager,
+    exometer_core,
+    tuplespace,
+    jsx,
+    msgpack
    ]},
   {env,[]},
   {modules, []},

@@ -80,7 +80,32 @@
 -define(INTERRUPT, 69).
 -define(YIELD, 70).
 
-
+-define(MSG_TYPES,[
+    ?HELLO,
+    ?WELCOME,
+    ?ABORT,
+    ?CHALLENGE,
+    ?AUTHENTICATE,
+    ?GOODBYE,
+    ?ERROR,
+    ?PUBLISH,
+    ?PUBLISHED,
+    ?SUBSCRIBE,
+    ?SUBSCRIBED,
+    ?UNSUBSCRIBE,
+    ?UNSUBSCRIBED,
+    ?EVENT,
+    ?CALL,
+    ?CANCEL,
+    ?RESULT,
+    ?REGISTER,
+    ?REGISTERED,
+    ?UNREGISTER,
+    ?UNREGISTERED,
+    ?INVOCATION,
+    ?INTERRUPT,
+    ?YIELD
+]).
 
 
 
@@ -538,8 +563,8 @@
 
 
 
-%% *** NOTICE: DO NOT CHANGE THE ORDER OF THE RECORD FIELDS as it maps
-%% *** to the order in WAMP messages
+%% NOTICE: DO NOT CHANGE THE ORDER OF THE RECORD FIELDS as it maps
+%% to the order in WAMP messages and we use list_to_tuple/1
 -record(hello, {
     realm_uri       ::  uri(),
     details         ::  map()
