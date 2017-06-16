@@ -58,6 +58,7 @@
     session                 ::  wamp_session:session() | undefined
 }).
 
+
 -type state_name()          ::  closed
                                 | establishing
                                 | established

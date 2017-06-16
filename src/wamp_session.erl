@@ -21,7 +21,7 @@
     pid = self()                    ::  pid(),
     realm_uri                       ::  uri(),
     %% Peer and roles
-    peer                            ::  wamp:peer(),
+    peer                            ::  wamp_protocol:peer(),
     roles                           ::  map(),
     %% The authentication ID of the session that joined
     authid                          ::  binary(),
@@ -109,7 +109,8 @@
 %% for value a map of features (possibly empty) where Role is one of 'callee',
 %%  'caller', 'publisher', 'subscriber'.
 %% -----------------------------------------------------------------------------
--spec new(wamp:peer(), uri(), session_opts()) -> session().
+-spec new(wamp_protocol:peer(), uri(), session_opts()) -> 
+    session() | no_return().
 
 new(Peer, RealmUri, Opts) when is_map(Opts) ->
     %% TODO replace with tuplespace
@@ -122,11 +123,11 @@ new(Peer, RealmUri, Opts) when is_map(Opts) ->
         {read_concurrency, true},
         {write_concurrency, true}
     ]),
+    
     Roles = maps:get(<<"roles">>, Opts),
-    length(maps:keys(Roles)) > 0 
-    orelse error({invalid_options, missing_client_role}),
+    maps:size(Roles) > 0 orelse error({invalid_options, missing_client_role}),
 
-    Now = calendar:local_time(),
+    Now = erlang:universaltime(),
     
     #session{
         id = wamp_utils:rand_uniform(),
@@ -169,7 +170,7 @@ close(#session{counters_tab = Tab}) ->
 %% Returns the peer of the provided session.
 %% @end
 %% -----------------------------------------------------------------------------
--spec peer(session()) -> wamp:peer().
+-spec peer(session()) -> wamp_protocol:peer().
 
 peer(#session{peer = Val}) -> Val.
 
@@ -179,7 +180,7 @@ peer(#session{peer = Val}) -> Val.
 %% Set the peer to the provided session.
 %% @end
 %% -----------------------------------------------------------------------------
--spec set_peer(session(), wamp:peer()) -> session().
+-spec set_peer(session(), wamp_protocol:peer()) -> session().
 
 set_peer(S, {{_, _, _, _}, _} = Peer) ->
     S#session{peer = Peer}.
