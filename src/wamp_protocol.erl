@@ -82,7 +82,7 @@
 -export_type([subprotocol/0]).
 
 
--export([init/6]).
+-export([init/5]).
 -export([handle_inbound_data/2]).
 -export([handle_inbound_message/2]).
 -export([handle_outbound_data/2]).
@@ -193,14 +193,14 @@
 %% @end
 %% -----------------------------------------------------------------------------
 -spec init(
-    peer_type() , binary() | subprotocol(), module(), peer(), uri(), map()) -> 
+    binary() | subprotocol(), {peer_type(), module()}, peer(), uri(), map()) -> 
     {ok, state()} 
     | {error, any(), state()}.
 
-init(Subproto0, PeerType, Peer, Mod, RealmUri, Opts) ->
+init(Subproto0, {PeerType, Mod}, Peer, RealmUri, Opts) ->
     case validate_subprotocol(Subproto0) of
         {ok, Subproto1} ->
-            do_init(Subproto1, PeerType, Peer, Mod, RealmUri, Opts);
+            do_init(Subproto1, {PeerType, Mod}, Peer, RealmUri, Opts);
         {error, Reason} ->
             {error, Reason, undefined}
     end.
@@ -812,7 +812,7 @@ abort(Type, Reason) ->
 %% =============================================================================
     
 %% @private
-do_init({T, FrameType, Enc}, PeerType, Peer, Mod, Uri, Opts) 
+do_init({T, FrameType, Enc}, {PeerType, Mod}, Peer, Uri, Opts) 
 when PeerType == client orelse PeerType == router ->
     State = #wamp_state{
         peer_type = PeerType,
