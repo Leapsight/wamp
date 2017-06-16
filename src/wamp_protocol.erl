@@ -194,8 +194,11 @@
 %% -----------------------------------------------------------------------------
 -spec init(
     binary() | subprotocol(), {peer_type(), module()}, peer(), uri(), map()) -> 
-    {ok, state()} 
-    | {error, any(), state()}.
+    {ok, state()}
+    | {ok, binary(), state()} 
+    | {stop, state()}
+    | {stop, binary(), state()}
+    | {reply, binary(), state()}.
 
 init(Subproto0, {PeerType, Mod}, Peer, RealmUri, Opts) ->
     case validate_subprotocol(Subproto0) of
@@ -313,9 +316,11 @@ handle_data(Type, Data0, St) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec handle_inbound_message(wamp_message:message(), state()) ->
-    {ok, binary(), state()} 
+    {ok, state()}
+    | {ok, binary(), state()} 
     | {stop, state()}
-    | {stop, binary(), state()}.
+    | {stop, binary(), state()}
+    | {reply, binary(), state()}.
 
 handle_inbound_message(M, St) ->
     ok = wamp_stats:update(M, St#wamp_state.session),
@@ -327,9 +332,11 @@ handle_inbound_message(M, St) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec handle_outbound_message(wamp_message:message(), state()) ->
-    {ok, binary(), state()} 
+    {ok, state()}
+    | {ok, binary(), state()} 
     | {stop, state()}
-    | {stop, binary(), state()}.
+    | {stop, binary(), state()}
+    | {reply, binary(), state()}.
 
 handle_outbound_message(M, St) ->
     ok = wamp_stats:update(M, St#wamp_state.session),
@@ -343,9 +350,11 @@ handle_outbound_message(M, St) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec handle_message(type(), wamp_message:message(), state()) ->
-    {ok, binary(), state()} 
+    {ok, state()}
+    | {ok, binary(), state()} 
     | {stop, state()}
-    | {stop, binary(), state()}.
+    | {stop, binary(), state()}
+    | {reply, binary(), state()}.
 
 handle_message(Type, M, St0) ->
     ok = wamp_stats:update(M, St0#wamp_state.session),
@@ -822,7 +831,13 @@ when PeerType == client orelse PeerType == router ->
         encoding = Enc,
         session = wamp_session:new(Peer, Uri, Opts)
     },
-    {ok, next_state(closed, State)}.
+    case PeerType of
+        router ->
+            {ok, next_state(closed, State)};
+        client ->
+            M = wamp_message:hello(Uri, Opts),
+            handle_outbound_message(M, next_state(closed, State))
+    end.
 
 
 %% @private

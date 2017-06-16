@@ -25,6 +25,7 @@
     roles                           ::  map(),
     %% The authentication ID of the session that joined
     authid                          ::  binary(),
+    authsignature                   ::  binary(),
     %% The authentication role of the session that joined
     authrole                        ::  binary(),
     %% The method that was used for authentication 
@@ -124,7 +125,7 @@ new(Peer, RealmUri, Opts) when is_map(Opts) ->
         {write_concurrency, true}
     ]),
     
-    Roles = maps:get(<<"roles">>, Opts),
+    Roles = maps:get(roles, Opts),
     maps:size(Roles) > 0 orelse error({invalid_options, missing_client_role}),
 
     Now = erlang:universaltime(),
