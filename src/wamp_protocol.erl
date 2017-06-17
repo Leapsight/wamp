@@ -449,14 +449,7 @@ establishing(in, #welcome{} = M, #wamp_state{peer_type = client} = St) ->
         S0, maps:get(<<"roles">>, M#welcome.details)),
     S2 = wamp_session:set_peer_agent(
         S1, maps:get(<<"agent">>, M#welcome.details)),
-    case (St#wamp_state.mod):deliver(M, S2) of
-        {ok, S3} ->
-            {ok, next_state(established, S3, St)};
-        {reply, R, S3} ->
-            {reply, R, next_state(established, S3, St)};
-        {stop, R, S3} ->
-            {stop, R, next_state(established, S3, St)}
-    end;
+    {ok, next_state(established, S2, St)};
 
 establishing(in, #abort{} = M, #wamp_state{peer_type = client} = St) ->
     %% My session request has been denied
