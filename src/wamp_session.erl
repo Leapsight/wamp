@@ -64,6 +64,7 @@
 -export([close/1]).
 -export([id/1]).
 -export([is_feature_enabled/3]).
+-export([is_active/1]).
 -export([new/3]).
 -export([peer/1]).
 -export([peer_id/1]).
@@ -238,6 +239,13 @@ realm_uri(#session{realm_uri = Val}) -> Val.
 
 set_realm_uri(S, Uri) ->
     S#session{realm_uri = Uri}.
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+is_active(#session{is_active = Val}) -> Val.
 
 
 %% -----------------------------------------------------------------------------
