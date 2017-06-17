@@ -836,7 +836,12 @@ when PeerType == client orelse PeerType == router ->
             {ok, next_state(closed, State)};
         client ->
             M = wamp_message:hello(Uri, Opts),
-            handle_outbound_message(M, next_state(closed, State))
+            case handle_outbound_message(M, next_state(closed, State)) of
+                {ok, Bin, St} ->
+                    {reply, Bin, St};
+                Other ->
+                    Other
+            end
     end.
 
 
