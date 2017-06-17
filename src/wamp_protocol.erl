@@ -359,7 +359,7 @@ handle_outbound_message(M, St) ->
 handle_message(Type, M, St0) ->
     ok = wamp_stats:update(M, St0#wamp_state.session),
     %% We call the current state's name function
-    case (St0#wamp_state.state_name)(Type, M, St0) of
+    case apply(?MODULE, St0#wamp_state.state_name, [Type, M, St0]) of
         {ok, _}  = OK->
             OK;
         {ok, R, St1} ->
@@ -755,7 +755,7 @@ handle_messages(_, [], St, Acc) ->
     {reply, lists:reverse(Acc), St};    
 
 handle_messages(Type, [H|T], St0, Acc) ->
-    case (St0#wamp_state.state_name)(Type, H, St0) of
+    case apply(?MODULE, St0#wamp_state.state_name, [Type, H, St0]) of
         {ok, St1} ->
             handle_messages(Type, T, St1, Acc);
         {reply, M, St1} ->
