@@ -447,15 +447,15 @@ establishing(in, #welcome{} = M, #wamp_state{peer_type = client} = St) ->
     S0 = St#wamp_state.session,
     S1 = wamp_session:set_peer_roles(
         S0, maps:get(<<"roles">>, M#welcome.details)),
-    S1 = wamp_session:set_peer_agent(
-        S0, maps:get(<<"agent">>, M#welcome.details)),
-    case (St#wamp_state.mod):deliver(M, S1) of
-        {ok, S2} ->
-            {ok, next_state(established, S2, St)};
-        {reply, R, S2} ->
-            {reply, R, next_state(established, S2, St)};
-        {stop, R, S2} ->
-            {stop, R, next_state(established, S2, St)}
+    S2 = wamp_session:set_peer_agent(
+        S1, maps:get(<<"agent">>, M#welcome.details)),
+    case (St#wamp_state.mod):deliver(M, S2) of
+        {ok, S3} ->
+            {ok, next_state(established, S3, St)};
+        {reply, R, S3} ->
+            {reply, R, next_state(established, S3, St)};
+        {stop, R, S3} ->
+            {stop, R, next_state(established, S3, St)}
     end;
 
 establishing(in, #abort{} = M, #wamp_state{peer_type = client} = St) ->
