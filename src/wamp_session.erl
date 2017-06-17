@@ -53,7 +53,7 @@
 
 
 -type session()                     :: #session{}.
--type session_opts()                ::  #{roles => map()}.
+-type session_opts()                :: map().
 
 -export_type([session/0]).
 -export_type([session_opts/0]).
@@ -125,7 +125,7 @@ new(Peer, RealmUri, Opts) when is_map(Opts) ->
         {write_concurrency, true}
     ]),
     
-    Roles = maps:get(roles, Opts),
+    Roles = maps:get(<<"roles">>, Opts),
     maps:size(Roles) > 0 orelse error({invalid_options, missing_client_role}),
 
     Now = erlang:universaltime(),
@@ -133,8 +133,16 @@ new(Peer, RealmUri, Opts) when is_map(Opts) ->
     #session{
         id = wamp_utils:rand_uniform(),
         peer = Peer,
-        roles = Roles,
         realm_uri = RealmUri,
+        roles = Roles,
+        authid = maps:get(<<"authid">>, Opts, undefined),
+        authsignature = maps:get(<<"authsignature">>, Opts, undefined),
+        authrole = maps:get(<<"authrole">>, Opts, undefined),
+        authmethod = maps:get(<<"authmethod">>, Opts, undefined),
+        authprovider = maps:get(<<"authprovider">>, Opts, undefined),
+        resumed = maps:get(<<"resumed">>, Opts, false),
+        resumable = maps:get(<<"resumable">>, Opts, false),
+        resumed_token = maps:get(<<"resumed_token">>, Opts, undefined),
         counters_tab = Tab,
         created = Now,
         last_updated = Now
