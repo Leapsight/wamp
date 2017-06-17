@@ -85,11 +85,18 @@ update(M, S) ->
 %% PRIVATE
 %% =============================================================================
 
+%% @private
+baddress(T) when is_tuple(T), tuple_size(T) == 4 ->
+  list_to_binary(inet_parse:ntoa(T));
+baddress(T) when is_list(T) ->
+  list_to_binary(T);
+baddress(T) when is_binary(T) ->
+  T.
 
 
 %% @private
 do_update({session_opened, Realm, _SessionId, IP}) ->
-    BIP = list_to_binary(inet_parse:ntoa(IP)),
+    BIP = baddress(IP),
     exometer:update([wamp, sessions], 1),
     exometer:update([wamp, sessions, active], 1),
 
@@ -104,7 +111,7 @@ do_update({session_opened, Realm, _SessionId, IP}) ->
       [wamp, ip, sessions, active, BIP], 1, counter, []);
 
 do_update({session_closed, Realm, SessionId, IP, Secs}) ->
-    BIP = list_to_binary(inet_parse:ntoa(IP)),
+    BIP = baddress(IP),
     exometer:update([wamp, sessions, active], -1),
     exometer:update([wamp, sessions, duration], Secs),
 
@@ -129,7 +136,7 @@ do_update({session_closed, Realm, SessionId, IP, Secs}) ->
     ok;
 
 do_update({message, IP, Type, Sz}) ->
-    BIP = list_to_binary(inet_parse:ntoa(IP)),
+    BIP = baddress(IP),
     exometer:update([wamp, messages], 1),
     exometer:update([wamp, messages, size], Sz),
     exometer:update_or_create([wamp, messages, Type], 1, spiral, []),
@@ -143,7 +150,7 @@ do_update({message, IP, Type, Sz}) ->
 
 
 do_update({message, Realm, IP, Type, Sz}) ->
-    BIP = list_to_binary(inet_parse:ntoa(IP)),
+    BIP = baddress(IP),
     exometer:update([wamp, messages], 1),
     exometer:update([wamp, messages, size], Sz),
     exometer:update_or_create([wamp, messages, Type], 1, spiral, []),
@@ -163,7 +170,7 @@ do_update({message, Realm, IP, Type, Sz}) ->
       [wamp, realm, messages, Type, Realm], 1, spiral, []);
 
 do_update({message, Realm, Session, IP, Type, Sz}) ->
-    BIP = list_to_binary(inet_parse:ntoa(IP)),
+    BIP = baddress(IP),
     exometer:update([wamp, messages], 1),
     exometer:update([wamp, messages, size], Sz),
     exometer:update_or_create([wamp, messages, Type], 1, spiral, []),
