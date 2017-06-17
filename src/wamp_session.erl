@@ -89,6 +89,7 @@
 -export([get/2]).
 -export([get/3]).
 -export([get_path/2]).
+-export([get_path/3]).
 -export([put/3]).
 -export([put_path/3]).
 -export([remove/2]).
@@ -424,6 +425,21 @@ get(#session{metadata = M}, K, Default) ->
 
 get_path(#session{metadata = M}, P) ->
     maps_utils:get_path(P, M).
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% Returns value Value associated with path Path if the Session metadata
+%% map contains Path.
+%% The call fails with a `{badkey,Key}` exception where Key is any component of 
+%% Path missing or if no value is associated with Path.
+%% @end
+%% -----------------------------------------------------------------------------
+-spec get_path(Session :: session(), Path :: list(), Default :: any()) ->
+    Value :: any().
+
+get_path(#session{metadata = M}, P, Default) ->
+    maps_utils:get_path(P, M, Default).
 
 
 %% -----------------------------------------------------------------------------
