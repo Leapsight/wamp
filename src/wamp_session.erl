@@ -20,10 +20,13 @@
     id                              ::  id(),
     pid = self()                    ::  pid(),
     realm_uri                       ::  uri(),
-    %% Peer and roles
-    peer                            ::  wamp_protocol:peer(),
+    %% My roles
     roles                           ::  map(),
-    %% The authentication ID of the session that joined
+    %% Peer (a client or router)
+    peer                            ::  wamp_protocol:peer(),
+    peer_roles                      ::  map(),
+    peer_agent                      ::  binary(),
+    %% The authentication ID of the client that joined
     authid                          ::  binary(),
     authsignature                   ::  binary(),
     %% The authentication role of the session that joined
@@ -67,6 +70,8 @@
 -export([is_active/1]).
 -export([new/3]).
 -export([peer/1]).
+-export([peer_roles/1]).
+-export([peer_agent/1]).
 -export([peer_id/1]).
 -export([realm_uri/1]).
 -export([set_realm_uri/2]).
@@ -75,6 +80,8 @@
 -export([reset/1]).
 -export([roles/1]).
 -export([set_peer/2]).
+-export([set_peer_roles/2]).
+-export([set_peer_agent/2]).
 -export([set_request_timeout/2]).
 -export([set_roles/2]).
 -export([get_id/2]).
@@ -197,6 +204,42 @@ set_peer(S, {{_, _, _, _}, _} = Peer) ->
 
 
 
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec peer_roles(session()) -> map().
+
+peer_roles(#session{peer_roles = Val}) -> Val.
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec set_peer_roles(session(), map()) -> session().
+
+set_peer_roles(S, Roles) when is_map(Roles) ->
+    S#session{peer_roles = Roles}.
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec peer_agent(session()) -> map().
+
+peer_agent(#session{peer_agent = Val}) -> Val.
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec set_peer_agent(session(), binary()) -> session().
+
+set_peer_agent(S, Agent) ->
+    S#session{peer_agent = Agent}.
 
 
 %% -----------------------------------------------------------------------------

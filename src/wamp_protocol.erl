@@ -444,13 +444,18 @@ closed(in, _, #wamp_state{peer_type = router} = St) ->
 
 establishing(in, #welcome{} = M, #wamp_state{peer_type = client} = St) ->
     %% We have a session
-    case (St#wamp_state.mod):deliver(M, St#wamp_state.session) of
-        {ok, Session} ->
-            {ok, next_state(established, Session, St)};
-        {reply, R, Session} ->
-            {reply, R, next_state(established, Session, St)};
-        {stop, R, Session} ->
-            {stop, R, next_state(established, Session, St)}
+    S0 = St#wamp_state.session,
+    S1 = wamp_session:set_peer_roles(
+        S0, maps:get(<<"roles">>, M#welcome.details)),
+    S1 = wamp_session:set_peer_agent(
+        S0, maps:get(<<"agent">>, M#welcome.details)),
+    case (St#wamp_state.mod):deliver(M, S1) of
+        {ok, S2} ->
+            {ok, next_state(established, S2, St)};
+        {reply, R, S2} ->
+            {reply, R, next_state(established, S2, St)};
+        {stop, R, S2} ->
+            {stop, R, next_state(established, S2, St)}
     end;
 
 establishing(in, #abort{} = M, #wamp_state{peer_type = client} = St) ->
