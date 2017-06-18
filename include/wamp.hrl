@@ -447,6 +447,15 @@
 }).
 
 -define(CALL_OPTS_SPEC, #{
+    <<"timeout">> => #{
+        required => false,
+        default => 0,
+        datatype => non_neg_integer
+    },
+    <<"receive_progress">> => #{
+        required => false,
+        datatype => boolean
+    },
     <<"disclose_me">> => #{
         required => false,
         datatype => boolean
