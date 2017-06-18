@@ -101,37 +101,6 @@
 -export([shutting_down/2]).
 
 
-%% =============================================================================
-%% WAMP CALLBACKS
-%% =============================================================================
-
-
-
-
-%% -----------------------------------------------------------------------------
-%% @doc
-%% To be implemented by the router
-%% @end
-%% -----------------------------------------------------------------------------
--callback forward(M :: wamp_message(), Session :: wamp_session:session()) ->
-    {ok, wamp_session:session()}
-    | {reply, Reply :: wamp_message(), wamp_session:session()}
-    | {stop, Reply :: wamp_message(), wamp_session:session()}.
-
--optional_callbacks([forward/2]).
-
-
-%% -----------------------------------------------------------------------------
-%% @doc
-%% To be implemented by the client
-%% @end
-%% -----------------------------------------------------------------------------
--callback deliver(M :: wamp_message(), Session :: wamp_session:session()) ->
-    {ok, wamp_session:session()}
-    | {reply, Reply :: wamp_message(), wamp_session:session()}
-    | {stop, Reply :: wamp_message(), wamp_session:session()}.
-
--optional_callbacks([deliver/2]).
 
 
 %% -----------------------------------------------------------------------------
@@ -446,14 +415,9 @@ establishing(in, #welcome{} = M, #wamp_state{peer_type = client} = St) ->
 
 establishing(in, #abort{} = M, #wamp_state{peer_type = client} = St) ->
     %% My session request has been denied
-    case (St#wamp_state.mod):deliver(M, St#wamp_state.session) of
-        {ok, Session} ->
-            {stop, next_state(closed, Session, St)};
-        {_, _, Session} ->
-            %% We ignore any reply or stop, the client should shutdown
-            %% an an abort message without replying.
-            {stop, next_state(closed, Session, St)}
-    end;
+    %% We ignore any reply or stop, the client should shutdown
+    %% an an abort message without replying.
+    {stop, M, next_state(closed, St)};
 
 establishing(
     in, 
@@ -657,24 +621,26 @@ established(in, #goodbye{}, #wamp_state{peer_type = client} = St0) ->
     {stop, R, next_state(closed, next_state(shutting_down, St0))};
 
 established(in, M, #wamp_state{peer_type = router} = St) ->
-    case (St#wamp_state.mod):forward(M, St#wamp_state.session) of
-        {ok, Session} ->
-            {ok, update_session(Session, St)};
-        {reply, M, Session} ->
-            {reply, M, update_session(Session, St)};
-        {stop, M, Session} ->
-            {stop, M, update_session(Session, St)}
-    end;
+    {ok, M, St};
+    %% case (St#wamp_state.mod):forward(M, St#wamp_state.session) of
+    %%     {ok, Session} ->
+    %%         {ok, update_session(Session, St)};
+    %%     {reply, M, Session} ->
+    %%         {reply, M, update_session(Session, St)};
+    %%     {stop, M, Session} ->
+    %%         {stop, M, update_session(Session, St)}
+    %% end;
 
 established(in, M, #wamp_state{peer_type = client} = St) ->
-    case (St#wamp_state.mod):deliver(M, St#wamp_state.session) of
-        {ok, Session} ->
-            {ok, update_session(Session, St)};
-        {reply, M, Session} ->
-            {reply, M, update_session(Session, St)};
-        {stop, M, Session} ->
-            {stop, M, update_session(Session, St)}
-    end;
+    {ok, M, St};
+    %% case (St#wamp_state.mod):deliver(M, St#wamp_state.session) of
+    %%     {ok, Session} ->
+    %%         {ok, update_session(Session, St)};
+    %%     {reply, M, Session} ->
+    %%         {reply, M, update_session(Session, St)};
+    %%     {stop, M, Session} ->
+    %%         {stop, M, update_session(Session, St)}
+    %% end;
 
 established(out, M, St) ->
     {ok, M, St}.
