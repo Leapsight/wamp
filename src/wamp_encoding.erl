@@ -53,6 +53,7 @@ decode(Data, binary, erl) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec encode(wamp_message(), encoding()) -> binary() | no_return().
+
 encode(Message, Encoding) when is_tuple(Message) ->
     encode(pack(Message), Encoding);
 
@@ -83,6 +84,7 @@ encode(Message, Format) when is_list(Message) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec pack(wamp_message()) -> list().
+
 pack(#error{} = M) ->
     #error{
         request_type = ReqType,
@@ -420,7 +422,14 @@ decode_binary(Bin, erl, Acc) ->
     {[unpack(binary_to_term(Bin)) | Acc], <<>>}.
 
 
+
+%% -----------------------------------------------------------------------------
 %% @private
+%% @doc
+%% RFC: Implementations SHOULD avoid sending empty Arguments lists.
+%% RFC: Implementations SHOULD avoid sending empty ArgumentsKw dictionaries.
+%% @end
+%% -----------------------------------------------------------------------------
 pack_optionals(undefined, undefined) -> [];
 pack_optionals(Args, undefined) -> [Args];
 pack_optionals(Args, Payload) -> [Args, Payload].
