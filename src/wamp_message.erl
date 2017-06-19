@@ -542,7 +542,10 @@ yield(ReqId, Options, Args, Payload) ->
 %% @end
 %% -----------------------------------------------------------------------------
 validate_map(Map, Spec) ->
-    maps_utils:validate(Map, Spec, #{atomic => true}).
+    maps_utils:validate(Map, Spec, #{
+        atomic => true, % Fail atomically for the whole map
+        labels => atom  % This will only turn the defined keys to atoms
+    }).
 
 
 %% @private

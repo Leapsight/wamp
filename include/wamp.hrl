@@ -607,6 +607,20 @@
     }
 }).
 
+-define(EXACT_MATCH, <<"exact">>).
+-define(PREFIX_MATCH, <<"prefix">>).
+-define(WILDCARD_MATCH, <<"wildcard">>).
+-define(MATCH_STRATEGIES, [
+    ?EXACT_MATCH,
+    ?PREFIX_MATCH,
+    ?WILDCARD_MATCH
+]).
+-define(INVOKE_SINGLE, <<"single">>).
+-define(INVOKE_ROUND_ROBIN, <<"roundrobin">>).
+-define(INVOKE_RANDOM, <<"random">>).
+-define(INVOKE_FIRST, <<"first">>).
+-define(INVOKE_LAST, <<"last">>).
+
 -define(REGISTER_OPTS_SPEC, #{
     disclose_caller => #{
         alias => <<"disclose_caller">>,
@@ -616,21 +630,18 @@
     match => #{
         alias => <<"match">>,
         required => false,
-        datatype => {in, [
-            <<"prefix">>, 
-            <<"wildcard">>
-        ]}
+        datatype => {in, ?MATCH_STRATEGIES}
     },
-    invoque => #{
-        alias => <<"invoque">>,
+    invoke => #{
+        alias => <<"invoke">>,
         required => false,
         default => <<"single">>,
         datatype => {in, [
-            <<"single">>, 
-            <<"roundrobin">>,
-            <<"random">>, 
-            <<"first">>,
-            <<"last">>
+            ?INVOKE_SINGLE, 
+            ?INVOKE_ROUND_ROBIN,
+            ?INVOKE_RANDOM, 
+            ?INVOKE_FIRST,
+            ?INVOKE_LAST
         ]}
     }
 }).
@@ -639,10 +650,7 @@
     match => #{
         alias => <<"match">>,
         required => false,
-        datatype => {in, [
-            <<"prefix">>, 
-            <<"wildcard">>
-        ]}
+        datatype => {in, ?MATCH_STRATEGIES}
     }
 }).
 
