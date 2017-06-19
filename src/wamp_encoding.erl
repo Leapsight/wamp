@@ -92,7 +92,7 @@ pack(#error{} = M) ->
         details = Details,
         error_uri = ErrorUri,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     } = M,
     T = pack_optionals(Args, Payload),
     [?ERROR, ReqType, ReqId, Details, ErrorUri | T];
@@ -103,7 +103,7 @@ pack(#publish{} = M) ->
         options = Options,
         topic_uri = TopicUri,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     } = M,
     T = pack_optionals(Args, Payload),
     [?PUBLISH, ReqId, Options, TopicUri | T];
@@ -114,7 +114,7 @@ pack(#event{} = M) ->
         publication_id = PubId,
         details = Details,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     } = M,
     T = pack_optionals(Args, Payload),
     [?EVENT, SubsId, PubId, Details | T];
@@ -125,7 +125,7 @@ pack(#call{} = M) ->
         options = Options,
         procedure_uri = ProcedureUri,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     } = M,
     T = pack_optionals(Args, Payload),
     [?CALL, ReqId, Options, ProcedureUri | T];
@@ -135,7 +135,7 @@ pack(#result{} = M) ->
         request_id = ReqId,
         details = Details,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     } = M,
     T = pack_optionals(Args, Payload),
     [?RESULT, ReqId, Details | T];
@@ -146,7 +146,7 @@ pack(#invocation{} = M) ->
         registration_id = RegId,
         details = Details,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     } = M,
     T = pack_optionals(Args, Payload),
     [?INVOCATION, ReqId, RegId, Details | T];
@@ -156,7 +156,7 @@ pack(#yield{} = M) ->
         request_id = ReqId,
         options = Options,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     } = M,
     T = pack_optionals(Args, Payload),
     [?YIELD, ReqId, Options | T];

@@ -776,7 +776,7 @@
     details         ::  map(),
     error_uri       ::  uri(),
     arguments       ::  list() | undefined,
-    payload         ::  map() | undefined
+    arguments_kw         ::  map() | undefined
 }).
 -type wamp_error()       ::  #error{}.
 
@@ -785,7 +785,7 @@
     options         ::  map(),
     topic_uri       ::  uri(),
     arguments       ::  list() | undefined,
-    payload         ::  map() | undefined
+    arguments_kw         ::  map() | undefined
 }).
 -type wamp_publish()       ::  #publish{}.
 
@@ -824,7 +824,7 @@
     publication_id  ::  id(),
     details         ::  map(),
     arguments       ::  list() | undefined,
-    payload         ::  map() | undefined
+    arguments_kw         ::  map() | undefined
 }).
 -type wamp_event()       ::  #event{}.
 
@@ -833,7 +833,7 @@
     options         ::  map(),
     procedure_uri   ::  uri(),
     arguments       ::  list() | undefined,
-    payload         ::  map() | undefined
+    arguments_kw         ::  map() | undefined
 }).
 -type wamp_call()       ::  #call{}.
 
@@ -847,7 +847,7 @@
     request_id      ::  id(),
     details         ::  map(),
     arguments       ::  list() | undefined,
-    payload         ::  map() | undefined
+    arguments_kw         ::  map() | undefined
 }).
 -type wamp_result()       ::  #result{}.
 
@@ -880,7 +880,7 @@
     registration_id ::  id(),
     details         ::  map(),
     arguments       ::  list() | undefined,
-    payload         ::  map() | undefined
+    arguments_kw         ::  map() | undefined
 }).
 -type wamp_invocation()       ::  #invocation{}.
 
@@ -894,7 +894,7 @@
     request_id      ::  id(),
     options         ::  map(),
     arguments       ::  list() | undefined,
-    payload         ::  map() | undefined
+    arguments_kw         ::  map() | undefined
 }).
 -type wamp_yield()  ::  #yield{}.
 

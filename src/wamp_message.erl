@@ -187,7 +187,7 @@ when is_map(Details) ->
         details = Details, % any
         error_uri = validate_uri(ErrorUri),
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     }.
 
 
@@ -221,7 +221,7 @@ publish(ReqId, Options, TopicUri, Args, Payload) ->
         options = validate_map(Options, ?PUBLISH_OPTS_SPEC),
         topic_uri = validate_uri(TopicUri),
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     }.
 
 
@@ -315,7 +315,7 @@ event(SubsId, PubId, Details, Args, Payload) when is_map(Details) ->
         publication_id = validate_id(PubId),
         details = Details,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     }.
 
 
@@ -349,7 +349,7 @@ call(ReqId, Options, ProcedureUri, Args, Payload) ->
         options = validate_map(Options, ?CALL_OPTS_SPEC),
         procedure_uri = validate_uri(ProcedureUri),
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     }.
 
 
@@ -394,7 +394,7 @@ result(ReqId, Details, Args, Payload) when is_map(Details) ->
         request_id = validate_id(ReqId),
         details = Details,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     }.
 
 
@@ -476,7 +476,7 @@ invocation(ReqId, RegId, Details, Args, Payload) ->
         registration_id = validate_id(RegId),
         details = validate_map(Details, ?INVOCATION_DETAILS_SPEC),
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     }.
 
 
@@ -521,7 +521,7 @@ yield(ReqId, Options, Args, Payload) ->
         request_id = validate_id(ReqId),
         options = Options,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     }.
 
 
