@@ -83,6 +83,7 @@
 
 
 -export([init/5]).
+-export([get_id/2]).
 -export([handle_inbound_data/2]).
 -export([handle_inbound_message/2]).
 -export([handle_outbound_data/2]).
@@ -180,6 +181,17 @@ init(Subproto0, {PeerType, Mod}, Peer, RealmUri, Opts) ->
 
 terminate(St) ->
     (St#wamp_state.mod):terminate(St#wamp_state.session).
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec get_id(MsgId :: pos_integer(), state()) -> map().
+
+get_id(X, #wamp_state{session = Session}) ->
+    wamp_session:get_id(Session, X).
+
 
 
 %% -----------------------------------------------------------------------------
