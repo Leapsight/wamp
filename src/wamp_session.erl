@@ -50,7 +50,7 @@
     seq = 0                         ::  non_neg_integer(),
     created                         ::  calendar:date_time(),
     last_updated                    ::  pos_integer(),
-    %% Metadata map 
+    %% Metadata map  
     metadata = #{}                  ::  map()
 }).
 
@@ -505,22 +505,22 @@ get_id(#session{} = S, X) ->
 
 %% @private
 id_type(?WELCOME) ->        global;
-id_type(?ERROR) ->          session;
-id_type(?PUBLISH) ->        session;
 id_type(?PUBLISHED) ->      global;
-id_type(?SUBSCRIBE) ->      session;
+id_type(?EVENT) ->          global;
 id_type(?SUBSCRIBED) ->     router;
 id_type(?UNSUBSCRIBE) ->    router;
+id_type(?REGISTERED) ->     router;
+id_type(?UNREGISTER) ->     router;
+id_type(?INVOCATION) ->     router;
+id_type(?ERROR) ->          session;
+id_type(?PUBLISH) ->        session;
+id_type(?SUBSCRIBE) ->      session;
 id_type(?UNSUBSCRIBED) ->   session;
-id_type(?EVENT) ->          global;
 id_type(?CALL) ->           session;
 id_type(?CANCEL) ->         session;
 id_type(?RESULT) ->         session;
 id_type(?REGISTER) ->       session;
-id_type(?REGISTERED) ->     router;
-id_type(?UNREGISTER) ->     router;
 id_type(?UNREGISTERED) ->   session;
-id_type(?INVOCATION) ->     router;
 id_type(?INTERRUPT) ->      session;
 id_type(?YIELD) ->          session.
 
