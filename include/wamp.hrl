@@ -583,7 +583,7 @@
         alias => <<"timeout">>,
         required => false,
         default => 0,
-        datatype => non_neg_integer
+        datatype => timeout
     },
     receive_progress => #{
         alias => <<"receive_progress">>,
@@ -715,6 +715,16 @@
 -define(INVOCATION_DETAILS_SPEC, #{
     trustlevel => #{
         alias => <<"trustlevel">>,
+        required => false,
+        datatype => integer
+    },
+    procedure => #{
+        alias => <<"procedure">>,
+        required => false,
+        datatype => binary
+    },
+    caller => #{
+        alias => <<"caller">>,
         required => false,
         datatype => integer
     }
