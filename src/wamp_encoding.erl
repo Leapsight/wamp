@@ -64,8 +64,7 @@ encode(Message, json) when is_list(Message) ->
 
 encode(Message, msgpack) when is_list(Message) ->
     Opts = [
-        {map_format, map},
-        {pack_str, from_binary}
+        {map_format, map}
     ],
     msgpack:pack(Message, Opts);
 
@@ -404,8 +403,7 @@ decode_text(_Data, json_batched, _Acc) ->
 
 decode_binary(Data, msgpack, Acc) ->
     Opts = [
-        {map_format, map}, 
-        {unpack_str, as_binary}
+        {map_format, map}
     ],
     {ok, M} = msgpack:unpack(Data, Opts),
     {[unpack(M) | Acc], <<>>};
