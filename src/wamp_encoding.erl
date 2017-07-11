@@ -33,13 +33,19 @@
 %% @end
 %% -----------------------------------------------------------------------------
 -spec decode(Data :: binary(), Type :: frame_type(), Format :: encoding()) ->
-    {Messages :: [wamp_message()], Rest :: binary()}.
+    {Messages :: [wamp_message()], Rest :: binary()} | no_return().
 
 decode(Data, text, json) ->
     decode_text(Data, json, []);
 
+decode(Data, text, json_batched) ->
+    decode_text(Data, json_batched, []);
+
 decode(Data, binary, msgpack) ->
     decode_binary(Data, msgpack, []);
+
+decode(Data, binary, msgpack_batched) ->
+    decode_binary(Data, msgpack_batched, []);
 
 decode(Data, binary, bert) ->
     decode_binary(Data, bert, []);
@@ -52,7 +58,7 @@ decode(Data, binary, erl) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec encode(wamp_message(), encoding()) -> binary() | no_return().
+-spec encode(wamp_message() | list(), encoding()) -> binary() | no_return().
 
 encode(Message, Encoding) when is_tuple(Message) ->
     encode(pack(Message), Encoding);
@@ -65,8 +71,7 @@ encode(Message, json) when is_list(Message) ->
 
 encode(Message, msgpack) when is_list(Message) ->
     Opts = [
-        {map_format, map},
-        {pack_str, from_binary}
+        {map_format, map}
     ],
     msgpack:pack(Message, Opts);
 
@@ -389,7 +394,7 @@ unpack([?YIELD, ReqId, Options, Args, Payload]) ->
 
 %% @private
 -spec decode_text(binary(), encoding(), Acc0 :: list()) -> 
-    {Acc1 :: list(), Buffer :: binary()}.
+    {Acc1 :: list(), Buffer :: binary()} | no_return().
 
 decode_text(Data, json, Acc) ->
     Term = jsx:decode(Data, [return_maps]),
@@ -402,12 +407,11 @@ decode_text(_Data, json_batched, _Acc) ->
 
 %% @private
 -spec decode_binary(binary(), encoding(), Acc0 :: list()) -> 
-    {Acc1 :: list(), Buffer :: binary()}.
+    {Acc1 :: list(), Buffer :: binary()} | no_return().
 
 decode_binary(Data, msgpack, Acc) ->
     Opts = [
-        {map_format, map}, 
-        {unpack_str, as_binary}
+        {map_format, map}
     ],
     {ok, M} = msgpack:unpack(Data, Opts),
     {[unpack(M) | Acc], <<>>};
