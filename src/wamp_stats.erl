@@ -116,14 +116,14 @@ do_update({session_closed, Realm, SessionId, IP, Secs}) ->
     exometer:update([wamp, sessions, duration], Secs),
 
     exometer:update_or_create(
-      [wamp, realm, sessions, active, Realm], -1, []),
+      [wamp, realm, sessions, active, Realm], -1, counter, []),
     exometer:update_or_create(
-      [wamp, realm, sessions, duration, Realm], Secs, []),
+      [wamp, realm, sessions, duration, Realm], Secs, histogram, []),
 
     exometer:update_or_create(
-      [wamp, ip, sessions, active, BIP], -1, []),
+      [wamp, ip, sessions, active, BIP], -1, counter, []),
     exometer:update_or_create(
-      [wamp, ip, sessions, duration, BIP], Secs, []),
+      [wamp, ip, sessions, duration, BIP], Secs, histogram, []),
 
     %% Cleanup
     exometer:delete([wamp, session, messages, SessionId]),
