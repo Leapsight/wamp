@@ -394,7 +394,7 @@ unpack([?YIELD, ReqId, Options, Args, Payload]) ->
 
 %% @private
 -spec decode_text(binary(), encoding(), Acc0 :: list()) -> 
-    {Acc1 :: list(), Buffer :: binary()} | no_return().
+    {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
 
 decode_text(Data, json, Acc) ->
     Term = jsx:decode(Data, [return_maps]),
@@ -407,23 +407,38 @@ decode_text(_Data, json_batched, _Acc) ->
 
 %% @private
 -spec decode_binary(binary(), encoding(), Acc0 :: list()) -> 
-    {Acc1 :: list(), Buffer :: binary()} | no_return().
+    {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
 
-decode_binary(Data, msgpack, Acc) ->
+decode_binary(<<0:5, 0:3, Len:24, Buffer/binary>>, Enc, Acc) 
+when byte_size(Buffer) >= Len ->
+    %% We have the whole message and maybe some more
+    <<Mssg:Len/binary, NewBuffer/binary>> = Buffer,
+    decode_binary(NewBuffer, Enc, decode_message(Mssg, Enc, Acc));
+
+decode_binary(<<0:5, 0:3, _:24, Buffer/binary>>, _Enc, Acc) ->
+    %% We need more data so we retain the buffer
+    {lists:reverse(Acc), Buffer};
+
+decode_binary(Buffer, _Enc, Acc) ->
+    {lists:reverse(Acc), Buffer}.
+
+
+%% @private
+decode_message(Data, msgpack, Acc) ->
     Opts = [
         {map_format, map}
     ],
     {ok, M} = msgpack:unpack(Data, Opts),
     {[unpack(M) | Acc], <<>>};
 
-decode_binary(_Data, msgpack_batched, _Acc) ->
-    error(not_yet_implemented);
-
-decode_binary(Data, bert, Acc) ->
+decode_message(Data, bert, Acc) ->
     {[unpack(bert:decode(Data)) | Acc], <<>>};
 
-decode_binary(Bin, erl, Acc) ->
-    {[unpack(binary_to_term(Bin)) | Acc], <<>>}.
+decode_message(Bin, erl, Acc) ->
+    {[unpack(binary_to_term(Bin)) | Acc], <<>>};
+
+decode_message(_Data, msgpack_batched, _Acc) ->
+    error(not_yet_implemented).
 
 
 
