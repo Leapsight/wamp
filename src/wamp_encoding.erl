@@ -425,17 +425,15 @@ decode_binary(Buffer, _Enc, Acc) ->
 
 %% @private
 decode_message(Data, msgpack, Acc) ->
-    Opts = [
-        {map_format, map}
-    ],
+    Opts = [{map_format, map}],
     {ok, M} = msgpack:unpack(Data, Opts),
-    {[unpack(M) | Acc], <<>>};
+    [unpack(M) | Acc];
 
 decode_message(Data, bert, Acc) ->
-    {[unpack(bert:decode(Data)) | Acc], <<>>};
+    [unpack(bert:decode(Data)) | Acc];
 
 decode_message(Bin, erl, Acc) ->
-    {[unpack(binary_to_term(Bin)) | Acc], <<>>};
+    [unpack(binary_to_term(Bin)) | Acc];
 
 decode_message(_Data, msgpack_batched, _Acc) ->
     error(not_yet_implemented).
