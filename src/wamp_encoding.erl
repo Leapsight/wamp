@@ -412,10 +412,6 @@ when byte_size(Buffer) >= Len ->
     <<Mssg:Len/binary, NewBuffer/binary>> = Buffer,
     decode_raw_binary(NewBuffer, Enc, decode_message(Mssg, Enc, Acc));
 
-decode_raw_binary(<<0:5, 0:3, _:24, Buffer/binary>>, _Enc, Acc) ->
-    %% We need more data so we retain the buffer
-    {lists:reverse(Acc), Buffer};
-
 decode_raw_binary(Buffer, _Enc, Acc) ->
     {lists:reverse(Acc), Buffer}.
 
