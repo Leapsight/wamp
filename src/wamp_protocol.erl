@@ -45,9 +45,7 @@
 
 
 -record(wamp_state, {
-    transport               ::  transport(),
-    frame_type              ::  frame_type(),
-    encoding                ::  encoding(),
+    subprotocol             ::  subprotocol(),
     raw_encoding            ::  1..15,
     raw_max_len             ::  0..15,
     max_len_bytes           ::  pos_integer(),
@@ -234,10 +232,10 @@ validate_subprotocol(_) ->
     | {stop, [binary()], state()}
     | {reply, [binary()], state()}.
 
-handle_inbound_data({T, Data}, #wamp_state{frame_type = T} = St) ->
+handle_inbound_data({FT, Data}, #wamp_state{subprotocol = {_, FT, _}} = St) ->
     handle_data(in, Data, St);
 
-handle_inbound_data(Data, #wamp_state{frame_type = binary} = St) ->
+handle_inbound_data(Data, #wamp_state{subprotocol = {_, binary, _}} = St) ->
     handle_data(in, Data, St).
 
 
@@ -252,10 +250,10 @@ handle_inbound_data(Data, #wamp_state{frame_type = binary} = St) ->
     | {stop, [binary()], state()}
     | {reply, [binary()], state()}.
 
-handle_outbound_data({T, Data}, #wamp_state{frame_type = T} = St) ->
+handle_outbound_data({FT, Data}, #wamp_state{subprotocol = {_, FT, _}} = St) ->
     handle_data(out, Data, St);
 
-handle_outbound_data(Data, #wamp_state{frame_type = binary} = St) ->
+handle_outbound_data(Data, #wamp_state{subprotocol = {_, binary, _}} = St) ->
     handle_data(out, Data, St).
 
 %% -----------------------------------------------------------------------------
@@ -280,8 +278,7 @@ handle_outbound_data(Data, #wamp_state{frame_type = binary} = St) ->
 
 handle_data(Type, Data0, St) ->
     Data1 = <<(St#wamp_state.buffer)/binary, Data0/binary>>,
-    {Messages, Buffer} = wamp_encoding:decode(
-        Data1, St#wamp_state.frame_type, St#wamp_state.encoding),
+    {Messages, Buffer} = wamp_encoding:decode(St#wamp_state.subprotocol, Data1),
     handle_messages(Type, Messages, St#wamp_state{buffer = Buffer}, []).
 
 
@@ -337,15 +334,15 @@ handle_message(Type, M, St0) ->
         {ok, _}  = OK->
             OK;
         {ok, R, St1} ->
-            Bin = wamp_encoding:encode(R, St1#wamp_state.encoding),
+            Bin = wamp_encoding:encode(R, encoding(St1)),
             {ok, Bin, St1};
         {reply, R, St1} ->
-            Bin = wamp_encoding:encode(R, St1#wamp_state.encoding),
+            Bin = wamp_encoding:encode(R, encoding(St1)),
             {reply, Bin, St1};
         {stop, _} = Stop ->
             Stop;
         {stop, R, St1} ->
-            Bin = wamp_encoding:encode(R, St1#wamp_state.encoding),
+            Bin = wamp_encoding:encode(R, encoding(St1)),
             {stop, Bin, St1}
     end.
 
@@ -728,12 +725,12 @@ handle_messages(Type, [H|T], St0, Acc) ->
         {ok, St1} ->
             handle_messages(Type, T, St1, Acc);
         {reply, M, St1} ->
-            Bin = wamp_encoding:encode(M, St1#wamp_state.encoding),
+            Bin = wamp_encoding:encode(M, encoding(St1)),
             handle_messages(Type, T, St1, [Bin | Acc]);
         {stop, St1} ->
             {stop, lists:reverse(Acc), St1};
         {stop, M, St1} ->
-            Bin = wamp_encoding:encode(M, St1#wamp_state.encoding),
+            Bin = wamp_encoding:encode(M, encoding(St1)),
             {stop, lists:reverse([Bin|Acc]), St1}
     end.
 
@@ -788,16 +785,28 @@ abort(Type, Reason) ->
 %% =============================================================================
 %% PRIVATE: UTILS
 %% =============================================================================
-    
+
+
+
 %% @private
-do_init({T, FrameType, Enc}, {PeerType, Mod}, Peer, Uri, Opts) 
+% transport(#wamp_state{subprotocol = {T, _, _}}) -> T.
+
+
+% %% @private
+% frame_type(#wamp_state{subprotocol = {_, T, _}}) -> T.
+
+
+%% @private
+encoding(#wamp_state{subprotocol = {_, _, E}}) -> E.
+
+
+%% @private
+do_init(Subprotocol, {PeerType, Mod}, Peer, Uri, Opts) 
 when PeerType == client orelse PeerType == router ->
     State = #wamp_state{
+        subprotocol = Subprotocol,
         peer_type = PeerType,
         mod = Mod,
-        transport = T,
-        frame_type = FrameType,
-        encoding = Enc,
         session = wamp_session:new(Peer, Uri, Opts)
     },
     case PeerType of

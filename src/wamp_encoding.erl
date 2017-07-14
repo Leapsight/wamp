@@ -15,7 +15,7 @@
 -export([pack/1]).
 -export([unpack/1]).
 -export([encode/2]).
--export([decode/3]).
+-export([decode/2]).
 
 
 
@@ -32,26 +32,20 @@
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec decode(Data :: binary(), Type :: frame_type(), Format :: encoding()) ->
+-spec decode(wamp_protocol:subprotocol(), Data :: binary()) ->
     {Messages :: [wamp_message()], Rest :: binary()} | no_return().
 
-decode(Data, text, json) ->
+decode({ws, text, json}, Data) ->
     decode_text(Data, json, []);
 
-decode(Data, text, json_batched) ->
+decode({ws, text, json_batched}, Data) ->
     decode_text(Data, json_batched, []);
 
-decode(Data, binary, msgpack) ->
-    decode_binary(Data, msgpack, []);
+decode({ws, binary, Enc}, Data) ->
+    decode_binary(Data, Enc, []);
 
-decode(Data, binary, msgpack_batched) ->
-    decode_binary(Data, msgpack_batched, []);
-
-decode(Data, binary, bert) ->
-    decode_binary(Data, bert, []);
-
-decode(Data, binary, erl) ->
-    decode_binary(Data, erl, []).
+decode({raw, binary, Enc}, Data) ->
+    decode_raw_binary(Data, Enc, []).
 
 
 %% -----------------------------------------------------------------------------
@@ -397,36 +391,42 @@ unpack([?YIELD, ReqId, Options, Args, Payload]) ->
     {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
 
 decode_text(Data, json, Acc) ->
-    Term = jsx:decode(Data, [return_maps]),
-    M = unpack(Term),
-    {[M | Acc], <<>>};
-
-decode_text(_Data, json_batched, _Acc) ->
-    error(not_yet_implemented).
+    {decode_message(Data, json, Acc), <<>>}.
 
 
 %% @private
 -spec decode_binary(binary(), encoding(), Acc0 :: list()) -> 
     {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
 
-decode_binary(<<0:5, 0:3, Len:24, Buffer/binary>>, Enc, Acc) 
+decode_binary(Data, Enc, Acc) when Enc =/= json ->
+    {decode_message(Data, Enc, Acc), <<>>}.
+
+
+%% @private
+-spec decode_raw_binary(binary(), encoding(), Acc0 :: list()) -> 
+    {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
+
+decode_raw_binary(<<0:5, 0:3, Len:24, Buffer/binary>>, Enc, Acc) 
 when byte_size(Buffer) >= Len ->
     %% We have the whole message and maybe some more
     <<Mssg:Len/binary, NewBuffer/binary>> = Buffer,
-    decode_binary(NewBuffer, Enc, decode_message(Mssg, Enc, Acc));
+    decode_raw_binary(NewBuffer, Enc, decode_message(Mssg, Enc, Acc));
 
-decode_binary(<<0:5, 0:3, _:24, Buffer/binary>>, _Enc, Acc) ->
+decode_raw_binary(<<0:5, 0:3, _:24, Buffer/binary>>, _Enc, Acc) ->
     %% We need more data so we retain the buffer
     {lists:reverse(Acc), Buffer};
 
-decode_binary(Buffer, _Enc, Acc) ->
+decode_raw_binary(Buffer, _Enc, Acc) ->
     {lists:reverse(Acc), Buffer}.
 
 
 %% @private
+decode_message(Data, json, Acc) ->
+    M = jsx:decode(Data, [return_maps]),
+    [unpack(M) | Acc];
+
 decode_message(Data, msgpack, Acc) ->
-    Opts = [{map_format, map}],
-    {ok, M} = msgpack:unpack(Data, Opts),
+    {ok, M} = msgpack:unpack(Data, [{map_format, map}]),
     [unpack(M) | Acc];
 
 decode_message(Data, bert, Acc) ->
@@ -434,6 +434,9 @@ decode_message(Data, bert, Acc) ->
 
 decode_message(Bin, erl, Acc) ->
     [unpack(binary_to_term(Bin)) | Acc];
+
+decode_message(_Data, json_batched, _Acc) ->
+    error(not_yet_implemented);
 
 decode_message(_Data, msgpack_batched, _Acc) ->
     error(not_yet_implemented).
