@@ -97,32 +97,32 @@ baddress(T) when is_binary(T) ->
 %% @private
 do_update({session_opened, Realm, _SessionId, IP}) ->
     BIP = baddress(IP),
-    exometer:update([wamp, sessions], 1),
-    exometer:update([wamp, sessions, active], 1),
+    _ = exometer:update([wamp, sessions], 1),
+    _ = exometer:update([wamp, sessions, active], 1),
 
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, realm, sessions, Realm], 1, spiral, []),
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, realm, sessions, active, Realm], 1, counter, []),
 
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, ip, sessions, BIP], 1, spiral, []),
     exometer:update_or_create(
       [wamp, ip, sessions, active, BIP], 1, counter, []);
 
 do_update({session_closed, Realm, SessionId, IP, Secs}) ->
     BIP = baddress(IP),
-    exometer:update([wamp, sessions, active], -1),
-    exometer:update([wamp, sessions, duration], Secs),
+    _ = exometer:update([wamp, sessions, active], -1),
+    _ = exometer:update([wamp, sessions, duration], Secs),
 
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, realm, sessions, active, Realm], -1, counter, []),
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, realm, sessions, duration, Realm], Secs, histogram, []),
 
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, ip, sessions, active, BIP], -1, counter, []),
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, ip, sessions, duration, BIP], Secs, histogram, []),
 
     %% Cleanup
@@ -137,13 +137,13 @@ do_update({session_closed, Realm, SessionId, IP, Secs}) ->
 
 do_update({message, IP, Type, Sz}) ->
     BIP = baddress(IP),
-    exometer:update([wamp, messages], 1),
-    exometer:update([wamp, messages, size], Sz),
-    exometer:update_or_create([wamp, messages, Type], 1, spiral, []),
+    _ = exometer:update([wamp, messages], 1),
+    _ = exometer:update([wamp, messages, size], Sz),
+    _ = exometer:update_or_create([wamp, messages, Type], 1, spiral, []),
 
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, ip, messages, BIP], 1, counter, []),
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, ip, messages, size, BIP], Sz, histogram, []),
     exometer:update_or_create(
       [wamp, ip, messages, Type, BIP], 1, spiral, []);
@@ -151,47 +151,47 @@ do_update({message, IP, Type, Sz}) ->
 
 do_update({message, Realm, IP, Type, Sz}) ->
     BIP = baddress(IP),
-    exometer:update([wamp, messages], 1),
-    exometer:update([wamp, messages, size], Sz),
-    exometer:update_or_create([wamp, messages, Type], 1, spiral, []),
+    _ = exometer:update([wamp, messages], 1),
+    _ = exometer:update([wamp, messages, size], Sz),
+    _ = exometer:update_or_create([wamp, messages, Type], 1, spiral, []),
 
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, ip, messages, BIP], 1, counter, []),
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, ip, messages, size, BIP], Sz, histogram, []),
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, ip, messages, Type, BIP], 1, spiral, []),
 
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, realm, messages, Realm], 1, counter, []),
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, realm, messages, size, Realm], Sz, histogram, []),
     exometer:update_or_create(
       [wamp, realm, messages, Type, Realm], 1, spiral, []);
 
 do_update({message, Realm, Session, IP, Type, Sz}) ->
     BIP = baddress(IP),
-    exometer:update([wamp, messages], 1),
-    exometer:update([wamp, messages, size], Sz),
-    exometer:update_or_create([wamp, messages, Type], 1, spiral, []),
+    _ = exometer:update([wamp, messages], 1),
+    _ = exometer:update([wamp, messages, size], Sz),
+    _ = exometer:update_or_create([wamp, messages, Type], 1, spiral, []),
 
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, ip, messages, BIP], 1, counter, []),
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, ip, messages, size, BIP], Sz, histogram, []),
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, ip, messages, Type, BIP], 1, spiral, []),
 
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, realm, messages, Realm], 1, counter, []),
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, realm, messages, size, Realm], Sz, histogram, []),
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, realm, messages, Type, Realm], 1, spiral, []),
 
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, session, messages, Session], 1, counter, []),
-    exometer:update_or_create(
+    _ = exometer:update_or_create(
       [wamp, session, messages, size, Session], Sz, histogram, []),
     exometer:update_or_create(
       [wamp, session, messages, Type, Session], 1, spiral, []).

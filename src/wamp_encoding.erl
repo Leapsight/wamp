@@ -387,15 +387,18 @@ unpack([?YIELD, ReqId, Options, Args, Payload]) ->
 %% =============================================================================
 
 %% @private
--spec decode_text(binary(), encoding(), Acc0 :: list()) -> 
+-spec decode_text(binary(), json | json_batched, Acc0 :: [wamp_message()]) -> 
     {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
 
 decode_text(Data, json, Acc) ->
-    {decode_message(Data, json, Acc), <<>>}.
+    {decode_message(Data, json, Acc), <<>>};
+
+decode_text(Data, json_batched, Acc) ->
+    {decode_message(Data, json_batched, Acc), <<>>}.
 
 
 %% @private
--spec decode_binary(binary(), encoding(), Acc0 :: list()) -> 
+-spec decode_binary(binary(), encoding(), Acc0 :: [wamp_message()]) -> 
     {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
 
 decode_binary(Data, Enc, Acc) when Enc =/= json ->
@@ -403,7 +406,7 @@ decode_binary(Data, Enc, Acc) when Enc =/= json ->
 
 
 %% @private
--spec decode_raw_binary(binary(), encoding(), Acc0 :: list()) -> 
+-spec decode_raw_binary(binary(), encoding(), Acc0 :: [wamp_message()]) -> 
     {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
 
 decode_raw_binary(<<0:5, 0:3, Len:24, Buffer/binary>>, Enc, Acc) 

@@ -19,20 +19,20 @@
 -record(session, {
     id                              ::  id(),
     pid = self()                    ::  pid(),
-    realm_uri                       ::  uri(),
+    realm_uri                       ::  uri() | undefined,
     %% My roles
     roles                           ::  map(),
     %% Peer (a client or router)
     peer                            ::  wamp_protocol:peer(),
-    peer_roles                      ::  map(),
-    peer_agent                      ::  binary(),
+    peer_roles                      ::  map() | undefined,
+    peer_agent                      ::  binary() | undefined,
     %% The authentication ID of the client that joined
     authid                          ::  binary(),
     authsignature                   ::  binary(),
     %% The authentication role of the session that joined
     authrole                        ::  binary(),
     %% The method that was used for authentication 
-    authmethod = ?TICKET_AUTH       ::  binary(),
+    authmethod                      ::  binary() | undefined,
     %% The provider that performed the authentication of the session that joined
     authprovider                    ::  binary(),
     %% Session resumption
@@ -43,25 +43,26 @@
     %% State
     awaiting_calls = sets:new()     ::  sets:set(),
     request_timeout = ?REQ_TIMEOUT  ::  non_neg_integer(),
-    request_details                 ::  map(),
+    % request_details                 ::  map(),
     %% Our extensions
     counters_tab                    ::  ets:tab(),
     expires_in = infinity           ::  timeout(),
     seq = 0                         ::  non_neg_integer(),
     created                         ::  calendar:date_time(),
-    last_updated                    ::  pos_integer(),
+    last_updated                    ::  calendar:date_time(),
     %% Metadata map  
     metadata = #{}                  ::  map()
 }).
 
 
--type session()                     :: #session{}.
+-opaque session()                   :: #session{}.
 -type session_opts()                :: map().
 
 -export_type([session/0]).
 -export_type([session_opts/0]).
 
 %% API
+-export([authmethod/1]).
 -export([add_awaiting_call/2]).
 -export([awaiting_calls/1]).
 -export([close/1]).
@@ -79,6 +80,7 @@
 -export([request_timeout/1]).
 -export([reset/1]).
 -export([roles/1]).
+-export([set_authmethod/2]).
 -export([set_peer/2]).
 -export([set_peer_roles/2]).
 -export([set_peer_agent/2]).
@@ -122,10 +124,12 @@
 -spec new(wamp_protocol:peer(), uri(), session_opts()) -> 
     session() | no_return().
 
-new(Peer, RealmUri, Opts) when is_map(Opts) ->
+new(Peer, RealmUri, Opts) when is_binary(RealmUri), is_map(Opts) ->
     %% TODO replace with tuplespace
     %% This table is used to allow concurrent atomic updates to the 
     %% session scope IDs.
+    %% Becuase new is called by the process managing the transport, it
+    %% gets GC'ed when the process dies.
     Tab = ets:new(session_counters, [
         set,
         {keypos, 1},
@@ -180,7 +184,8 @@ reset(S) ->
 -spec close(session()) -> ok.
 
 close(#session{counters_tab = Tab}) ->
-    ets:delete(Tab).
+    _ = ets:delete(Tab),
+    ok.
 
 
 %% -----------------------------------------------------------------------------
@@ -209,7 +214,7 @@ set_peer(S, {{_, _, _, _}, _} = Peer) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec peer_roles(session()) -> map().
+-spec peer_roles(session()) -> map() | undefined.
 
 peer_roles(#session{peer_roles = Val}) -> Val.
 
@@ -228,7 +233,7 @@ set_peer_roles(S, Roles) when is_map(Roles) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec peer_agent(session()) -> map().
+-spec peer_agent(session()) -> map() | undefined.
 
 peer_agent(#session{peer_agent = Val}) -> Val.
 
@@ -269,7 +274,7 @@ peer_id(#session{id = Id, pid = Pid}) ->
 %% Returns the realm uri of the provided session.
 %% @end
 %% -----------------------------------------------------------------------------
--spec realm_uri(session()) -> uri().
+-spec realm_uri(session()) -> uri() | undefined.
 
 realm_uri(#session{realm_uri = Val}) -> Val.
 
@@ -289,6 +294,8 @@ set_realm_uri(S, Uri) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
+-spec is_active(session()) -> boolean().
+
 is_active(#session{is_active = Val}) -> Val.
 
 
@@ -347,6 +354,23 @@ when is_binary(Feature) ->
     maps_utils:get_path([Role, Feature], Roles, false).
 
 
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec authmethod(session()) -> binary() | undefined.
+
+authmethod(#session{authmethod = Val}) -> Val.
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec set_authmethod(session(), binary()) -> session().
+
+set_authmethod(S, Val) when is_binary(Val) ->
+    S#session{authmethod = Val}.
 
 %% -----------------------------------------------------------------------------
 %% @doc
@@ -489,7 +513,7 @@ remove_path(#session{metadata = M}, P) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec get_id(id() | session(), MsgId :: pos_integer()) -> map().
+-spec get_id(id() | session(), MsgId :: pos_integer()) -> integer().
 
 get_id(#session{} = S, X) ->
     case id_type(X) of 

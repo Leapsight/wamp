@@ -46,13 +46,13 @@
 
 -record(wamp_state, {
     subprotocol             ::  subprotocol(),
-    raw_encoding            ::  1..15,
-    raw_max_len             ::  0..15,
-    max_len_bytes           ::  pos_integer(),
+    raw_encoding            ::  1..15 | undefined,
+    raw_max_len             ::  0..15 | undefined,
+    max_len_bytes           ::  pos_integer() | undefined,
     buffer = <<>>           ::  binary(),
     peer_type               ::  peer_type(),
     mod                     ::  module(),
-    state_name              ::  state_name(),
+    state_name              ::  state_name() | undefined,
     session                 ::  wamp_session:session() | undefined
 }).
 
@@ -159,12 +159,18 @@
     | {ok, binary(), state()} 
     | {stop, state()}
     | {stop, binary(), state()}
-    | {reply, binary(), state()}.
+    | {reply, binary(), state()}
+    | no_return().
 
 init(Subproto0, {PeerType, Mod}, Peer, RealmUri, Opts) ->
     case validate_subprotocol(Subproto0) of
         {ok, Subproto1} ->
-            do_init(Subproto1, {PeerType, Mod}, Peer, RealmUri, Opts);
+            try 
+                do_init(Subproto1, {PeerType, Mod}, Peer, RealmUri, Opts)
+            catch
+                _:Reason ->
+                    {error, Reason, undefined}
+            end;
         {error, Reason} ->
             {error, Reason, undefined}
     end.
@@ -185,10 +191,10 @@ terminate(St) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec get_id(MsgId :: pos_integer(), state()) -> map().
+-spec get_id(MsgType :: 0..255, state()) -> integer().
 
-get_id(X, #wamp_state{session = Session}) ->
-    wamp_session:get_id(Session, X).
+get_id(MsgType, #wamp_state{session = Session}) ->
+    wamp_session:get_id(Session, MsgType).
 
 
 
@@ -376,7 +382,7 @@ closed(in, #hello{realm_uri = Uri} = M, #wamp_state{peer_type = router} = St0) -
     %% We will reply with wamp_welcome() | wamp_challenge() | wamp_abort()
     Session0 = St0#wamp_state.session,
     ok = wamp_stats:update(M, Session0),
-    Session1 = Session0#{realm_uri => Uri},
+    Session1 = wamp_session:set_realm_uri(Session0, Uri),
     %% This transition is irrelevant as we do the auth synchonously
     %% but we keep it for completeness
     St1 = next_state(establishing, Session1, St0),
@@ -384,12 +390,11 @@ closed(in, #hello{realm_uri = Uri} = M, #wamp_state{peer_type = router} = St0) -
     case 
         (St1#wamp_state.mod):authenticate(Uri, M#hello.details, Session1) 
     of
-        {ok, #welcome{} = R, Session, Session2} ->
-            Session3 = maps:put(session, Session, Session2),
-            {reply, R, next_state(established, Session3, St1)};
+        {ok, #welcome{} = R, Session2} ->
+            {reply, R, next_state(established, Session2, St1)};
         
         {ok, #challenge{auth_method = Method} = R, Session2} ->
-            Session3 = maps:put(auth_method, Method, Session2),
+            Session3 = wamp_session:set_authmethod(Session2, Method),
             {reply, R, next_state(challenging, Session3, St1)};
         
         {error, Reason, Session2} ->
@@ -801,6 +806,14 @@ encoding(#wamp_state{subprotocol = {_, _, E}}) -> E.
 
 
 %% @private
+-spec do_init(subprotocol(), {peer_type(), module()}, peer(), uri(), map()) -> 
+    {ok, state()}
+    | {ok, binary(), state()} 
+    | {stop, state()}
+    | {stop, binary(), state()}
+    | {reply, binary(), state()}
+    | no_return().
+
 do_init(Subprotocol, {PeerType, Mod}, Peer, Uri, Opts) 
 when PeerType == client orelse PeerType == router ->
     State = #wamp_state{
