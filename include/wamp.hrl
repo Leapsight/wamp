@@ -233,12 +233,12 @@
 -define(ROUTER_ROLES_SPEC, #{
     broker => #{
         alias => <<"broker">>,
-        required => false, 
+        required => false,
         datatype => map,
         validator => ?BROKER_ROLE_SPEC},
     dealer => #{
         alias => <<"dealer">>,
-        required => false, 
+        required => false,
         datatype => map,
         validator => ?DEALER_ROLE_SPEC}
 }).
@@ -392,22 +392,22 @@
 -define(CLIENT_ROLES_SPEC, #{
     publisher => #{
         alias => <<"publisher">>,
-        required => false, 
+        required => false,
         datatype => map,
         validator => ?PUBLISHER_ROLE_SPEC},
     subscriber => #{
         alias => <<"subscriber">>,
-        required => false, 
+        required => false,
         datatype => map,
         validator => ?SUBSCRIBER_ROLE_SPEC},
     caller => #{
         alias => <<"caller">>,
-        required => false, 
+        required => false,
         datatype => map,
         validator => ?CALLER_ROLE_SPEC},
     callee => #{
         alias => <<"callee">>,
-        required => false, 
+        required => false,
         datatype => map,
         validator => ?CALLEE_ROLE_SPEC}
 }).
@@ -419,7 +419,7 @@
     authmethods => #{
         % description => Used by the client to announce the authentication methods it is prepared to perform.">>,
         alias => <<"authmethods">>,
-        required => false, 
+        required => false,
         datatype => {in, ?WAMP_AUTH_METHODS}
     },
     authid => #{
@@ -637,9 +637,9 @@
         required => false,
         default => <<"single">>,
         datatype => {in, [
-            ?INVOKE_SINGLE, 
+            ?INVOKE_SINGLE,
             ?INVOKE_ROUND_ROBIN,
-            ?INVOKE_RANDOM, 
+            ?INVOKE_RANDOM,
             ?INVOKE_FIRST,
             ?INVOKE_LAST
         ]}
@@ -908,26 +908,26 @@
 }).
 -type wamp_yield()  ::  #yield{}.
 
--type wamp_message()     ::  wamp_hello() 
-                        | wamp_challenge() 
-                        | wamp_authenticate() 
+-type wamp_message()     ::  wamp_hello()
+                        | wamp_challenge()
+                        | wamp_authenticate()
                         | wamp_welcome()
                         | wamp_abort()
                         | wamp_goodbye()
                         | wamp_error()
-                        | wamp_publish() 
+                        | wamp_publish()
                         | wamp_published()
-                        | wamp_subscribe() 
+                        | wamp_subscribe()
                         | wamp_subscribed()
-                        | wamp_unsubscribe() 
+                        | wamp_unsubscribe()
                         | wamp_unsubscribed()
                         | wamp_event()
                         | wamp_call()
                         | wamp_cancel()
                         | wamp_result()
-                        | wamp_register() 
+                        | wamp_register()
                         | wamp_registered()
-                        | wamp_unregister() 
+                        | wamp_unregister()
                         | wamp_unregistered()
                         | wamp_invocation()
                         | wamp_interrupt()
@@ -935,20 +935,20 @@
 
 
 
-                                    
+
 % -type hello_details()           ::  roles
 %                                     | agent
 %                                     | transport
 %                                     | authmethods
 %                                     | authid.
 % -type result_details()          ::  progress.
-% -type challenge_details()       ::  challenge 
-%                                     | salt 
-%                                     | keylen 
+% -type challenge_details()       ::  challenge
+%                                     | salt
+%                                     | keylen
 %                                     | iterations.
 % -type invocation_details()      ::  caller
 %                                     | trustlevel | procedure.
-% -type event_details()           ::  publisher 
+% -type event_details()           ::  publisher
 %                                     | trustlevel | topic.
 
 % %% <<"exact">> | <<"prefix">> | <<"wildcard">>.
@@ -981,7 +981,7 @@
 %                                     | rkey.
 
 -define(WAMP_ERROR_AUTHORIZATION_FAILED, <<"wamp.error.authorization_failed">>).
--define(WAMP_ERROR_CANCELLED, <<"wamp.error.cancelled">>).
+-define(WAMP_ERROR_CANCELLED, <<"wamp.error.canceled">>).
 -define(WAMP_ERROR_CLOSE_REALM, <<"wamp.error.close_realm">>).
 -define(WAMP_ERROR_DISCLOSE_ME_NOT_ALLOWED, <<"wamp.error.disclose_me.not_allowed">>).
 -define(WAMP_ERROR_GOODBYE_AND_OUT, <<"wamp.error.goodbye_and_out">>).
