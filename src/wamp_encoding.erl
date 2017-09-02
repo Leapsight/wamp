@@ -10,12 +10,14 @@
 -module(wamp_encoding).
 -include("wamp.hrl").
 
+%% WEBSOCKET
 -define(JSON_BATCHED_SEPARATOR, <<24>>). % ASCII CANCEL
 
+%
 -export([pack/1]).
 -export([unpack/1]).
 -export([encode/2]).
--export([decode/3]).
+-export([decode/2]).
 
 
 
@@ -32,27 +34,28 @@
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec decode(Data :: binary(), Type :: frame_type(), Format :: encoding()) ->
-    {Messages :: [wamp_message()], Rest :: binary()}.
+-spec decode(subprotocol(), Data :: binary()) ->
+    {Messages :: [wamp_message()], Rest :: binary()} | no_return().
 
-decode(Data, text, json) ->
+decode({ws, text, json}, Data) ->
     decode_text(Data, json, []);
 
-decode(Data, binary, msgpack) ->
-    decode_binary(Data, msgpack, []);
+decode({ws, text, json_batched}, Data) ->
+    decode_text(Data, json_batched, []);
 
-decode(Data, binary, bert) ->
-    decode_binary(Data, bert, []);
+decode({ws, binary, Enc}, Data) ->
+    decode_binary(Data, Enc, []);
 
-decode(Data, binary, erl) ->
-    decode_binary(Data, erl, []).
+decode({raw, binary, Enc}, Data) ->
+    decode_binary(Data, Enc, []).
 
 
 %% -----------------------------------------------------------------------------
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec encode(wamp_message(), encoding()) -> binary() | no_return().
+-spec encode(wamp_message() | list(), encoding()) -> binary() | no_return().
+
 encode(Message, Encoding) when is_tuple(Message) ->
     encode(pack(Message), Encoding);
 
@@ -82,6 +85,7 @@ encode(Message, Format) when is_list(Message) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec pack(wamp_message()) -> list().
+
 pack(#error{} = M) ->
     #error{
         request_type = ReqType,
@@ -89,7 +93,7 @@ pack(#error{} = M) ->
         details = Details,
         error_uri = ErrorUri,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     } = M,
     T = pack_optionals(Args, Payload),
     [?ERROR, ReqType, ReqId, Details, ErrorUri | T];
@@ -100,7 +104,7 @@ pack(#publish{} = M) ->
         options = Options,
         topic_uri = TopicUri,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     } = M,
     T = pack_optionals(Args, Payload),
     [?PUBLISH, ReqId, Options, TopicUri | T];
@@ -111,7 +115,7 @@ pack(#event{} = M) ->
         publication_id = PubId,
         details = Details,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     } = M,
     T = pack_optionals(Args, Payload),
     [?EVENT, SubsId, PubId, Details | T];
@@ -122,7 +126,7 @@ pack(#call{} = M) ->
         options = Options,
         procedure_uri = ProcedureUri,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     } = M,
     T = pack_optionals(Args, Payload),
     [?CALL, ReqId, Options, ProcedureUri | T];
@@ -132,7 +136,7 @@ pack(#result{} = M) ->
         request_id = ReqId,
         details = Details,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     } = M,
     T = pack_optionals(Args, Payload),
     [?RESULT, ReqId, Details | T];
@@ -143,7 +147,7 @@ pack(#invocation{} = M) ->
         registration_id = RegId,
         details = Details,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     } = M,
     T = pack_optionals(Args, Payload),
     [?INVOCATION, ReqId, RegId, Details | T];
@@ -153,7 +157,7 @@ pack(#yield{} = M) ->
         request_id = ReqId,
         options = Options,
         arguments = Args,
-        payload = Payload
+        arguments_kw = Payload
     } = M,
     T = pack_optionals(Args, Payload),
     [?YIELD, ReqId, Options | T];
@@ -167,7 +171,7 @@ pack(M) when is_tuple(M) ->
 
 %% -----------------------------------------------------------------------------
 %% @doc
-%% Converts a message from a WAMP list external format to 
+%% Converts a message from a WAMP list external format to
 %% an internal format (erlang record).
 %% See {@link wamp_message} for all message types.
 %% @end
@@ -380,45 +384,70 @@ unpack([?YIELD, ReqId, Options, Args, Payload]) ->
     ).
 
 
+
 %% =============================================================================
-%% PRIVATE
+%% PRIVATE: DECODING
 %% =============================================================================
+
+
 
 %% @private
--spec decode_text(binary(), encoding(), Acc0 :: list()) -> 
-    {Acc1 :: list(), Buffer :: binary()}.
+-spec decode_text(binary(), json | json_batched, Acc0 :: [wamp_message()]) ->
+    {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
 
 decode_text(Data, json, Acc) ->
-    Term = jsx:decode(Data, [return_maps]),
-    M = unpack(Term),
-    {[M | Acc], <<>>};
+    {decode_message(Data, json, Acc), <<>>};
 
-decode_text(_Data, json_batched, _Acc) ->
+decode_text(Data, json_batched, Acc) ->
+    {decode_message(Data, json_batched, Acc), <<>>}.
+
+
+%% @private
+-spec decode_binary(binary(), encoding(), Acc0 :: [wamp_message()]) ->
+    {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
+
+decode_binary(Data, Enc, Acc) ->
+    {decode_message(Data, Enc, Acc), <<>>}.
+
+
+
+%% @private
+decode_message(Data, json, Acc) ->
+    M = jsx:decode(Data, [return_maps]),
+    [unpack(M) | Acc];
+
+decode_message(Data, msgpack, Acc) ->
+    {ok, M} = msgpack:unpack(Data, [{map_format, map}]),
+    [unpack(M) | Acc];
+
+decode_message(Data, bert, Acc) ->
+    [unpack(bert:decode(Data)) | Acc];
+
+decode_message(Bin, erl, Acc) ->
+    [unpack(binary_to_term(Bin)) | Acc];
+
+decode_message(_Data, json_batched, _Acc) ->
+    error(not_yet_implemented);
+
+decode_message(_Data, msgpack_batched, _Acc) ->
     error(not_yet_implemented).
 
 
+
+
+%% =============================================================================
+%% PRIVATE: UTILS
+%% =============================================================================
+
+
+
+%% -----------------------------------------------------------------------------
 %% @private
--spec decode_binary(binary(), encoding(), Acc0 :: list()) -> 
-    {Acc1 :: list(), Buffer :: binary()}.
-
-decode_binary(Data, msgpack, Acc) ->
-    Opts = [
-        {map_format, map}
-    ],
-    {ok, M} = msgpack:unpack(Data, Opts),
-    {[unpack(M) | Acc], <<>>};
-
-decode_binary(_Data, msgpack_batched, _Acc) ->
-    error(not_yet_implemented);
-
-decode_binary(Data, bert, Acc) ->
-    {[unpack(bert:decode(Data)) | Acc], <<>>};
-
-decode_binary(Bin, erl, Acc) ->
-    {[unpack(binary_to_term(Bin)) | Acc], <<>>}.
-
-
-%% @private
+%% @doc
+%% RFC: Implementations SHOULD avoid sending empty Arguments lists.
+%% RFC: Implementations SHOULD avoid sending empty ArgumentsKw dictionaries.
+%% @end
+%% -----------------------------------------------------------------------------
 pack_optionals(undefined, undefined) -> [];
 pack_optionals(Args, undefined) -> [Args];
 pack_optionals(Args, Payload) -> [Args, Payload].

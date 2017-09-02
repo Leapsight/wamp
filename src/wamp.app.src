@@ -2,10 +2,15 @@
  [{description, "An OTP library implementing the WAMP encoding and decoding using JSON."},
   {vsn, "0.2.0"},
   {registered, []},
+  {mod, {wamp_app, []}},
   {applications,
    [kernel,
     stdlib,
-    jsx
+    lager,
+    exometer_core,
+    jsx,
+    msgpack,
+    bert
    ]},
   {env,[]},
   {modules, []},

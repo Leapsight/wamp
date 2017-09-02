@@ -41,6 +41,7 @@
     erl_batched
 ]).
 
+
 -type encoding()        ::  json
                             | msgpack
                             | bert
@@ -53,6 +54,7 @@
 
 -type frame_type()          ::  text | binary.
 -type transport()           ::  ws | raw.
+-type subprotocol()         ::  {transport(), frame_type(), encoding()}.
 
 
 -define(HELLO, 1).
@@ -80,7 +82,32 @@
 -define(INTERRUPT, 69).
 -define(YIELD, 70).
 
-
+-define(MSG_TYPES,[
+    ?HELLO,
+    ?WELCOME,
+    ?ABORT,
+    ?CHALLENGE,
+    ?AUTHENTICATE,
+    ?GOODBYE,
+    ?ERROR,
+    ?PUBLISH,
+    ?PUBLISHED,
+    ?SUBSCRIBE,
+    ?SUBSCRIBED,
+    ?UNSUBSCRIBE,
+    ?UNSUBSCRIBED,
+    ?EVENT,
+    ?CALL,
+    ?CANCEL,
+    ?RESULT,
+    ?REGISTER,
+    ?REGISTERED,
+    ?UNREGISTER,
+    ?UNREGISTERED,
+    ?INVOCATION,
+    ?INTERRUPT,
+    ?YIELD
+]).
 
 
 
@@ -90,59 +117,106 @@
 
 
 -define(DEALER_FEATURES_SPEC, #{
-    <<"progressive_call_results">> => #{
-        required => false, datatype => boolean},
-    <<"progressive_calls">> => #{
-        required => false, datatype => boolean},
-    <<"call_timeout">> => #{
-        required => false, datatype => boolean},
-    <<"call_canceling">> => #{
-        required => false, datatype => boolean},
-    <<"caller_identification">>=> #{
-        required => false, datatype => boolean},
-    <<"call_trustlevels">> => #{
-        required => false, datatype => boolean},
-    <<"registration_meta_api">> => #{
-        required => false, datatype => boolean},
-    <<"registration_revocation">> => #{
-        required => false, datatype => boolean},
-    <<"session_meta_api">> => #{
-        required => false, datatype => boolean},
-    <<"pattern_based_registration">> => #{
-        required => false, datatype => boolean},
-    <<"procedure_reflection">> => #{
-        required => false, datatype => boolean},
-    <<"shared_registration">> => #{
-        required => false, datatype => boolean},
-    <<"sharded_registration">> => #{
-        required => false, datatype => boolean}
+    progressive_call_results => #{
+        alias => <<"progressive_call_results">>,
+        required => false,
+        datatype => boolean},
+    progressive_calls => #{
+        alias => <<"progressive_calls">>,
+        required => false,
+        datatype => boolean},
+    call_timeout => #{
+        alias => <<"call_timeout">>,
+        required => false,
+        datatype => boolean},
+    call_canceling => #{
+        alias => <<"call_canceling">>,
+        required => false,
+        datatype => boolean},
+    caller_identification=> #{
+        alias => <<"caller_identification">>,
+        required => false,
+        datatype => boolean},
+    call_trustlevels => #{
+        alias => <<"call_trustlevels">>,
+        required => false,
+        datatype => boolean},
+    registration_meta_api => #{
+        alias => <<"registration_meta_api">>,
+        required => false,
+        datatype => boolean},
+    registration_revocation => #{
+        alias => <<"registration_revocation">>,
+        required => false,
+        datatype => boolean},
+    session_meta_api => #{
+        alias => <<"session_meta_api">>,
+        required => false,
+        datatype => boolean},
+    pattern_based_registration => #{
+        alias => <<"pattern_based_registration">>,
+        required => false,
+        datatype => boolean},
+    procedure_reflection => #{
+        alias => <<"procedure_reflection">>,
+        required => false,
+        datatype => boolean},
+    shared_registration => #{
+        alias => <<"shared_registration">>,
+        required => false,
+        datatype => boolean},
+    sharded_registration => #{
+        alias => <<"sharded_registration">>,
+        required => false,
+        datatype => boolean}
 }).
 
 -define(BROKER_FEATURES_SPEC, #{
-    <<"event_history">> => #{
-        required => false, datatype => boolean},
-    <<"pattern_based_subscription">> => #{
-        required => false, datatype => boolean},
-    <<"publication_trustlevels">> => #{
-        required => false, datatype => boolean},
-    <<"publisher_exclusion">> => #{
-        required => false, datatype => boolean},
-    <<"publisher_identification">> => #{
-        required => false, datatype => boolean},
-    <<"session_meta_api">> => #{
-        required => false, datatype => boolean},
-    <<"sharded_subscription">> => #{
-        required => false, datatype => boolean},
-    <<"subscriber_blackwhite_listing">> => #{
-        required => false, datatype => boolean},
-    <<"subscription_meta_api">> => #{
-        required => false, datatype => boolean},
-    <<"topic_reflection">> => #{
-        required => false, datatype => boolean}
+    event_history => #{
+        alias => <<"event_history">>,
+        required => false,
+        datatype => boolean},
+    pattern_based_subscription => #{
+        alias => <<"pattern_based_subscription">>,
+        required => false,
+        datatype => boolean},
+    publication_trustlevels => #{
+        alias => <<"publication_trustlevels">>,
+        required => false,
+        datatype => boolean},
+    publisher_exclusion => #{
+        alias => <<"publisher_exclusion">>,
+        required => false,
+        datatype => boolean},
+    publisher_identification => #{
+        alias => <<"publisher_identification">>,
+        required => false,
+        datatype => boolean},
+    session_meta_api => #{
+        alias => <<"session_meta_api">>,
+        required => false,
+        datatype => boolean},
+    sharded_subscription => #{
+        alias => <<"sharded_subscription">>,
+        required => false,
+        datatype => boolean},
+    subscriber_blackwhite_listing => #{
+        alias => <<"subscriber_blackwhite_listing">>,
+        required => false,
+        datatype => boolean},
+    subscription_meta_api => #{
+        alias => <<"subscription_meta_api">>,
+        required => false,
+        datatype => boolean},
+    topic_reflection => #{
+        alias => <<"topic_reflection">>,
+        required => false,
+        datatype => boolean}
 }).
 
 -define(BROKER_ROLE_SPEC, #{
-    <<"features">> => #{
+    features => #{
+        alias => <<"features">>,
         required => false,
         datatype => map,
         validator => ?BROKER_FEATURES_SPEC
@@ -150,7 +224,8 @@
 }).
 
 -define(DEALER_ROLE_SPEC, #{
-    <<"features">> => #{
+    features => #{
+        alias => <<"features">>,
         required => false,
         datatype => map,
         validator => ?DEALER_FEATURES_SPEC
@@ -158,79 +233,130 @@
 }).
 
 -define(ROUTER_ROLES_SPEC, #{
-    <<"broker">> => #{
-        required => false, 
+    broker => #{
+        alias => <<"broker">>,
+        required => false,
         datatype => map,
         validator => ?BROKER_ROLE_SPEC},
-    <<"dealer">> => #{
-        required => false, 
+    dealer => #{
+        alias => <<"dealer">>,
+        required => false,
         datatype => map,
         validator => ?DEALER_ROLE_SPEC}
 }).
 
 
 -define(CALLEE_FEATURES_SPEC, #{
-    <<"progressive_call_results">> => #{
-        required => false, datatype => boolean},
-    <<"progressive_calls">> => #{
-        required => false, datatype => boolean},
-    <<"call_timeout">> => #{
-        required => false, datatype => boolean},
-    <<"call_canceling">> => #{
-        required => false, datatype => boolean},
-    <<"caller_identification">> => #{
-        required => false, datatype => boolean},
-    <<"call_trustlevels">> => #{
-        required => false, datatype => boolean},
-    <<"registration_revocation">> => #{
-        required => false, datatype => boolean},
-    <<"session_meta_api">> => #{
-        required => false, datatype => boolean},
-    <<"pattern_based_registration">> => #{
-        required => false, datatype => boolean},
-    <<"shared_registration">> => #{
-        required => false, datatype => boolean},
-    <<"sharded_registration">> => #{
-        required => false, datatype => boolean}
+    progressive_call_results => #{
+        alias => <<"progressive_call_results">>,
+        required => false,
+        datatype => boolean},
+    progressive_calls => #{
+        alias => <<"progressive_calls">>,
+        required => false,
+        datatype => boolean},
+    call_timeout => #{
+        alias => <<"call_timeout">>,
+        required => false,
+        datatype => boolean},
+    call_canceling => #{
+        alias => <<"call_canceling">>,
+        required => false,
+        datatype => boolean},
+    caller_identification => #{
+        alias => <<"caller_identification">>,
+        required => false,
+        datatype => boolean},
+    call_trustlevels => #{
+        alias => <<"call_trustlevels">>,
+        required => false,
+        datatype => boolean},
+    registration_revocation => #{
+        alias => <<"registration_revocation">>,
+        required => false,
+        datatype => boolean},
+    session_meta_api => #{
+        alias => <<"session_meta_api">>,
+        required => false,
+        datatype => boolean},
+    pattern_based_registration => #{
+        alias => <<"pattern_based_registration">>,
+        required => false,
+        datatype => boolean},
+    shared_registration => #{
+        alias => <<"shared_registration">>,
+        required => false,
+        datatype => boolean},
+    sharded_registration => #{
+        alias => <<"sharded_registration">>,
+        required => false,
+        datatype => boolean}
 }).
 
 -define(CALLER_FEATURES_SPEC, #{
-    <<"progressive_call_results">> => #{
-        required => false, datatype => boolean},
-    <<"progressive_calls">> => #{
-        required => false, datatype => boolean},
-    <<"call_timeout">> => #{
-        required => false, datatype => boolean},
-    <<"call_canceling">> => #{
-        required => false, datatype => boolean},
-    <<"caller_identification">>=> #{
-        required => false, datatype => boolean}
+    progressive_call_results => #{
+        alias => <<"progressive_call_results">>,
+        required => false,
+        datatype => boolean},
+    progressive_calls => #{
+        alias => <<"progressive_calls">>,
+        required => false,
+        datatype => boolean},
+    call_timeout => #{
+        alias => <<"call_timeout">>,
+        required => false,
+        datatype => boolean},
+    call_canceling => #{
+        alias => <<"call_canceling">>,
+        required => false,
+        datatype => boolean},
+    caller_identification=> #{
+        alias => <<"caller_identification">>,
+        required => false,
+        datatype => boolean}
 }).
 
 -define(SUBSCRIBER_FEATURES_SPEC, #{
-    <<"event_history">> => #{
-        required => false, datatype => boolean},
-    <<"pattern_based_subscription">> => #{
-        required => false, datatype => boolean},
-    <<"publication_trustlevels">> => #{
-        required => false, datatype => boolean},
-    <<"publisher_identification">> => #{
-        required => false, datatype => boolean},
-    <<"sharded_subscription">> => #{
-        required => false, datatype => boolean}
+    event_history => #{
+        alias => <<"event_history">>,
+        required => false,
+        datatype => boolean},
+    pattern_based_subscription => #{
+        alias => <<"pattern_based_subscription">>,
+        required => false,
+        datatype => boolean},
+    publication_trustlevels => #{
+        alias => <<"publication_trustlevels">>,
+        required => false,
+        datatype => boolean},
+    publisher_identification => #{
+        alias => <<"publisher_identification">>,
+        required => false,
+        datatype => boolean},
+    sharded_subscription => #{
+        alias => <<"sharded_subscription">>,
+        required => false,
+        datatype => boolean}
 }).
 
 -define(PUBLISHER_FEATURES_SPEC, #{
-    <<"publisher_exclusion">> => #{
-        required => false, datatype => boolean},
-    <<"publisher_identification">> => #{
-        required => false, datatype => boolean},
-    <<"subscriber_blackwhite_listing">> => #{
-        required => false, datatype => boolean}
+    publisher_exclusion => #{
+        alias => <<"publisher_exclusion">>,
+        required => false,
+        datatype => boolean},
+    publisher_identification => #{
+        alias => <<"publisher_identification">>,
+        required => false,
+        datatype => boolean},
+    subscriber_blackwhite_listing => #{
+        alias => <<"subscriber_blackwhite_listing">>,
+        required => false,
+        datatype => boolean}
 }).
 
 -define(PUBLISHER_ROLE_SPEC, #{
-    <<"features">> => #{
+    features => #{
+        alias => <<"features">>,
         required => false,
         datatype => map,
         validator => ?PUBLISHER_FEATURES_SPEC
@@ -238,7 +364,8 @@
 }).
 
 -define(SUBSCRIBER_ROLE_SPEC, #{
-    <<"features">> => #{
+    features => #{
+        alias => <<"features">>,
         required => false,
         datatype => map,
         validator => ?SUBSCRIBER_FEATURES_SPEC
@@ -246,7 +373,8 @@
 }).
 
 -define(CALLER_ROLE_SPEC, #{
-    <<"features">> => #{
+    features => #{
+        alias => <<"features">>,
         required => false,
         datatype => map,
         validator => ?CALLER_FEATURES_SPEC
@@ -254,7 +382,8 @@
 }).
 
 -define(CALLEE_ROLE_SPEC, #{
-    <<"features">> => #{
+    features => #{
+        alias => <<"features">>,
         required => false,
         datatype => map,
         validator => ?CALLEE_FEATURES_SPEC
@@ -263,20 +392,24 @@
 
 
 -define(CLIENT_ROLES_SPEC, #{
-    <<"publisher">> => #{
-        required => false, 
+    publisher => #{
+        alias => <<"publisher">>,
+        required => false,
         datatype => map,
         validator => ?PUBLISHER_ROLE_SPEC},
-    <<"subscriber">> => #{
-        required => false, 
+    subscriber => #{
+        alias => <<"subscriber">>,
+        required => false,
         datatype => map,
         validator => ?SUBSCRIBER_ROLE_SPEC},
-    <<"caller">> => #{
-        required => false, 
+    caller => #{
+        alias => <<"caller">>,
+        required => false,
         datatype => map,
         validator => ?CALLER_ROLE_SPEC},
-    <<"callee">> => #{
-        required => false, 
+    callee => #{
+        alias => <<"callee">>,
+        required => false,
         datatype => map,
         validator => ?CALLEE_ROLE_SPEC}
 }).
@@ -285,73 +418,87 @@
 
 
 -define(HELLO_DETAILS_SPEC, #{
-    <<"authmethods">> => #{
-        % description => <<"Used by the client to announce the authentication methods it is prepared to perform.">>,
-        required => false, 
+    authmethods => #{
+        % description => Used by the client to announce the authentication methods it is prepared to perform.">>,
+        alias => <<"authmethods">>,
+        required => false,
         datatype => {in, ?WAMP_AUTH_METHODS}
     },
-    <<"authid">> => #{
+    authid => #{
         % description => <<"Te authentication ID (e.g. username) the client wishes to authenticate as.">>,
+        alias => <<"authid">>,
         required => false,
         datatype => binary
     },
-    <<"authrole">> => #{
+    authrole => #{
+        alias => <<"authrole">>,
         required => false,
         datatype => binary
     },
-    <<"authextra">> => #{
+    authextra => #{
         % description => <<"Not in RFC">>,
+        alias => <<"authextra">>,
         required => false
     },
-    <<"roles">> => #{
+    roles => #{
+        alias => <<"roles">>,
         required => true,
         datatype => map,
         validator => ?CLIENT_ROLES_SPEC
     },
-    <<"agent">> => #{
+    agent => #{
         % description => <<"When a software agent operates in a network protocol, it often identifies itself, its application type, operating system, software vendor, or software revision, by submitting a characteristic identification string to its operating peer. Similar to what browsers do with the User-Agent HTTP header, both the HELLO and the WELCOME message MAY disclose the WAMP implementation in use to its peer">>,
+        alias => <<"agent">>,
         required => false,
         datatype => binary
     },
-    <<"transport">> => #{
+    transport => #{
         % description => <<"When running WAMP over a TLS (either secure WebSocket
         % or raw TCP) transport, a peer may authenticate to the other via the TLS certificate mechanism. A server might authenticate to the client, and a client may authenticate to the server (TLS client-certificate based authentication). This transport-level authentication information may be forward to the WAMP level within HELLO.Details.transport.auth|any in both directions (if available).">>,
+        alias => <<"transport">>,
         required => false,
         datatype => map,
         validator => #{
             auth => #{required => true}
         }
     },
-    <<"resumable">> => #{
+    resumable => #{
+        alias => <<"resumable">>,
         required => false,
         datatype => boolean
     },
-    <<"resume_session">> => #{
+    resume_session => #{
         % description => <<"The session ID the client would like to resume.">>,
+        alias => <<"resume_session">>,
         required => false,
         datatype => binary
     },
-    <<"resume_token">> => #{
+    resume_token => #{
         % description => <<"The secure token required to resume the session defined in 'resume_session'.">>,
+        alias => <<"resume_token">>,
         required => false,
         datatype => binary
     }
 }).
 
 -define(CHALLENGE_DETAILS_SPEC, #{
-    <<"challenge">> => #{
+    challenge => #{
+        alias => <<"challenge">>,
         required => false,
         datatype => binary
     },
-    <<"salt">> => #{
+    salt => #{
+        alias => <<"salt">>,
         required => false,
         datatype => binary
     },
-    <<"keylen">> => #{
+    keylen => #{
+        alias => <<"keylen">>,
         required => false,
         datatype => integer
     },
-    <<"iterations">> => #{
+    iterations => #{
+        alias => <<"iterations">>,
         required => false,
         datatype => integer
     }
@@ -359,54 +506,65 @@
 
 
 -define(WELCOME_DETAILS_SPEC, #{
-    <<"authmethod">> => #{
+    authmethod => #{
+        alias => <<"authmethod">>,
         required => false,
         datatype => binary
     },
-    <<"authid">> => #{
+    authid => #{
         % description => <<"The authentication ID (e.g. username) the client is authenticate as.">>,
+        alias => <<"authid">>,
         required => false,
         datatype => binary
     },
-    <<"authrole">> => #{
+    authrole => #{
+        alias => <<"authrole">>,
         required => false,
         datatype => binary
     },
-    <<"authprovider">> => #{
+    authprovider => #{
+        alias => <<"authprovider">>,
         % description => <<"Not in RFC">>,
         required => false,
         datatype => binary
     },
-    <<"authextra">> => #{
+    authextra => #{
         % description => <<"Not in RFC">>,
+        alias => <<"authextra">>,
         required => false
     },
-    <<"roles">> => #{
+    roles => #{
+        alias => <<"roles">>,
         required => true,
         datatype => map,
         validator => ?ROUTER_ROLES_SPEC
     },
-    <<"agent">> => #{
+    agent => #{
+        alias => <<"agent">>,
         required => false,
         datatype => binary
     },
-    <<"resumed">> => #{
+    resumed => #{
+        alias => <<"resumed">>,
         required => false,
         datatype => boolean
     },
-    <<"resumable">> => #{
+    resumable => #{
+        alias => <<"resumable">>,
         required => false,
         datatype => boolean
     },
-    <<"resume_token">> => #{
+    resume_token => #{
         % description => <<"The secure token required to resume the session defined in 'resume_session'.">>,
+        alias => <<"resume_token">>,
         required => false,
         datatype => binary
     }
 }).
 
 -define(GOODBYE_DETAILS_SPEC, #{
-    <<"message">> => #{
+    message => #{
+        alias => <<"message">>,
         required => false,
         datatype => binary
     }
@@ -415,112 +573,160 @@
 -define(ABORT_DETAILS_SPEC, ?GOODBYE_DETAILS_SPEC).
 
 -define(CALL_CANCELLING_OPTS_SPEC, #{
-    <<"mode">> => #{
+    mode => #{
+        alias => <<"mode">>,
         required => false,
         datatype => {in, [<<"skip">>, <<"kill">>, <<"killnowait">>]}
     }
 }).
 
 -define(CALL_OPTS_SPEC, #{
-    <<"disclose_me">> => #{
+    timeout => #{
+        alias => <<"timeout">>,
+        required => false,
+        default => 0,
+        datatype => timeout
+    },
+    receive_progress => #{
+        alias => <<"receive_progress">>,
         required => false,
         datatype => boolean
     },
-    <<"runmode">> => #{
+    disclose_me => #{
+        alias => <<"disclose_me">>,
+        required => false,
+        datatype => boolean
+    },
+    runmode => #{
+        alias => <<"runmode">>,
         required => false,
         datatype => {in, [<<"partition">>]}
     },
-    <<"rkey">> => #{
+    rkey => #{
+        alias => <<"rkey">>,
         required => false,
         datatype => binary
     }
 }).
 
+-define(EXACT_MATCH, <<"exact">>).
+-define(PREFIX_MATCH, <<"prefix">>).
+-define(WILDCARD_MATCH, <<"wildcard">>).
+-define(MATCH_STRATEGIES, [
+    ?EXACT_MATCH,
+    ?PREFIX_MATCH,
+    ?WILDCARD_MATCH
+]).
+-define(INVOKE_SINGLE, <<"single">>).
+-define(INVOKE_ROUND_ROBIN, <<"roundrobin">>).
+-define(INVOKE_RANDOM, <<"random">>).
+-define(INVOKE_FIRST, <<"first">>).
+-define(INVOKE_LAST, <<"last">>).
+
 -define(REGISTER_OPTS_SPEC, #{
-    <<"disclose_caller">> => #{
+    disclose_caller => #{
+        alias => <<"disclose_caller">>,
         required => false,
         datatype => boolean
     },
-    <<"match">> => #{
+    match => #{
+        alias => <<"match">>,
         required => false,
-        datatype => {in, [
-            <<"prefix">>, 
-            <<"wildcard">>
-        ]}
+        datatype => {in, ?MATCH_STRATEGIES}
     },
-    <<"invoque">> => #{
+    invoke => #{
+        alias => <<"invoke">>,
         required => false,
         default => <<"single">>,
         datatype => {in, [
-            <<"single">>, 
-            <<"roundrobin">>,
-            <<"random">>, 
-            <<"first">>,
-            <<"last">>
+            ?INVOKE_SINGLE,
+            ?INVOKE_ROUND_ROBIN,
+            ?INVOKE_RANDOM,
+            ?INVOKE_FIRST,
+            ?INVOKE_LAST
         ]}
     }
 }).
 
 -define(SUBSCRIBE_OPTS_SPEC, #{
-    <<"match">> => #{
+    match => #{
+        alias => <<"match">>,
         required => false,
-        datatype => {in, [
-            <<"prefix">>, 
-            <<"wildcard">>
-        ]}
+        datatype => {in, ?MATCH_STRATEGIES}
     }
 }).
 
 
 -define(PUBLISH_OPTS_SPEC, #{
     %% resource key
-   <<"rkey">> => #{
+   rkey => #{
+       alias => <<"rkey">>,
         required => false,
         datatype => binary
     },
     %% node key
-    <<"nkey">> => #{
+    nkey => #{
+        alias => <<"nkey">>,
         required => false,
         datatype => binary
     },
-    <<"disclose_me">> => #{
+    disclose_me => #{
+        alias => <<"disclose_me">>,
         required => false,
         datatype => boolean
     },
-    <<"exclude_me">> => #{
+    exclude_me => #{
+        alias => <<"exclude_me">>,
         required => false,
         datatype => boolean
     },
     %% blacklisting
-    <<"exclude">> => #{
+    exclude => #{
+        alias => <<"exclude">>,
         required => false,
         datatype => {list, integer}
     },
-    <<"exclude_authid">> => #{
+    exclude_authid => #{
+        alias => <<"exclude_authid">>,
         required => false,
         datatype => {list, binary}
     },
-    <<"exclude_authrole">> => #{
+    exclude_authrole => #{
+        alias => <<"exclude_authrole">>,
         required => false,
         datatype => {list, binary}
     },
     %% whitelisting
-    <<"eligible">> => #{
+    eligible => #{
+        alias => <<"eligible">>,
         required => false,
         datatype => {list, integer}
     },
-    <<"eligible_authid">> => #{
+    eligible_authid => #{
+        alias => <<"eligible_authid">>,
         required => false,
         datatype => {list, binary}
     },
-    <<"eligible_authrole">> => #{
+    eligible_authrole => #{
+        alias => <<"eligible_authrole">>,
         required => false,
         datatype => {list, binary}
     }
 }).
 
 -define(INVOCATION_DETAILS_SPEC, #{
-    <<"trustlevel">> => #{
+    trustlevel => #{
+        alias => <<"trustlevel">>,
+        required => false,
+        datatype => integer
+    },
+    procedure => #{
+        alias => <<"procedure">>,
+        required => false,
+        datatype => binary
+    },
+    caller => #{
+        alias => <<"caller">>,
         required => false,
         datatype => integer
     }
@@ -538,8 +744,8 @@
 
 
 
-%% *** NOTICE: DO NOT CHANGE THE ORDER OF THE RECORD FIELDS as it maps
-%% *** to the order in WAMP messages
+%% NOTICE: DO NOT CHANGE THE ORDER OF THE RECORD FIELDS as it maps
+%% to the order in WAMP messages and we use list_to_tuple/1
 -record(hello, {
     realm_uri       ::  uri(),
     details         ::  map()
@@ -582,7 +788,7 @@
     details         ::  map(),
     error_uri       ::  uri(),
     arguments       ::  list() | undefined,
-    payload         ::  map() | undefined
+    arguments_kw         ::  map() | undefined
 }).
 -type wamp_error()       ::  #error{}.
 
@@ -591,7 +797,7 @@
     options         ::  map(),
     topic_uri       ::  uri(),
     arguments       ::  list() | undefined,
-    payload         ::  map() | undefined
+    arguments_kw         ::  map() | undefined
 }).
 -type wamp_publish()       ::  #publish{}.
 
@@ -630,7 +836,7 @@
     publication_id  ::  id(),
     details         ::  map(),
     arguments       ::  list() | undefined,
-    payload         ::  map() | undefined
+    arguments_kw         ::  map() | undefined
 }).
 -type wamp_event()       ::  #event{}.
 
@@ -639,7 +845,7 @@
     options         ::  map(),
     procedure_uri   ::  uri(),
     arguments       ::  list() | undefined,
-    payload         ::  map() | undefined
+    arguments_kw         ::  map() | undefined
 }).
 -type wamp_call()       ::  #call{}.
 
@@ -653,7 +859,7 @@
     request_id      ::  id(),
     details         ::  map(),
     arguments       ::  list() | undefined,
-    payload         ::  map() | undefined
+    arguments_kw         ::  map() | undefined
 }).
 -type wamp_result()       ::  #result{}.
 
@@ -686,7 +892,7 @@
     registration_id ::  id(),
     details         ::  map(),
     arguments       ::  list() | undefined,
-    payload         ::  map() | undefined
+    arguments_kw         ::  map() | undefined
 }).
 -type wamp_invocation()       ::  #invocation{}.
 
@@ -700,30 +906,30 @@
     request_id      ::  id(),
     options         ::  map(),
     arguments       ::  list() | undefined,
-    payload         ::  map() | undefined
+    arguments_kw         ::  map() | undefined
 }).
 -type wamp_yield()  ::  #yield{}.
 
--type wamp_message()     ::  wamp_hello() 
-                        | wamp_challenge() 
-                        | wamp_authenticate() 
+-type wamp_message()     ::  wamp_hello()
+                        | wamp_challenge()
+                        | wamp_authenticate()
                         | wamp_welcome()
                         | wamp_abort()
                         | wamp_goodbye()
                         | wamp_error()
-                        | wamp_publish() 
+                        | wamp_publish()
                         | wamp_published()
-                        | wamp_subscribe() 
+                        | wamp_subscribe()
                         | wamp_subscribed()
-                        | wamp_unsubscribe() 
+                        | wamp_unsubscribe()
                         | wamp_unsubscribed()
                         | wamp_event()
                         | wamp_call()
                         | wamp_cancel()
                         | wamp_result()
-                        | wamp_register() 
+                        | wamp_register()
                         | wamp_registered()
-                        | wamp_unregister() 
+                        | wamp_unregister()
                         | wamp_unregistered()
                         | wamp_invocation()
                         | wamp_interrupt()
@@ -731,20 +937,20 @@
 
 
 
-                                    
+
 % -type hello_details()           ::  roles
 %                                     | agent
 %                                     | transport
 %                                     | authmethods
 %                                     | authid.
 % -type result_details()          ::  progress.
-% -type challenge_details()       ::  challenge 
-%                                     | salt 
-%                                     | keylen 
+% -type challenge_details()       ::  challenge
+%                                     | salt
+%                                     | keylen
 %                                     | iterations.
 % -type invocation_details()      ::  caller
 %                                     | trustlevel | procedure.
-% -type event_details()           ::  publisher 
+% -type event_details()           ::  publisher
 %                                     | trustlevel | topic.
 
 % %% <<"exact">> | <<"prefix">> | <<"wildcard">>.
@@ -777,7 +983,7 @@
 %                                     | rkey.
 
 -define(WAMP_ERROR_AUTHORIZATION_FAILED, <<"wamp.error.authorization_failed">>).
--define(WAMP_ERROR_CANCELLED, <<"wamp.error.cancelled">>).
+-define(WAMP_ERROR_CANCELLED, <<"wamp.error.canceled">>).
 -define(WAMP_ERROR_CLOSE_REALM, <<"wamp.error.close_realm">>).
 -define(WAMP_ERROR_DISCLOSE_ME_NOT_ALLOWED, <<"wamp.error.disclose_me.not_allowed">>).
 -define(WAMP_ERROR_GOODBYE_AND_OUT, <<"wamp.error.goodbye_and_out">>).
