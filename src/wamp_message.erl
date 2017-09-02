@@ -161,7 +161,7 @@ error(ReqType, ReqId, Details, ErrorUri) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec error(pos_integer(), id(), map(), uri(), list()) -> 
+-spec error(pos_integer(), id(), map(), uri(), list()) ->
     wamp_error() | no_return().
 error(ReqType, ReqId, Details, ErrorUri, Args) ->
     error(ReqType, ReqId, Details, ErrorUri, Args, undefined).
@@ -172,12 +172,12 @@ error(ReqType, ReqId, Details, ErrorUri, Args) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec error(
-    pos_integer(), 
-    id(), 
-    map(), 
-    uri(), 
-    list() | undefined, 
-    map() | undefined) -> 
+    pos_integer(),
+    id(),
+    map(),
+    uri(),
+    list() | undefined,
+    map() | undefined) ->
     wamp_error() | no_return().
 error(ReqType, ReqId, Details, ErrorUri, Args, Payload)
 when is_map(Details) ->
@@ -213,7 +213,7 @@ publish(ReqId, Options, TopicUri, Args) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec publish(id(), map(), uri(), list() | undefined, map() | undefined) -> 
+-spec publish(id(), map(), uri(), list() | undefined, map() | undefined) ->
     wamp_publish() | no_return().
 publish(ReqId, Options, TopicUri, Args, Payload) ->
     #publish{
@@ -387,7 +387,7 @@ result(ReqId, Details, Args) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec result(id(), map(), list() | undefined, map() | undefined) -> 
+-spec result(id(), map(), list() | undefined, map() | undefined) ->
     wamp_result() | no_return().
 result(ReqId, Details, Args, Payload) when is_map(Details) ->
     #result{
@@ -468,7 +468,7 @@ invocation(ReqId, RegId, Details, Args) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec invocation(id(), id(), map(), list() | undefined, map() | undefined) -> 
+-spec invocation(id(), id(), map(), list() | undefined, map() | undefined) ->
     wamp_invocation() | no_return().
 invocation(ReqId, RegId, Details, Args, Payload) ->
     #invocation{
@@ -514,7 +514,7 @@ yield(ReqId, Options, Args) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec yield(id(), map(), list() | undefined, map() | undefined) -> 
+-spec yield(id(), map(), list() | undefined, map() | undefined) ->
     wamp_yield() | no_return().
 yield(ReqId, Options, Args, Payload) ->
     #yield{
