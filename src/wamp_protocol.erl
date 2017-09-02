@@ -1,14 +1,14 @@
-%% 
+%%
 %%  Untitled-1 -
-%% 
+%%
 %%  Copyright (c) 2016-2017 Ngineo Limited t/a Leapsight. All rights reserved.
-%% 
+%%
 %%  Licensed under the Apache License, Version 2.0 (the "License");
 %%  you may not use this file except in compliance with the License.
 %%  You may obtain a copy of the License at
-%% 
+%%
 %%     http://www.apache.org/licenses/LICENSE-2.0
-%% 
+%%
 %%  Unless required by applicable law or agreed to in writing, software
 %%  distributed under the License is distributed on an "AS IS" BASIS,
 %%  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,7 +25,7 @@
 -define(IS_TRANSPORT(X), (T =:= ws orelse T =:= raw)).
 %% Custom error messages
 -define(ERROR_NOT_IN_SESSION, <<"com.leapsight.error.not_in_session">>).
--define(SESSION_ALREADY_EXISTS, 
+-define(SESSION_ALREADY_EXISTS,
     <<"com.leapsight.error.session_already_exists">>).
 -define(INVALID_MESSAGE, <<"com.leapsight.error.invalid_message">>).
 
@@ -68,7 +68,6 @@
 
 -type peer_type()           ::  router | client.
 -type peer()                ::  {inet:ip_address(), inet:port_number()}.
--type subprotocol()         ::  {transport(), frame_type(), encoding()}.
 -type state()               ::  #wamp_state{} | undefined.
 -type auth_details()        ::  #{}.
 -type type()                ::  in | out.
@@ -108,8 +107,8 @@
 %% @end
 %% -----------------------------------------------------------------------------
 -callback authenticate(
-    RealmUri :: uri(), 
-    Details :: auth_details(), 
+    RealmUri :: uri(),
+    Details :: auth_details(),
     Session :: wamp_session:session()) ->
     {ok, wamp_welcome(), Session :: any(), wamp_session:session()}
     | {ok, wamp_challenge(), wamp_session:session()}
@@ -154,9 +153,9 @@
 %% @end
 %% -----------------------------------------------------------------------------
 -spec init(
-    binary() | subprotocol(), {peer_type(), module()}, peer(), uri(), map()) -> 
+    binary() | subprotocol(), {peer_type(), module()}, peer(), uri(), map()) ->
     {ok, state()}
-    | {ok, binary(), state()} 
+    | {ok, binary(), state()}
     | {stop, state()}
     | {stop, binary(), state()}
     | {reply, binary(), state()}
@@ -165,7 +164,7 @@
 init(Subproto0, {PeerType, Mod}, Peer, RealmUri, Opts) ->
     case validate_subprotocol(Subproto0) of
         {ok, Subproto1} ->
-            try 
+            try
                 do_init(Subproto1, {PeerType, Mod}, Peer, RealmUri, Opts)
             catch
                 _:Reason ->
@@ -206,23 +205,23 @@ get_id(MsgType, #wamp_state{session = Session}) ->
 
 validate_subprotocol(T) when is_binary(T) ->
     {ok, subprotocol(T)};
-validate_subprotocol({ws, text, json_batched} = S) ->  
+validate_subprotocol({ws, text, json_batched} = S) ->
     {ok, S};
 validate_subprotocol({ws, binary, msgpack_batched} = S) ->
     {ok, S};
 validate_subprotocol({ws, binary, bert_batched} = S) ->
     {ok, S};
-validate_subprotocol({ws, binary, erl_batched} = S) -> 
+validate_subprotocol({ws, binary, erl_batched} = S) ->
     {ok, S};
-validate_subprotocol({T, text, json} = S) when ?IS_TRANSPORT(T) ->          
+validate_subprotocol({T, text, json} = S) when ?IS_TRANSPORT(T) ->
     {ok, S};
-validate_subprotocol({T, binary, msgpack} = S) when ?IS_TRANSPORT(T) ->     
+validate_subprotocol({T, binary, msgpack} = S) when ?IS_TRANSPORT(T) ->
     {ok, S};
-validate_subprotocol({T, binary, bert} = S) when ?IS_TRANSPORT(T) ->        
+validate_subprotocol({T, binary, bert} = S) when ?IS_TRANSPORT(T) ->
     {ok, S};
-validate_subprotocol({T, binary, erl} = S) when ?IS_TRANSPORT(T) ->         
+validate_subprotocol({T, binary, erl} = S) when ?IS_TRANSPORT(T) ->
     {ok, S};
-validate_subprotocol(_) ->                             
+validate_subprotocol(_) ->
     {error, invalid_subprotocol}.
 
 
@@ -233,7 +232,7 @@ validate_subprotocol(_) ->
 %% -----------------------------------------------------------------------------
 -spec handle_inbound_data({frame_type(), binary()} | binary(), state()) ->
     {ok, state()}
-    | {ok, [binary()], state()} 
+    | {ok, [binary()], state()}
     | {stop, state()}
     | {stop, [binary()], state()}
     | {reply, [binary()], state()}.
@@ -251,7 +250,7 @@ handle_inbound_data(Data, #wamp_state{subprotocol = {_, binary, _}} = St) ->
 %% -----------------------------------------------------------------------------
 -spec handle_outbound_data({frame_type(), binary()} | binary(), state()) ->
     {ok, state()}
-    | {ok, [binary()], state()} 
+    | {ok, [binary()], state()}
     | {stop, state()}
     | {stop, [binary()], state()}
     | {reply, [binary()], state()}.
@@ -264,9 +263,9 @@ handle_outbound_data(Data, #wamp_state{subprotocol = {_, binary, _}} = St) ->
 
 %% -----------------------------------------------------------------------------
 %% @doc
-%% Handles wamp frames, decoding 1 or more messages. 
+%% Handles wamp frames, decoding 1 or more messages.
 %% The messages are then either forwarded to the router callback module
-%% in case the peer type is `router` by calling the `forward/2` 
+%% in case the peer type is `router` by calling the `forward/2`
 %% callback function.
 %% Otherwise in case the peer type is `client` it will call the client's
 %% callback module using the `deliver/2` function.
@@ -277,7 +276,7 @@ handle_outbound_data(Data, #wamp_state{subprotocol = {_, binary, _}} = St) ->
 %% -----------------------------------------------------------------------------
 -spec handle_data(type(), binary(), state()) ->
     {ok, state()}
-    | {ok, [binary()], state()} 
+    | {ok, [binary()], state()}
     | {stop, state()}
     | {stop, [binary()], state()}
     | {reply, [binary()], state()}.
@@ -294,7 +293,7 @@ handle_data(Type, Data0, St) ->
 %% -----------------------------------------------------------------------------
 -spec handle_inbound_message(wamp_message:message(), state()) ->
     {ok, state()}
-    | {ok, binary(), state()} 
+    | {ok, binary(), state()}
     | {stop, state()}
     | {stop, binary(), state()}
     | {reply, binary(), state()}.
@@ -310,7 +309,7 @@ handle_inbound_message(M, St) ->
 %% -----------------------------------------------------------------------------
 -spec handle_outbound_message(wamp_message:message(), state()) ->
     {ok, state()}
-    | {ok, binary(), state()} 
+    | {ok, binary(), state()}
     | {stop, state()}
     | {stop, binary(), state()}
     | {reply, binary(), state()}.
@@ -328,7 +327,7 @@ handle_outbound_message(M, St) ->
 %% -----------------------------------------------------------------------------
 -spec handle_message(type(), wamp_message:message(), state()) ->
     {ok, state()}
-    | {ok, binary(), state()} 
+    | {ok, binary(), state()}
     | {stop, state()}
     | {stop, binary(), state()}
     | {reply, binary(), state()}.
@@ -368,7 +367,7 @@ handle_message(Type, M, St0) ->
 %% -----------------------------------------------------------------------------
 -spec closed(type(), wamp_message(), state()) ->
     {ok, state()}
-    | {ok, wamp_message(), state()} 
+    | {ok, wamp_message(), state()}
     | {stop, state()}
     | {stop, wamp_message(), state()}
     | {reply, wamp_message(), state()}.
@@ -387,16 +386,16 @@ closed(in, #hello{realm_uri = Uri} = M, #wamp_state{peer_type = router} = St0) -
     %% but we keep it for completeness
     St1 = next_state(establishing, Session1, St0),
 
-    case 
-        (St1#wamp_state.mod):authenticate(Uri, M#hello.details, Session1) 
+    case
+        (St1#wamp_state.mod):authenticate(Uri, M#hello.details, Session1)
     of
         {ok, #welcome{} = R, Session2} ->
             {reply, R, next_state(established, Session2, St1)};
-        
+
         {ok, #challenge{auth_method = Method} = R, Session2} ->
             Session3 = wamp_session:set_authmethod(Session2, Method),
             {reply, R, next_state(challenging, Session3, St1)};
-        
+
         {error, Reason, Session2} ->
             {stop, abort(Reason), next_state(closed, Session2, St1)}
     end;
@@ -413,7 +412,7 @@ closed(in, _, #wamp_state{peer_type = router} = St) ->
 %% -----------------------------------------------------------------------------
 -spec establishing(type(), wamp_message(), state()) ->
     {ok, state()}
-    | {ok, wamp_message(), state()} 
+    | {ok, wamp_message(), state()}
     | {stop, state()}
     | {stop, wamp_message(), state()}
     | {reply, wamp_message(), state()}.
@@ -434,7 +433,7 @@ establishing(in, #abort{} = M, #wamp_state{peer_type = client} = St) ->
     {stop, M, next_state(closed, St)};
 
 establishing(
-    in, 
+    in,
     #challenge{auth_method = ?TICKET_AUTH}, #wamp_state{peer_type = client} = St) ->
     %% We've been challenged, we need to reply with an authenticate
     %% message
@@ -445,7 +444,7 @@ establishing(
     {reply, R, next_state(authenticating, St)};
 
 establishing(
-    in, 
+    in,
     #challenge{auth_method = ?WAMPCRA_AUTH}, #wamp_state{peer_type = client} = _St) ->
     %% We've been challenged, we need to reply with an authenticate
     %% message
@@ -458,7 +457,7 @@ establishing(in, #hello{}, #wamp_state{peer_type = router} = St) ->
     %% This case will never happen as we synchronously transition from
     %% closed to challenging | authenticating
     R = abort(
-        ?WAMP_ERROR_CANCELLED, 
+        ?WAMP_ERROR_CANCELLED,
         <<"You've sent a HELLO message more than once.">>),
     {stop, R, next_state(closed, St)};
 
@@ -472,20 +471,20 @@ establishing(_, _, #wamp_state{peer_type = client} = St) ->
 
 establishing(_, _, #wamp_state{peer_type = router} = St) ->
     R = abort(
-        ?ERROR_NOT_IN_SESSION, 
+        ?ERROR_NOT_IN_SESSION,
         <<"You need to request a session first by sending a HELLO message.">>),
     {stop, R, next_state(failed, St)}.
 
 
 %% -----------------------------------------------------------------------------
 %% @doc
-%% The state the router is in when it has sent a challenge message and is 
+%% The state the router is in when it has sent a challenge message and is
 %% awaiting for an authenticate response.
 %% @end
 %% -----------------------------------------------------------------------------
 -spec challenging(type(), wamp_message(), state()) ->
     {ok, state()}
-    | {ok, wamp_message(), state()} 
+    | {ok, wamp_message(), state()}
     | {stop, state()}
     | {stop, wamp_message(), state()}
     | {reply, wamp_message(), state()}.
@@ -494,12 +493,12 @@ challenging(in, #hello{}, #wamp_state{peer_type = router} = St) ->
     %% client already sent a HELLO previously and we have replied
     %% with a challenge message
     R = abort(
-        ?WAMP_ERROR_CANCELLED, 
+        ?WAMP_ERROR_CANCELLED,
         <<"You've sent a HELLO message again and you have not yet replied to our previous CHALLENGE message. Connection closing.">>),
     {stop, R, next_state(closed, St)};
 
 challenging(in, #authenticate{}, #wamp_state{peer_type = router} = St) ->
-    %% TODO authenticate, return welcome -> established  
+    %% TODO authenticate, return welcome -> established
     %% or abort -> closed
 
     %% ok = wamp_stats:update(M, St#wamp_state.session),
@@ -509,9 +508,9 @@ challenging(in, #authenticate{}, #wamp_state{peer_type = router} = St) ->
     %% Realm = maps:get(realm_uri, Session0),
     %% Peer = maps:get(client, Session0),
     %% AuthId = maps:get(authid, Session0),
-    %% case 
+    %% case
     %%     bondy_security_utils:authenticate(
-    %%         AuthMethod, {AuthMethod, AuthId, Sign}, Realm, Peer) 
+    %%         AuthMethod, {AuthMethod, AuthId, Sign}, Realm, Peer)
     %% of
     %%     {ok, _AuthSession} ->
     %%         %% We already stored the authid (username) in the Session
@@ -519,14 +518,14 @@ challenging(in, #authenticate{}, #wamp_state{peer_type = router} = St) ->
     %%     {error, Reason} ->
     %%         abort(?WAMP_ERROR_AUTHORIZATION_FAILED, Reason, St)
     %% end;
-    
+
     {stop, St};
 
 challenging(_, _, #wamp_state{peer_type = router} = St) ->
     %% Any other message is an error
     %% TODO MAYBE AN ERROR? SPEC is not clear
     R = abort(
-        ?ERROR_NOT_IN_SESSION, 
+        ?ERROR_NOT_IN_SESSION,
         <<"You need to establish a session first. Connection closing.">>
     ),
     {stop, R, next_state(failed, St)}.
@@ -534,12 +533,12 @@ challenging(_, _, #wamp_state{peer_type = router} = St) ->
 
 %% -----------------------------------------------------------------------------
 %% @doc
-%% State the peer is in 
+%% State the peer is in
 %% @end
 %% -----------------------------------------------------------------------------
 -spec authenticating(type(), wamp_message(), state()) ->
     {ok, state()}
-    | {ok, wamp_message(), state()} 
+    | {ok, wamp_message(), state()}
     | {stop, state()}
     | {stop, wamp_message(), state()}
     | {reply, wamp_message(), state()}.
@@ -552,7 +551,7 @@ authenticating(in, #welcome{}, #wamp_state{peer_type = client} = St) ->
 authenticating(_, _, #wamp_state{peer_type = client} = St) ->
     %% The router sent us an invalid message
     R = abort(
-        ?INVALID_MESSAGE, 
+        ?INVALID_MESSAGE,
         <<"Invalid message. I was expecting ABORT or WELCOME.">>
     ),
     {stop, R, next_state(failed, St)}.
@@ -564,7 +563,7 @@ authenticating(_, _, #wamp_state{peer_type = client} = St) ->
 %% -----------------------------------------------------------------------------
 -spec failed(type(), wamp_message(), state()) ->
     {ok, state()}
-    | {ok, wamp_message(), state()} 
+    | {ok, wamp_message(), state()}
     | {stop, state()}
     | {stop, wamp_message(), state()}
     | {reply, wamp_message(), state()}.
@@ -606,8 +605,8 @@ established(in, #hello{}, #wamp_state{peer_type = router} = St) ->
     %% happens
     %% @TODO Abort | Error or Silent?
     R = abort(
-        ?SESSION_ALREADY_EXISTS, 
-        <<"You've sent a HELLO message more than once.">> 
+        ?SESSION_ALREADY_EXISTS,
+        <<"You've sent a HELLO message more than once.">>
     ),
     {stop, R, next_state(failed, St)};
 
@@ -615,7 +614,7 @@ established(in, #authenticate{}, #wamp_state{peer_type = router} = St) ->
     %% Peer already has a session
     %% @TODO Error?
     R = abort(
-        ?SESSION_ALREADY_EXISTS, 
+        ?SESSION_ALREADY_EXISTS,
         <<"You've sent an AUTHENTICATE message more than once.">>
     ),
     {stop, R, next_state(failed, St)};
@@ -666,7 +665,7 @@ established(out, M, St) ->
 %% -----------------------------------------------------------------------------
 -spec shutting_down(wamp_message(), state()) ->
     {ok, state()}
-    | {ok, wamp_message(), state()} 
+    | {ok, wamp_message(), state()}
     | {stop, state()}
     | {stop, wamp_message(), state()}
     | {reply, wamp_message(), state()}.
@@ -686,7 +685,7 @@ shutting_down(_M, #wamp_state{peer_type = router} = St) ->
 %% -----------------------------------------------------------------------------
 -spec closing(wamp_message(), state()) ->
     {ok, state()}
-    | {ok, wamp_message(), state()} 
+    | {ok, wamp_message(), state()}
     | {stop, state()}
     | {stop, wamp_message(), state()}
     | {reply, wamp_message(), state()}.
@@ -713,7 +712,7 @@ closing(_M, #wamp_state{peer_type = router} = St) ->
 -spec handle_messages(
     type(), [wamp_message()], state(), Acc :: [wamp_message()]) ->
     {ok, state()}
-    | {ok, [binary()], state()} 
+    | {ok, [binary()], state()}
     | {stop, state()}
     | {stop, [binary()], state()}
     | {reply, [binary()], state()}.
@@ -723,7 +722,7 @@ handle_messages(_, [], St, []) ->
     {ok, St};
 
 handle_messages(_, [], St, Acc) ->
-    {reply, lists:reverse(Acc), St};    
+    {reply, lists:reverse(Acc), St};
 
 handle_messages(Type, [H|T], St0, Acc) ->
     case apply(?MODULE, St0#wamp_state.state_name, [Type, H, St0]) of
@@ -759,7 +758,7 @@ abort({realm_not_found, Uri}) ->
 abort({missing_param, Param}) ->
     abort(
         ?WAMP_ERROR_CANCELLED,
-        <<"Missing value for required parameter '", 
+        <<"Missing value for required parameter '",
         Param/binary, "'.">>
     );
 
@@ -771,7 +770,7 @@ abort({user_not_found, AuthId}) ->
 
 abort({invalid_options, missing_client_role}) ->
     abort(
-        <<"wamp.error.missing_client_role">>, 
+        <<"wamp.error.missing_client_role">>,
         <<"Please provide at least one client role.">>
     ).
 
@@ -806,15 +805,15 @@ encoding(#wamp_state{subprotocol = {_, _, E}}) -> E.
 
 
 %% @private
--spec do_init(subprotocol(), {peer_type(), module()}, peer(), uri(), map()) -> 
+-spec do_init(subprotocol(), {peer_type(), module()}, peer(), uri(), map()) ->
     {ok, state()}
-    | {ok, binary(), state()} 
+    | {ok, binary(), state()}
     | {stop, state()}
     | {stop, binary(), state()}
     | {reply, binary(), state()}
     | no_return().
 
-do_init(Subprotocol, {PeerType, Mod}, Peer, Uri, Opts) 
+do_init(Subprotocol, {PeerType, Mod}, Peer, Uri, Opts)
 when PeerType == client orelse PeerType == router ->
     State = #wamp_state{
         subprotocol = Subprotocol,
@@ -907,14 +906,14 @@ subprotocol(?WAMP2_BERT) ->                 {ws, binary, bert};
 subprotocol(?WAMP2_ERL) ->                  {ws, binary, erl};
 subprotocol(?WAMP2_BERT_BATCHED) ->         {ws, binary, bert_batched};
 subprotocol(?WAMP2_ERL_BATCHED) ->          {ws, binary, erl_batched};
-subprotocol(_) ->                           {error, invalid_subprotocol}. 
+subprotocol(_) ->                           {error, invalid_subprotocol}.
 
 
 
 
 
 %% %% =============================================================================
-%% %% PRIVATE: RAW SOCKET SUBPROTOCOL 
+%% %% PRIVATE: RAW SOCKET SUBPROTOCOL
 %% %% =============================================================================
 
 
@@ -926,11 +925,11 @@ subprotocol(_) ->                           {error, invalid_subprotocol}.
 %% %% @doc
 %% %% The possible values for "LENGTH" are:
 %% %%
-%% %% 0: 2**9 octets 
+%% %% 0: 2**9 octets
 %% %% 1: 2**10 octets ...
 %% %% 15: 2**24 octets
 %% %%
-%% %% This means a _Client_ can choose the maximum message length between *512* 
+%% %% This means a _Client_ can choose the maximum message length between *512*
 %% %% and *16M* octets.
 %% %% @end
 %% %% -----------------------------------------------------------------------------

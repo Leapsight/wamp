@@ -10,8 +10,10 @@
 -module(wamp_encoding).
 -include("wamp.hrl").
 
+%% WEBSOCKET
 -define(JSON_BATCHED_SEPARATOR, <<24>>). % ASCII CANCEL
 
+%
 -export([pack/1]).
 -export([unpack/1]).
 -export([encode/2]).
@@ -32,7 +34,7 @@
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec decode(wamp_protocol:subprotocol(), Data :: binary()) ->
+-spec decode(subprotocol(), Data :: binary()) ->
     {Messages :: [wamp_message()], Rest :: binary()} | no_return().
 
 decode({ws, text, json}, Data) ->
@@ -45,7 +47,7 @@ decode({ws, binary, Enc}, Data) ->
     decode_binary(Data, Enc, []);
 
 decode({raw, binary, Enc}, Data) ->
-    decode_raw_binary(Data, Enc, []).
+    decode_binary(Data, Enc, []).
 
 
 %% -----------------------------------------------------------------------------
@@ -169,7 +171,7 @@ pack(M) when is_tuple(M) ->
 
 %% -----------------------------------------------------------------------------
 %% @doc
-%% Converts a message from a WAMP list external format to 
+%% Converts a message from a WAMP list external format to
 %% an internal format (erlang record).
 %% See {@link wamp_message} for all message types.
 %% @end
@@ -382,12 +384,15 @@ unpack([?YIELD, ReqId, Options, Args, Payload]) ->
     ).
 
 
+
 %% =============================================================================
-%% PRIVATE
+%% PRIVATE: DECODING
 %% =============================================================================
 
+
+
 %% @private
--spec decode_text(binary(), json | json_batched, Acc0 :: [wamp_message()]) -> 
+-spec decode_text(binary(), json | json_batched, Acc0 :: [wamp_message()]) ->
     {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
 
 decode_text(Data, json, Acc) ->
@@ -398,25 +403,12 @@ decode_text(Data, json_batched, Acc) ->
 
 
 %% @private
--spec decode_binary(binary(), encoding(), Acc0 :: [wamp_message()]) -> 
+-spec decode_binary(binary(), encoding(), Acc0 :: [wamp_message()]) ->
     {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
 
-decode_binary(Data, Enc, Acc) when Enc =/= json ->
+decode_binary(Data, Enc, Acc) ->
     {decode_message(Data, Enc, Acc), <<>>}.
 
-
-%% @private
--spec decode_raw_binary(binary(), encoding(), Acc0 :: [wamp_message()]) -> 
-    {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
-
-decode_raw_binary(<<0:5, 0:3, Len:24, Buffer/binary>>, Enc, Acc) 
-when byte_size(Buffer) >= Len ->
-    %% We have the whole message and maybe some more
-    <<Mssg:Len/binary, NewBuffer/binary>> = Buffer,
-    decode_raw_binary(NewBuffer, Enc, decode_message(Mssg, Enc, Acc));
-
-decode_raw_binary(Buffer, _Enc, Acc) ->
-    {lists:reverse(Acc), Buffer}.
 
 
 %% @private
@@ -439,6 +431,21 @@ decode_message(_Data, json_batched, _Acc) ->
 
 decode_message(_Data, msgpack_batched, _Acc) ->
     error(not_yet_implemented).
+
+
+
+
+%% =============================================================================
+%% PRIVATE: DECODING RAW TCP TRANSPORT
+%% =============================================================================
+
+
+
+
+
+%% =============================================================================
+%% PRIVATE: UTILS
+%% =============================================================================
 
 
 

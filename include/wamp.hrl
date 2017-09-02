@@ -41,6 +41,7 @@
     erl_batched
 ]).
 
+
 -type encoding()        ::  json
                             | msgpack
                             | bert
@@ -53,6 +54,7 @@
 
 -type frame_type()          ::  text | binary.
 -type transport()           ::  ws | raw.
+-type subprotocol()         ::  {transport(), frame_type(), encoding()}.
 
 
 -define(HELLO, 1).
