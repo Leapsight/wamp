@@ -406,7 +406,7 @@ decode_text(Data, json_batched, Acc) ->
 -spec decode_binary(binary(), encoding(), Acc0 :: [wamp_message()]) ->
     {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
 
-decode_binary(Data, Enc, Acc) when Enc =/= json ->
+decode_binary(Data, Enc, Acc) ->
     {decode_message(Data, Enc, Acc), <<>>}.
 
 
