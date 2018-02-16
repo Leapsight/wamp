@@ -66,8 +66,10 @@ encode(Message, json) when is_list(Message) ->
     jsx:encode(Message);
 
 encode(Message, msgpack) when is_list(Message) ->
+    %% We want binary keys always
     Opts = [
-        {map_format, map}
+        {map_format, map},
+        {pack_str, from_list}
     ],
     msgpack:pack(Message, Opts);
 
@@ -417,7 +419,8 @@ decode_message(Data, json, Acc) ->
     [unpack(M) | Acc];
 
 decode_message(Data, msgpack, Acc) ->
-    {ok, M} = msgpack:unpack(Data, [{map_format, map}]),
+    {ok, M} = msgpack:unpack(
+        Data, [{map_format, map}, {unpack_str, as_binary}]),
     [unpack(M) | Acc];
 
 decode_message(Data, bert, Acc) ->
