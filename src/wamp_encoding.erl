@@ -68,8 +68,7 @@ encode(Message, json) when is_list(Message) ->
 encode(Message, msgpack) when is_list(Message) ->
     %% We want binary keys always
     Opts = [
-        {map_format, map},
-        {pack_str, from_list}
+        {map_format, map}
     ],
     msgpack:pack(Message, Opts);
 
@@ -420,7 +419,7 @@ decode_message(Data, json, Acc) ->
 
 decode_message(Data, msgpack, Acc) ->
     {ok, M} = msgpack:unpack(
-        Data, [{map_format, map}, {unpack_str, as_binary}]),
+        Data, [{map_format, map}]),
     [unpack(M) | Acc];
 
 decode_message(Data, bert, Acc) ->
