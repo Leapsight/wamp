@@ -116,6 +116,8 @@
 %% =============================================================================
 
 
+
+%% maps_utils:map_spec()
 -define(DEALER_FEATURES_SPEC, #{
     progressive_call_results => #{
         alias => <<"progressive_call_results">>,
@@ -171,6 +173,7 @@
         datatype => boolean}
 }).
 
+%% maps_utils:map_spec()
 -define(BROKER_FEATURES_SPEC, #{
     event_history => #{
         alias => <<"event_history">>,
@@ -214,6 +217,7 @@
         datatype => boolean}
 }).
 
+%% maps_utils:map_spec()
 -define(BROKER_ROLE_SPEC, #{
     features => #{
         alias => <<"features">>,
@@ -223,6 +227,7 @@
     }
 }).
 
+%% maps_utils:map_spec()
 -define(DEALER_ROLE_SPEC, #{
     features => #{
         alias => <<"features">>,
@@ -232,6 +237,7 @@
     }
 }).
 
+%% maps_utils:map_spec()
 -define(ROUTER_ROLES_SPEC, #{
     broker => #{
         alias => <<"broker">>,
@@ -246,6 +252,7 @@
 }).
 
 
+%% maps_utils:map_spec()
 -define(CALLEE_FEATURES_SPEC, #{
     progressive_call_results => #{
         alias => <<"progressive_call_results">>,
@@ -293,6 +300,7 @@
         datatype => boolean}
 }).
 
+%% maps_utils:map_spec()
 -define(CALLER_FEATURES_SPEC, #{
     progressive_call_results => #{
         alias => <<"progressive_call_results">>,
@@ -316,6 +324,7 @@
         datatype => boolean}
 }).
 
+%% maps_utils:map_spec()
 -define(SUBSCRIBER_FEATURES_SPEC, #{
     event_history => #{
         alias => <<"event_history">>,
@@ -339,6 +348,7 @@
         datatype => boolean}
 }).
 
+%% maps_utils:map_spec()
 -define(PUBLISHER_FEATURES_SPEC, #{
     publisher_exclusion => #{
         alias => <<"publisher_exclusion">>,
@@ -354,6 +364,7 @@
         datatype => boolean}
 }).
 
+%% maps_utils:map_spec()
 -define(PUBLISHER_ROLE_SPEC, #{
     features => #{
         alias => <<"features">>,
@@ -363,6 +374,7 @@
     }
 }).
 
+%% maps_utils:map_spec()
 -define(SUBSCRIBER_ROLE_SPEC, #{
     features => #{
         alias => <<"features">>,
@@ -372,6 +384,7 @@
     }
 }).
 
+%% maps_utils:map_spec()
 -define(CALLER_ROLE_SPEC, #{
     features => #{
         alias => <<"features">>,
@@ -381,6 +394,7 @@
     }
 }).
 
+%% maps_utils:map_spec()
 -define(CALLEE_ROLE_SPEC, #{
     features => #{
         alias => <<"features">>,
@@ -391,6 +405,7 @@
 }).
 
 
+%% maps_utils:map_spec()
 -define(CLIENT_ROLES_SPEC, #{
     publisher => #{
         alias => <<"publisher">>,
@@ -417,6 +432,7 @@
 
 
 
+%% maps_utils:map_spec()
 -define(HELLO_DETAILS_SPEC, #{
     authmethods => #{
         % description => Used by the client to announce the authentication methods it is prepared to perform.">>,
@@ -481,6 +497,7 @@
     }
 }).
 
+%% maps_utils:map_spec()
 -define(CHALLENGE_DETAILS_SPEC, #{
     challenge => #{
         alias => <<"challenge">>,
@@ -505,6 +522,7 @@
 }).
 
 
+%% maps_utils:map_spec()
 -define(WELCOME_DETAILS_SPEC, #{
     authmethod => #{
         alias => <<"authmethod">>,
@@ -562,6 +580,7 @@
     }
 }).
 
+%% maps_utils:map_spec()
 -define(GOODBYE_DETAILS_SPEC, #{
     message => #{
         alias => <<"message">>,
@@ -570,8 +589,10 @@
     }
 }).
 
+%% maps_utils:map_spec()
 -define(ABORT_DETAILS_SPEC, ?GOODBYE_DETAILS_SPEC).
 
+%% maps_utils:map_spec()
 -define(CALL_CANCELLING_OPTS_SPEC, #{
     mode => #{
         alias => <<"mode">>,
@@ -580,6 +601,7 @@
     }
 }).
 
+%% maps_utils:map_spec()
 -define(CALL_OPTS_SPEC, #{
     timeout => #{
         alias => <<"timeout">>,
@@ -623,6 +645,8 @@
 -define(INVOKE_FIRST, <<"first">>).
 -define(INVOKE_LAST, <<"last">>).
 
+
+%% maps_utils:map_spec()
 -define(REGISTER_OPTS_SPEC, #{
     disclose_caller => #{
         alias => <<"disclose_caller">>,
@@ -648,6 +672,8 @@
     }
 }).
 
+
+%% maps_utils:map_spec()
 -define(SUBSCRIBE_OPTS_SPEC, #{
     match => #{
         alias => <<"match">>,
@@ -657,6 +683,7 @@
 }).
 
 
+%% maps_utils:map_spec()
 -define(PUBLISH_OPTS_SPEC, #{
     %% resource key
    rkey => #{
@@ -714,6 +741,7 @@
     }
 }).
 
+%% maps_utils:map_spec()
 -define(INVOCATION_DETAILS_SPEC, #{
     trustlevel => #{
         alias => <<"trustlevel">>,
@@ -732,6 +760,7 @@
     }
 }).
 
+%% maps_utils:map_spec()
 -define(EVENT_DETAILS_SPEC, ?INVOCATION_DETAILS_SPEC).
 
 
