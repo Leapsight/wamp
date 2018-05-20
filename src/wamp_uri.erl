@@ -61,5 +61,5 @@ components(Uri) ->
             [Domain | Rest];
         _Other ->
             %% Invalid Uri
-            error({?WAMP_ERROR_INVALID_URI, Uri})
+            error({?WAMP_INVALID_URI, Uri})
     end.

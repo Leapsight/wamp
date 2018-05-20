@@ -1011,26 +1011,41 @@
 %                                     | eligible_authrole
 %                                     | rkey.
 
--define(WAMP_ERROR_AUTHORIZATION_FAILED, <<"wamp.error.authorization_failed">>).
--define(WAMP_ERROR_CANCELLED, <<"wamp.error.canceled">>).
--define(WAMP_ERROR_CLOSE_REALM, <<"wamp.error.close_realm">>).
--define(WAMP_ERROR_DISCLOSE_ME_NOT_ALLOWED, <<"wamp.error.disclose_me.not_allowed">>).
--define(WAMP_ERROR_GOODBYE_AND_OUT, <<"wamp.error.goodbye_and_out">>).
--define(WAMP_ERROR_INVALID_ARGUMENT, <<"wamp.error.invalid_argument">>).
--define(WAMP_ERROR_INVALID_URI, <<"wamp.error.invalid_uri">>).
--define(WAMP_ERROR_NET_FAILURE, <<"wamp.error.network_failure">>).
--define(WAMP_ERROR_NOT_AUTHORIZED, <<"wamp.error.not_authorized">>).
--define(WAMP_ERROR_NO_ELIGIBLE_CALLE, <<"wamp.error.no_eligible_callee">>).
--define(WAMP_ERROR_NO_SUCH_PROCEDURE, <<"wamp.error.no_such_procedure">>).
--define(WAMP_ERROR_NO_SUCH_REALM, <<"wamp.error.no_such_realm">>).
--define(WAMP_ERROR_NO_SUCH_REGISTRATION, <<"wamp.error.no_such_registration">>).
--define(WAMP_ERROR_NO_SUCH_ROLE, <<"wamp.error.no_such_role">>).
--define(WAMP_ERROR_NO_SUCH_SESSION, <<"wamp.error.no_such_session">>).
--define(WAMP_ERROR_NO_SUCH_SUBSCRIPTION, <<"wamp.error.no_such_subscription">>).
--define(WAMP_ERROR_OPTION_DISALLOWED_DISCLOSE_ME, <<"wamp.error.option_disallowed.disclose_me">>).
--define(WAMP_ERROR_OPTION_NOT_ALLOWED, <<"wamp.error.option_not_allowed">>).
--define(WAMP_ERROR_PROCEDURE_ALREADY_EXISTS, <<"wamp.error.procedure_already_exists">>).
--define(WAMP_ERROR_SYSTEM_SHUTDOWN, <<"wamp.error.system_shutdown">>).
+
+%% INCORRECT URIs
+-define(WAMP_INVALID_URI, <<"wamp.error.invalid_uri">>).
+
+%% INTERACTION URIs
+-define(WAMP_NO_SUCH_PROCEDURE, <<"wamp.error.no_such_procedure">>).
+-define(WAMP_PROCEDURE_ALREADY_EXISTS,
+    <<"wamp.error.procedure_already_exists">>).
+-define(WAMP_NO_SUCH_REGISTRATION, <<"wamp.error.no_such_registration">>).
+-define(WAMP_NO_SUCH_SUBSCRIPTION, <<"wamp.error.no_such_subscription">>).
+-define(WAMP_INVALID_ARGUMENT, <<"wamp.error.invalid_argument">>).
+
+%% SESSION CLOSE
+-define(WAMP_SYSTEM_SHUTDOWN, <<"wamp.close.system_shutdown">>).
+-define(WAMP_CLOSE_REALM, <<"wamp.close.close_realm">>).
+-define(WAMP_GOODBYE_AND_OUT, <<"wamp.close.goodbye_and_out">>).
+-define(WAMP_PROTOCOL_VIOLATION, <<"wamp.error.protocol_violation">>).
+
+%% AUTORIZATION
+-define(WAMP_NOT_AUTHORIZED, <<"wamp.error.not_authorized">>).
+-define(WAMP_AUTHORIZATION_FAILED, <<"wamp.error.authorization_failed">>).
+-define(WAMP_NO_SUCH_REALM, <<"wamp.error.no_such_realm">>).
+-define(WAMP_NO_SUCH_ROLE, <<"wamp.error.no_such_role">>).
+
+%% ADVANCES
+-define(WAMP_CANCELLED, <<"wamp.error.canceled">>).
+-define(WAMP_OPTION_NOT_ALLOWED, <<"wamp.error.option_not_allowed">>).
+-define(WAMP_NO_ELIGIBLE_CALLE, <<"wamp.error.no_eligible_callee">>).
+-define(WAMP_OPTION_DISALLOWED_DISCLOSE_ME,
+    <<"wamp.error.option_disallowed.disclose_me">>).
+
+-define(WAMP_DISCLOSE_ME_NOT_ALLOWED, <<"wamp.error.disclose_me.not_allowed">>).
+-define(WAMP_NET_FAILURE, <<"wamp.error.network_failure">>).
+
+-define(WAMP_NO_SUCH_SESSION, <<"wamp.error.no_such_session">>).
 
 
 

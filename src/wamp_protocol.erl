@@ -457,7 +457,7 @@ establishing(in, #hello{}, #wamp_state{peer_type = router} = St) ->
     %% This case will never happen as we synchronously transition from
     %% closed to challenging | authenticating
     R = abort(
-        ?WAMP_ERROR_CANCELLED,
+        ?WAMP_CANCELLED,
         <<"You've sent a HELLO message more than once.">>),
     {stop, R, next_state(closed, St)};
 
@@ -493,7 +493,7 @@ challenging(in, #hello{}, #wamp_state{peer_type = router} = St) ->
     %% client already sent a HELLO previously and we have replied
     %% with a challenge message
     R = abort(
-        ?WAMP_ERROR_CANCELLED,
+        ?WAMP_CANCELLED,
         <<"You've sent a HELLO message again and you have not yet replied to our previous CHALLENGE message. Connection closing.">>),
     {stop, R, next_state(closed, St)};
 
@@ -516,7 +516,7 @@ challenging(in, #authenticate{}, #wamp_state{peer_type = router} = St) ->
     %%         %% We already stored the authid (username) in the Session
     %%         open_session(St);
     %%     {error, Reason} ->
-    %%         abort(?WAMP_ERROR_AUTHORIZATION_FAILED, Reason, St)
+    %%         abort(?WAMP_AUTHORIZATION_FAILED, Reason, St)
     %% end;
 
     {stop, St};
@@ -623,14 +623,14 @@ established(in, #goodbye{}, #wamp_state{peer_type = router} = St0) ->
     %% The peer initiated a goodbye, so we will not process
     %% any subsequent messages
     %% We reply with a goodbye and stop
-    R = wamp_message:goodbye(#{}, ?WAMP_ERROR_GOODBYE_AND_OUT),
+    R = wamp_message:goodbye(#{}, ?WAMP_GOODBYE_AND_OUT),
     {stop, R, next_state(closed, next_state(closing, St0))};
 
 established(in, #goodbye{}, #wamp_state{peer_type = client} = St0) ->
     %% The router is closing the session
     %% We reply with a goodbye and stop
     %% TODO Log reason for goodbye
-    R = wamp_message:goodbye(#{}, ?WAMP_ERROR_GOODBYE_AND_OUT),
+    R = wamp_message:goodbye(#{}, ?WAMP_GOODBYE_AND_OUT),
     {stop, R, next_state(closed, next_state(shutting_down, St0))};
 
 established(in, M, #wamp_state{peer_type = router} = St) ->
@@ -751,20 +751,20 @@ handle_messages(Type, [H|T], St0, Acc) ->
 %% @private
 abort({realm_not_found, Uri}) ->
     abort(
-        ?WAMP_ERROR_NO_SUCH_REALM,
+        ?WAMP_NO_SUCH_REALM,
         <<"Realm '", Uri/binary, "' does not exist.">>
     );
 
 abort({missing_param, Param}) ->
     abort(
-        ?WAMP_ERROR_CANCELLED,
+        ?WAMP_CANCELLED,
         <<"Missing value for required parameter '",
         Param/binary, "'.">>
     );
 
 abort({user_not_found, AuthId}) ->
     abort(
-        ?WAMP_ERROR_CANCELLED,
+        ?WAMP_CANCELLED,
         <<"User '", AuthId/binary, "' does not exist.">>
     );
 
