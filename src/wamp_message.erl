@@ -245,7 +245,7 @@ published(ReqId, PubId) ->
 subscribe(ReqId, Options, TopicUri) when is_map(Options) ->
     #subscribe{
         request_id = validate_id(ReqId),
-        options = Options,
+        options = validate_map(Options, ?SUBSCRIBE_OPTS_SPEC),
         topic_uri = validate_uri(TopicUri)
     }.
 
