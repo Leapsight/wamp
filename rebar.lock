@@ -19,7 +19,7 @@
  {<<"setup">>,{pkg,<<"setup">>,<<"1.7.0">>},1},
  {<<"utils">>,
   {git,"git@gitlab.com:leapsight/utils.git",
-       {ref,"139d139c43075ae20e9f2089b4626d743739e457"}},
+       {ref,"15b60b1892902551f86fb931723570180b9494d6"}},
   0}]}.
 [
 {pkg_hash,[
