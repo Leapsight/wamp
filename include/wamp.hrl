@@ -456,7 +456,7 @@
         % description => Used by the client to announce the authentication methods it is prepared to perform.">>,
         alias => <<"authmethods">>,
         required => false,
-        datatype => {in, ?WAMP_AUTH_METHODS}
+        datatype => {list, {in, ?WAMP_AUTH_METHODS}}
     },
     authid => #{
         % description => <<"Te authentication ID (e.g. username) the client wishes to authenticate as.">>,
