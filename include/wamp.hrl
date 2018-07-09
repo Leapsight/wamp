@@ -118,7 +118,16 @@
 
 
 %% maps_utils:map_spec()
--define(DEALER_FEATURES_SPEC, #{
+-define(DEALER_FEATURES_SPEC, ?WAMP_DEALER_FEATURES_SPEC#{
+    call_retries => #{
+        alias => <<"call_retries">>,
+        required => false,
+        datatype => boolean}
+}).
+
+
+%% maps_utils:map_spec()
+-define(WAMP_DEALER_FEATURES_SPEC, #{
     progressive_call_results => #{
         alias => <<"progressive_call_results">>,
         required => false,
@@ -253,6 +262,7 @@
 
 
 %% maps_utils:map_spec()
+
 -define(CALLEE_FEATURES_SPEC, #{
     progressive_call_results => #{
         alias => <<"progressive_call_results">>,
@@ -301,7 +311,15 @@
 }).
 
 %% maps_utils:map_spec()
--define(CALLER_FEATURES_SPEC, #{
+
+-define(CALLER_FEATURES_SPEC, ?WAMP_CALLER_FEATURES_SPEC#{
+    call_retries => #{
+        alias => <<"call_retries">>,
+        required => false,
+        datatype => boolean}
+}).
+
+-define(WAMP_CALLER_FEATURES_SPEC, #{
     progressive_call_results => #{
         alias => <<"progressive_call_results">>,
         required => false,
@@ -602,7 +620,70 @@
 }).
 
 %% maps_utils:map_spec()
--define(CALL_OPTS_SPEC, #{
+
+-define(CALL_OPTS_SPEC, ?WAMP_CALL_OPTS_SPEC#{
+    retries => #{
+        alias => <<"retries">>,
+        required => false,
+        datatype => map,
+        validator => ?RETRIES_SPEC
+    }
+}).
+
+-define(RETRIES_SPEC, #{
+    allowance => #{
+        alias => <<"allowance">>,
+        required => true,
+        datatype => map,
+        validator => #{
+            min_retries_per_sec => #{
+                alias => <<"min_retries_frequency">>,
+                required => true,
+                default => 5,
+                datatype => non_neg_integer
+            },
+            ratio => #{
+                alias => <<"ratio">>,
+                required => true,
+                default => 0.5,
+                datatype => float
+            },
+            ttl => #{
+                alias => <<"ttl">>,
+                required => true,
+                default => 5000,
+                datatype => timeout
+            }
+        }
+    },
+    backoff => #{
+        alias => <<"backoff">>,
+        required => true,
+        datatype => map,
+        validator => #{
+            type => #{
+                alias => <<"type">>,
+                required => true,
+                default => <<"normal">>,
+                datatype => {in, [<<"normal">>, <<"jitter">>]}
+            },
+            min_duration => #{
+                alias => <<"min_duration">>,
+                required => true,
+                default => 50,
+                datatype => non_neg_integer
+            },
+            max_duration => #{
+                alias => <<"max_duration">>,
+                required => true,
+                default => 5000,
+                datatype => non_neg_integer
+            }
+        }
+    }
+}).
+
+-define(WAMP_CALL_OPTS_SPEC, #{
     timeout => #{
         alias => <<"timeout">>,
         required => false,
@@ -624,6 +705,7 @@
         required => false,
         datatype => {in, [<<"partition">>]}
     },
+    %% if runmode is present then rkey should be present
     rkey => #{
         alias => <<"rkey">>,
         required => false,
@@ -661,7 +743,7 @@
     invoke => #{
         alias => <<"invoke">>,
         required => false,
-        default => <<"single">>,
+        default => ?INVOKE_SINGLE,
         datatype => {in, [
             ?INVOKE_SINGLE,
             ?INVOKE_ROUND_ROBIN,
@@ -679,6 +761,12 @@
         alias => <<"match">>,
         required => false,
         datatype => {in, ?MATCH_STRATEGIES}
+    },
+    %% node key
+    nkey => #{
+        alias => <<"nkey">>,
+        required => false,
+        datatype => binary
     }
 }).
 
@@ -686,24 +774,18 @@
 %% maps_utils:map_spec()
 -define(PUBLISH_OPTS_SPEC, #{
     %% resource key
-   rkey => #{
-       alias => <<"rkey">>,
+    acknowledge => #{
+        alias => <<"acknowledge">>,
         required => false,
-        datatype => binary
+        datatype => boolean
     },
-    %% node key
-    nkey => #{
-        alias => <<"nkey">>,
+    rkey => #{
+        alias => <<"rkey">>,
         required => false,
         datatype => binary
     },
     disclose_me => #{
         alias => <<"disclose_me">>,
-        required => false,
-        datatype => boolean
-    },
-    exclude_me => #{
-        alias => <<"exclude_me">>,
         required => false,
         datatype => boolean
     },
@@ -722,6 +804,11 @@
         alias => <<"exclude_authrole">>,
         required => false,
         datatype => {list, binary}
+    },
+    exclude_me => #{
+        alias => <<"exclude_me">>,
+        required => false,
+        datatype => boolean
     },
     %% whitelisting
     eligible => #{
