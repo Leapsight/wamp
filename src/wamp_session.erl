@@ -31,7 +31,7 @@
     authsignature                   ::  binary(),
     %% The authentication role of the session that joined
     authrole                        ::  binary(),
-    %% The method that was used for authentication 
+    %% The method that was used for authentication
     authmethod                      ::  binary() | undefined,
     %% The provider that performed the authentication of the session that joined
     authprovider                    ::  binary(),
@@ -50,7 +50,7 @@
     seq = 0                         ::  non_neg_integer(),
     created                         ::  calendar:date_time(),
     last_updated                    ::  calendar:date_time(),
-    %% Metadata map  
+    %% Metadata map
     metadata = #{}                  ::  map()
 }).
 
@@ -110,23 +110,23 @@
 %% -----------------------------------------------------------------------------
 %% @doc
 %% Creates a new client session.
-%% 
-%% 
+%%
+%%
 %% Opts is a map containing the following keys:
 %% - authid (required) - the user id of the client
-%% - authmethod (required) - the method to be used for authentication 
+%% - authmethod (required) - the method to be used for authentication
 %% - authrole (optional) - the authentication role for the session
-%% - agent (optional) - a name identifying the client 
+%% - agent (optional) - a name identifying the client
 %% - roles (optional) - a map containing at least one entry with key Role and
 %% for value a map of features (possibly empty) where Role is one of 'callee',
 %%  'caller', 'publisher', 'subscriber'.
 %% -----------------------------------------------------------------------------
--spec new(wamp_protocol:peer(), uri(), session_opts()) -> 
+-spec new(wamp_protocol:peer(), uri(), session_opts()) ->
     session() | no_return().
 
 new(Peer, RealmUri, Opts) when is_binary(RealmUri), is_map(Opts) ->
     %% TODO replace with tuplespace
-    %% This table is used to allow concurrent atomic updates to the 
+    %% This table is used to allow concurrent atomic updates to the
     %% session scope IDs.
     %% Becuase new is called by the process managing the transport, it
     %% gets GC'ed when the process dies.
@@ -137,12 +137,12 @@ new(Peer, RealmUri, Opts) when is_binary(RealmUri), is_map(Opts) ->
         {read_concurrency, true},
         {write_concurrency, true}
     ]),
-    
+
     Roles = maps:get(<<"roles">>, Opts),
     maps:size(Roles) > 0 orelse error({invalid_options, missing_client_role}),
 
     Now = erlang:universaltime(),
-    
+
     #session{
         id = wamp_utils:rand_uniform(),
         peer = Peer,
@@ -250,7 +250,7 @@ set_peer_agent(S, Agent) ->
 
 %% -----------------------------------------------------------------------------
 %% @doc
-%% Returns the sessionId of the provided session or 'undefined' 
+%% Returns the sessionId of the provided session or 'undefined'
 %% if there is none.
 %% @end
 %% -----------------------------------------------------------------------------
@@ -349,7 +349,7 @@ set_request_timeout(S, Timeout) when is_integer(Timeout), Timeout >= 0 ->
 %% -----------------------------------------------------------------------------
 -spec is_feature_enabled(session(), atom(), binary()) -> boolean().
 
-is_feature_enabled(#session{roles = Roles}, Role, Feature) 
+is_feature_enabled(#session{roles = Roles}, Role, Feature)
 when is_binary(Feature) ->
     maps_utils:get_path([Role, Feature], Roles, false).
 
@@ -374,7 +374,7 @@ set_authmethod(S, Val) when is_binary(Val) ->
 
 %% -----------------------------------------------------------------------------
 %% @doc
-%% Returns a list containing the identifiers for the calls the peer performed 
+%% Returns a list containing the identifiers for the calls the peer performed
 %% and it is still awaiting a response for.  This is used by the internal rpc
 %% mechanism which is based on promises.
 %% @end
@@ -412,7 +412,7 @@ remove_awaiting_call(#session{awaiting_calls = Set} = S, Id) ->
 %% @doc
 %% Returns value Value associated with Key if the Session metadata
 %% map contains Key.
-%% The call fails with a `{badkey,Key}` exception if no value is associated 
+%% The call fails with a `{badkey,Key}` exception if no value is associated
 %% with Key.
 %% @end
 %% -----------------------------------------------------------------------------
@@ -430,7 +430,7 @@ get(#session{metadata = M}, K) ->
 %% If no value is associated with Key, Default is returned.
 %% @end
 %% -----------------------------------------------------------------------------
--spec get(Session :: session(), Key :: any(), Default :: any()) -> 
+-spec get(Session :: session(), Key :: any(), Default :: any()) ->
     Value :: any().
 
 get(#session{metadata = M}, K, Default) ->
@@ -441,7 +441,7 @@ get(#session{metadata = M}, K, Default) ->
 %% @doc
 %% Returns value Value associated with path Path if the Session metadata
 %% map contains Path.
-%% The call fails with a `{badkey,Key}` exception where Key is any component of 
+%% The call fails with a `{badkey,Key}` exception where Key is any component of
 %% Path missing or if no value is associated with Path.
 %% @end
 %% -----------------------------------------------------------------------------
@@ -455,7 +455,7 @@ get_path(#session{metadata = M}, P) ->
 %% @doc
 %% Returns value Value associated with path Path if the Session metadata
 %% map contains Path.
-%% The call fails with a `{badkey,Key}` exception where Key is any component of 
+%% The call fails with a `{badkey,Key}` exception where Key is any component of
 %% Path missing or if no value is associated with Path.
 %% @end
 %% -----------------------------------------------------------------------------
@@ -470,7 +470,7 @@ get_path(#session{metadata = M}, P, Default) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec put(Session :: session(), Key :: any(), Value :: any()) -> 
+-spec put(Session :: session(), Key :: any(), Value :: any()) ->
     NewSession :: session().
 
 put(#session{metadata = M}, K, V) ->
@@ -480,7 +480,7 @@ put(#session{metadata = M}, K, V) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec put_path(Session :: session(), Path :: list(), Value :: any()) -> 
+-spec put_path(Session :: session(), Path :: list(), Value :: any()) ->
     NewSession :: session().
 
 put_path(#session{metadata = M}, P, V) ->
@@ -501,7 +501,7 @@ remove(#session{metadata = M}, K) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec remove_path(Session :: session(), Path :: list()) -> 
+-spec remove_path(Session :: session(), Path :: list()) ->
     NewSession :: session().
 
 remove_path(#session{metadata = M}, P) ->
@@ -516,11 +516,11 @@ remove_path(#session{metadata = M}, P) ->
 -spec get_id(id() | session(), MsgId :: pos_integer()) -> integer().
 
 get_id(#session{} = S, X) ->
-    case id_type(X) of 
+    case id_type(X) of
         global ->
-            crypto:rand_uniform(0, ?MAX_ID);
+            rand:uniform(?MAX_ID);
         router ->
-            crypto:rand_uniform(0, ?MAX_ID);
+            rand:uniform(?MAX_ID);
         session ->
             ets:update_counter(
                 S#session.counters_tab, X, {2, 1, ?MAX_ID, 1}, {X, 0})

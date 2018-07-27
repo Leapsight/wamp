@@ -25,7 +25,7 @@
 -spec rand_uniform() -> integer().
 
 rand_uniform() ->
-    crypto:rand_uniform(0, ?MAX_ID).
+    rand:uniform(?MAX_ID).
 
 
 %% -----------------------------------------------------------------------------
