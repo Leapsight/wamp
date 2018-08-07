@@ -86,7 +86,7 @@ encode(Message, Format) when is_list(Message) ->
 %% Returns a message in WAMP list format.
 %% @end
 %% -----------------------------------------------------------------------------
--spec pack(wamp_message()) -> list().
+-spec pack(wamp_message()) -> list() | no_return().
 
 pack(#error{} = M) ->
     #error{
@@ -164,10 +164,32 @@ pack(#yield{} = M) ->
     T = pack_optionals(Args, Payload),
     [?YIELD, ReqId, Options | T];
 
-pack(M) when is_tuple(M) ->
+pack(#hello{} = M) -> pack_generic(?HELLO, M);
+pack(#welcome{} = M) -> pack_generic(?WELCOME, M);
+pack(#abort{} = M) -> pack_generic(?ABORT, M);
+pack(#challenge{} = M) -> pack_generic(?CHALLENGE, M);
+pack(#authenticate{} = M) -> pack_generic(?AUTHENTICATE, M);
+pack(#goodbye{} = M) -> pack_generic(?GOODBYE, M);
+pack(#published{} = M) -> pack_generic(?PUBLISHED, M);
+pack(#subscribe{} = M) -> pack_generic(?SUBSCRIBE, M);
+pack(#subscribed{} = M) -> pack_generic(?SUBSCRIBED, M);
+pack(#unsubscribe{} = M) -> pack_generic(?UNSUBSCRIBE, M);
+pack(#unsubscribed{} = M) -> pack_generic(?UNSUBSCRIBED, M);
+pack(#cancel{} = M) -> pack_generic(?CANCEL, M);
+pack(#register{} = M) -> pack_generic(?REGISTER, M);
+pack(#registered{} = M) -> pack_generic(?REGISTERED, M);
+pack(#unregister{} = M) -> pack_generic(?UNREGISTER, M);
+pack(#unregistered{} = M) -> pack_generic(?UNREGISTERED, M);
+pack(#interrupt{} = M) -> pack_generic(?INTERRUPT, M);
+
+pack(_) ->
+    error(badarg).
+
+
+pack_generic(Type, M) when is_tuple(M) ->
     %% All other message types are straight forward
     [_H|T] = tuple_to_list(M),
-    [pack_message_type(element(1, M)) | T].
+    [Type | T].
 
 
 
@@ -457,28 +479,3 @@ pack_optionals(Args, Payload) -> [Args, Payload].
 
 
 
-%% @private
-pack_message_type(hello) -> ?HELLO;
-pack_message_type(welcome) -> ?WELCOME;
-pack_message_type(abort) -> ?ABORT;
-pack_message_type(challenge) -> ?CHALLENGE;
-pack_message_type(authenticate) -> ?AUTHENTICATE;
-pack_message_type(goodbye) -> ?GOODBYE;
-pack_message_type(error) -> ?ERROR;
-pack_message_type(publish) -> ?PUBLISH;
-pack_message_type(published) -> ?PUBLISHED;
-pack_message_type(subscribe) -> ?SUBSCRIBE;
-pack_message_type(subscribed) -> ?SUBSCRIBED;
-pack_message_type(unsubscribe) -> ?UNSUBSCRIBE;
-pack_message_type(unsubscribed) -> ?UNSUBSCRIBED;
-pack_message_type(event) -> ?EVENT;
-pack_message_type(call) -> ?CALL;
-pack_message_type(cancel) -> ?CANCEL;
-pack_message_type(result) -> ?RESULT;
-pack_message_type(register) -> ?REGISTER;
-pack_message_type(registered) -> ?REGISTERED;
-pack_message_type(unregister) -> ?UNREGISTER;
-pack_message_type(unregistered) -> ?UNREGISTERED;
-pack_message_type(invocation) -> ?INVOCATION;
-pack_message_type(interrupt) -> ?INTERRUPT;
-pack_message_type(yield) -> ?YIELD.
