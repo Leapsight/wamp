@@ -13,12 +13,17 @@
 %% WEBSOCKET
 -define(JSON_BATCHED_SEPARATOR, <<24>>). % ASCII CANCEL
 
-%
+
+
+
 -export([pack/1]).
 -export([unpack/1]).
 -export([encode/2]).
 -export([decode/2]).
+-export([is_encoding/1]).
 
+-export([message_name/1]).
+-export([decode_message_names/2]).
 
 
 
@@ -28,6 +33,77 @@
 %% =============================================================================
 
 
+
+-spec is_encoding(encoding()) -> boolean().
+
+is_encoding(bert) -> true;
+is_encoding(erl) -> true;
+is_encoding(json) -> true;
+is_encoding(msgpack) -> true;
+is_encoding(bert_batched) -> true;
+is_encoding(erl_batched) -> true;
+is_encoding(json_batched) -> true;
+is_encoding(msgpack_batched) -> true;
+is_encoding(_) -> false.
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec decode_message_names(subprotocol(), Data :: binary()) ->
+    {Types :: [message_name()], Rest :: binary()} | no_return().
+
+decode_message_names({_, _, Enc}, Data) ->
+    decode_message_names(Data, Enc);
+
+decode_message_names(<<131, 108, _:32, 97, Type, _/binary>>, erl) ->
+    {[message_name(Type)], <<>>};
+
+decode_message_names(<<131, 107, _Len:16, Type, _/binary>>, erl) ->
+    %% When all elements in the list are integers, erlang encodes it
+    %% with 107 :: string type
+    {[message_name(Type)], <<>>};
+
+decode_message_names(_, erl) ->
+    error(badarg);
+
+decode_message_names(Data, bert) ->
+    decode_message_names(Data, erl);
+
+decode_message_names(<<"[", Rest/binary>>, json) ->
+    case binary:match(Rest, [<<$,>>], []) of
+        nomatch ->
+            error(badarg);
+        {Pos, 1} ->
+            Type = binary:part(Rest, {0, Pos}),
+            {[message_name(binary_to_integer(Type))], <<>>}
+    end;
+
+decode_message_names(_, json) ->
+    error(badarg);
+
+decode_message_names(<<2#101:3, _:5, 0:1, V:7, _/binary>>, msgpack) ->
+    %% We use msgpack list with len < 16
+    {[message_name(V)], <<>>};
+
+decode_message_names(<<2#101:3, _:5, 16#CD, V:8, _/binary>>, msgpack) ->
+    %% We use msgpack list with len < 16
+    {[message_name(V)], <<>>};
+
+decode_message_names(<<2#1001:4, _:4, 0:1, V:7, _/binary>>, msgpack) ->
+    {[message_name(V)], <<>>};
+
+decode_message_names(
+    <<2#1001:4, _:4, 16#CD, V:8/unsigned-integer, _/binary>>, msgpack) ->
+    %% We use msgpack list with len < 16
+    {[message_name(V)], <<>>};
+
+decode_message_names(_, msgpack) ->
+    error(badarg);
+
+decode_message_names(_, Enc) ->
+    error({unsupported_encoding, Enc}).
 
 
 %% -----------------------------------------------------------------------------
@@ -78,6 +154,9 @@ encode(Message, bert) when is_list(Message) ->
 
 encode(Message, Format) when is_list(Message) ->
     error({unsupported_encoding, Format}).
+
+
+
 
 
 
@@ -479,3 +558,27 @@ pack_optionals(Args, Payload) -> [Args, Payload].
 
 
 
+message_name(?HELLO) -> hello;
+message_name(?WELCOME) -> welcome;
+message_name(?ABORT) -> abort;
+message_name(?CHALLENGE) -> challenge;
+message_name(?AUTHENTICATE) -> authenticate;
+message_name(?GOODBYE) -> goodbye;
+message_name(?ERROR) -> error;
+message_name(?PUBLISH) -> publish;
+message_name(?PUBLISHED) -> published;
+message_name(?SUBSCRIBE) -> subscribe;
+message_name(?SUBSCRIBED) -> subscribed;
+message_name(?UNSUBSCRIBE) -> unsubscribe;
+message_name(?UNSUBSCRIBED) -> unsubscribed;
+message_name(?EVENT) -> event;
+message_name(?CALL) -> call;
+message_name(?CANCEL) -> cancel;
+message_name(?RESULT) -> result;
+message_name(?REGISTER) -> register;
+message_name(?REGISTERED) -> registered;
+message_name(?UNREGISTER) -> unregister;
+message_name(?UNREGISTERED) -> unregistered;
+message_name(?INVOCATION) -> invocation;
+message_name(?INTERRUPT) -> interrupt;
+message_name(?YIELD) -> yield.
