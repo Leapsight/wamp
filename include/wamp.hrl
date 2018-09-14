@@ -4,6 +4,7 @@
 
 
 
+
 -define(WAMP2_JSON, <<"wamp.2.json">>).
 -define(WAMP2_MSGPACK, <<"wamp.2.msgpack">>).
 -define(WAMP2_BERT, <<"wamp.2.bert">>).
@@ -12,7 +13,44 @@
 -define(WAMP2_JSON_BATCHED,<<"wamp.2.json.batched">>).
 -define(WAMP2_BERT_BATCHED,<<"wamp.2.bert.batched">>).
 -define(WAMP2_ERL_BATCHED,<<"wamp.2.erl.batched">>).
--define(MAX_ID, 9007199254740993).
+
+
+%% =============================================================================
+%% RAW
+%% =============================================================================
+
+
+
+-define(RAW_MAGIC, 16#7F).
+-define(RAW_MSG_PREFIX, <<0:5, 0:3>>).
+-define(RAW_PING_PREFIX, <<0:5, 1:3>>).
+-define(RAW_PONG_PREFIX, <<0:5, 2:3>>).
+
+%% 0: illegal (must not be used)
+%% 1: serializer unsupported
+%% 2: maximum message length unacceptable
+%% 3: use of reserved bits (unsupported feature)
+%% 4: maximum connection count reached
+%% 5 - 15: reserved for future errors
+-define(RAW_ERROR(Upper), <<?RAW_MAGIC:8, Upper:4, 0:20>>).
+-define(RAW_FRAME(Bin),
+    <<(?RAW_MSG_PREFIX)/binary, (byte_size(Bin)):24, Bin/binary>>
+).
+
+-type raw_error()           ::  invalid_response
+                                | invalid_socket
+                                | invalid_handshake
+                                | maximum_connection_count_reached
+                                | maximum_message_length_unacceptable
+                                | maximum_message_length_exceeded
+                                | serializer_unsupported
+                                | use_of_reserved_bits.
+
+%% =============================================================================
+%% AUTH
+%% =============================================================================
+
+
 
 -define(ANON_AUTH, <<"anonymous">>).
 -define(COOKIE_AUTH, <<"cookie">>).
@@ -27,8 +65,6 @@
     ?TLS_AUTH,
     ?WAMPCRA_AUTH
 ]).
-
-
 
 -define(WAMP_ENCODINGS, [
     json,
@@ -55,59 +91,6 @@
 -type frame_type()          ::  text | binary.
 -type transport()           ::  ws | raw.
 -type subprotocol()         ::  {transport(), frame_type(), encoding()}.
-
-
--define(HELLO, 1).
--define(WELCOME, 2).
--define(ABORT, 3).
--define(CHALLENGE, 4).
--define(AUTHENTICATE, 5).
--define(GOODBYE, 6).
--define(ERROR, 8).
--define(PUBLISH, 16).
--define(PUBLISHED, 17).
--define(SUBSCRIBE, 32).
--define(SUBSCRIBED, 33).
--define(UNSUBSCRIBE, 34).
--define(UNSUBSCRIBED, 35).
--define(EVENT, 36).
--define(CALL, 48).
--define(CANCEL, 49).
--define(RESULT, 50).
--define(REGISTER, 64).
--define(REGISTERED, 65).
--define(UNREGISTER, 66).
--define(UNREGISTERED, 67).
--define(INVOCATION, 68).
--define(INTERRUPT, 69).
--define(YIELD, 70).
-
--define(MSG_TYPES,[
-    ?HELLO,
-    ?WELCOME,
-    ?ABORT,
-    ?CHALLENGE,
-    ?AUTHENTICATE,
-    ?GOODBYE,
-    ?ERROR,
-    ?PUBLISH,
-    ?PUBLISHED,
-    ?SUBSCRIBE,
-    ?SUBSCRIBED,
-    ?UNSUBSCRIBE,
-    ?UNSUBSCRIBED,
-    ?EVENT,
-    ?CALL,
-    ?CANCEL,
-    ?RESULT,
-    ?REGISTER,
-    ?REGISTERED,
-    ?UNREGISTER,
-    ?UNREGISTERED,
-    ?INVOCATION,
-    ?INTERRUPT,
-    ?YIELD
-]).
 
 
 
@@ -450,6 +433,95 @@
 
 
 
+%% =============================================================================
+%% MESSAGES
+%% =============================================================================
+
+
+
+
+-define(MAX_ID, 9007199254740993).
+
+
+
+-define(HELLO, 1).
+-define(WELCOME, 2).
+-define(ABORT, 3).
+-define(CHALLENGE, 4).
+-define(AUTHENTICATE, 5).
+-define(GOODBYE, 6).
+-define(ERROR, 8).
+-define(PUBLISH, 16).
+-define(PUBLISHED, 17).
+-define(SUBSCRIBE, 32).
+-define(SUBSCRIBED, 33).
+-define(UNSUBSCRIBE, 34).
+-define(UNSUBSCRIBED, 35).
+-define(EVENT, 36).
+-define(CALL, 48).
+-define(CANCEL, 49).
+-define(RESULT, 50).
+-define(REGISTER, 64).
+-define(REGISTERED, 65).
+-define(UNREGISTER, 66).
+-define(UNREGISTERED, 67).
+-define(INVOCATION, 68).
+-define(INTERRUPT, 69).
+-define(YIELD, 70).
+
+-define(MSG_TYPES,[
+    ?HELLO,
+    ?WELCOME,
+    ?ABORT,
+    ?CHALLENGE,
+    ?AUTHENTICATE,
+    ?GOODBYE,
+    ?ERROR,
+    ?PUBLISH,
+    ?PUBLISHED,
+    ?SUBSCRIBE,
+    ?SUBSCRIBED,
+    ?UNSUBSCRIBE,
+    ?UNSUBSCRIBED,
+    ?EVENT,
+    ?CALL,
+    ?CANCEL,
+    ?RESULT,
+    ?REGISTER,
+    ?REGISTERED,
+    ?UNREGISTER,
+    ?UNREGISTERED,
+    ?INVOCATION,
+    ?INTERRUPT,
+    ?YIELD
+]).
+
+-type message_name() :: hello
+                        | welcome
+                        | abort
+                        | challenge
+                        | authenticate
+                        | goodbye
+                        | error
+                        | publish
+                        | published
+                        | subscribe
+                        | subscribed
+                        | unsubscribe
+                        | unsubscribed
+                        | event
+                        | call
+                        | cancel
+                        | result
+                        | register
+                        | registered
+                        | unregister
+                        | unregistered
+                        | invocation
+                        | interrupt
+                        | yield.
+
+
 %% maps_utils:map_spec()
 -define(HELLO_DETAILS_SPEC, #{
     authmethods => #{
@@ -621,6 +693,7 @@
 
 %% maps_utils:map_spec()
 
+%% BONDY ALPHA
 -define(CALL_OPTS_SPEC, ?WAMP_CALL_OPTS_SPEC#{
     retries => #{
         alias => <<"retries">>,
@@ -710,6 +783,12 @@
         alias => <<"rkey">>,
         required => false,
         datatype => binary
+    },
+    %% 'all' invocation strategy (ALPHA)
+    yields => #{
+        alias => <<"yields">>,
+        required => false,
+        datatype => {in, [<<"first">>, <<"gather">>, <<"progressive">>]}
     }
 }).
 
@@ -726,6 +805,8 @@
 -define(INVOKE_RANDOM, <<"random">>).
 -define(INVOKE_FIRST, <<"first">>).
 -define(INVOKE_LAST, <<"last">>).
+%% ALPHA
+-define(INVOKE_ALL, <<"last">>).
 
 
 %% maps_utils:map_spec()
@@ -749,7 +830,8 @@
             ?INVOKE_ROUND_ROBIN,
             ?INVOKE_RANDOM,
             ?INVOKE_FIRST,
-            ?INVOKE_LAST
+            ?INVOKE_LAST,
+            ?INVOKE_ALL
         ]}
     }
 }).
