@@ -10,12 +10,16 @@
 -module(wamp_encoding).
 -include("wamp.hrl").
 
-%% WEBSOCKET
--define(JSON_BATCHED_SEPARATOR, <<24>>). % ASCII CANCEL
+
+%% ASCII record separator
+-define(JSON_BATCHED_SEPARATOR, <<$\30>>).
+-define(JSON_BATCH_FRAME(Bin), <<Bib/binary, $\30>>).
+-define(MSGPACK_BATCH_FRAME(Bin), <<Bib/binary, $\30>>).
 
 
 
-
+%% -export([frame/2]).
+%% -export([unframe/2]).
 -export([pack/1]).
 -export([unpack/1]).
 -export([encode/2]).
@@ -23,7 +27,7 @@
 -export([is_encoding/1]).
 
 -export([message_name/1]).
--export([decode_message_names/2]).
+-export([decode_message_name/2]).
 
 
 
@@ -47,62 +51,61 @@ is_encoding(msgpack_batched) -> true;
 is_encoding(_) -> false.
 
 
+
 %% -----------------------------------------------------------------------------
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec decode_message_names(subprotocol(), Data :: binary()) ->
-    {Types :: [message_name()], Rest :: binary()} | no_return().
+-spec decode_message_name(subprotocol(), Data :: binary()) ->
+    message_name() | no_return().
 
-decode_message_names({_, _, Enc}, Data) ->
-    decode_message_names(Data, Enc);
+decode_message_name({_, _, Enc}, Data) ->
+    decode_message_name(Data, Enc);
 
-decode_message_names(<<131, 108, _:32, 97, Type, _/binary>>, erl) ->
-    {[message_name(Type)], <<>>};
+decode_message_name(<<131, 108, _:32, 97, Type, _/binary>>, erl) ->
+    message_name(Type);
 
-decode_message_names(<<131, 107, _Len:16, Type, _/binary>>, erl) ->
+decode_message_name(<<131, 107, _Len:16, Type, _/binary>>, erl) ->
     %% When all elements in the list are integers, erlang encodes it
     %% with 107 :: string type
-    {[message_name(Type)], <<>>};
+    message_name(Type);
 
-decode_message_names(_, erl) ->
+decode_message_name(_, erl) ->
     error(badarg);
 
-decode_message_names(Data, bert) ->
-    decode_message_names(Data, erl);
+decode_message_name(Data, bert) ->
+    decode_message_name(Data, erl);
 
-decode_message_names(<<"[", Rest/binary>>, json) ->
+decode_message_name(<<"[", Rest/binary>>, json) ->
     case binary:match(Rest, [<<$,>>], []) of
         nomatch ->
             error(badarg);
         {Pos, 1} ->
             Type = binary:part(Rest, {0, Pos}),
-            {[message_name(binary_to_integer(Type))], <<>>}
+            message_name(binary_to_integer(Type))
     end;
 
-decode_message_names(_, json) ->
+decode_message_name(_, json) ->
     error(badarg);
 
-decode_message_names(<<2#101:3, _:5, 0:1, V:7, _/binary>>, msgpack) ->
-    %% We use msgpack list with len < 16
-    {[message_name(V)], <<>>};
+decode_message_name(<<2#101:3, _:5, 0:1, V:7, _/binary>>, msgpack) ->
+    message_name(V);
 
-decode_message_names(<<2#101:3, _:5, 16#CD, V:8, _/binary>>, msgpack) ->
-    %% We use msgpack list with len < 16
-    {[message_name(V)], <<>>};
+decode_message_name(<<2#101:3, _:5, 16#CD, V:8, _/binary>>, msgpack) ->
+    message_name(V);
 
-decode_message_names(<<2#1001:4, _:4, 0:1, V:7, _/binary>>, msgpack) ->
-    {[message_name(V)], <<>>};
+decode_message_name(<<2#1001:4, _:4, 0:1, V:7, _/binary>>, msgpack) ->
+    message_name(V);
 
-decode_message_names(
+decode_message_name(
     <<2#1001:4, _:4, 16#CD, V:8/unsigned-integer, _/binary>>, msgpack) ->
     %% We use msgpack list with len < 16
-    {[message_name(V)], <<>>};
+    message_name(V);
 
-decode_message_names(_, msgpack) ->
+decode_message_name(_, msgpack) ->
     error(badarg);
 
-decode_message_names(_, Enc) ->
+decode_message_name(_, Enc) ->
     error({unsupported_encoding, Enc}).
 
 
