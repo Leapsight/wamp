@@ -930,7 +930,7 @@
 }).
 
 %% maps_utils:map_spec()
--define(EVENT_DETAILS_SPEC, ?INVOCATION_DETAILS_SPEC).
+-define(EVENT_DETAILS_SPEC, ?PUBLISH_OPTS_SPEC).
 
 
 
