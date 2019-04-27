@@ -77,10 +77,10 @@ validate(_) ->
 
 
 
-is_transport(ws) -> true;
-is_transport(wss) -> true;
-is_transport(raw) -> true;
-is_transport(raws) -> true;
-is_transport(tcp) -> true;
-is_transport(tls) -> true;
-is_transport(ssl) -> false.
+%% is_transport(ws) -> true;
+%% is_transport(wss) -> true;
+%% is_transport(raw) -> true;
+%% is_transport(raws) -> true;
+%% is_transport(tcp) -> true;
+%% is_transport(tls) -> true;
+%% is_transport(ssl) -> false.

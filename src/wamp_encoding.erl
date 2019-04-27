@@ -37,19 +37,21 @@
 %% =============================================================================
 
 
-
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
 -spec is_encoding(encoding()) -> boolean().
 
 is_encoding(bert) -> true;
 is_encoding(erl) -> true;
 is_encoding(json) -> true;
 is_encoding(msgpack) -> true;
-is_encoding(bert_batched) -> true;
-is_encoding(erl_batched) -> true;
-is_encoding(json_batched) -> true;
-is_encoding(msgpack_batched) -> true;
+%% is_encoding(bert_batched) -> true;
+%% is_encoding(erl_batched) -> true;
+%% is_encoding(json_batched) -> true;
+%% is_encoding(msgpack_batched) -> true;
 is_encoding(_) -> false.
-
 
 
 %% -----------------------------------------------------------------------------
@@ -60,53 +62,7 @@ is_encoding(_) -> false.
     message_name() | no_return().
 
 decode_message_name({_, _, Enc}, Data) ->
-    decode_message_name(Data, Enc);
-
-decode_message_name(<<131, 108, _:32, 97, Type, _/binary>>, erl) ->
-    message_name(Type);
-
-decode_message_name(<<131, 107, _Len:16, Type, _/binary>>, erl) ->
-    %% When all elements in the list are integers, erlang encodes it
-    %% with 107 :: string type
-    message_name(Type);
-
-decode_message_name(_, erl) ->
-    error(badarg);
-
-decode_message_name(Data, bert) ->
-    decode_message_name(Data, erl);
-
-decode_message_name(<<"[", Rest/binary>>, json) ->
-    case binary:match(Rest, [<<$,>>], []) of
-        nomatch ->
-            error(badarg);
-        {Pos, 1} ->
-            Type = binary:part(Rest, {0, Pos}),
-            message_name(binary_to_integer(Type))
-    end;
-
-decode_message_name(_, json) ->
-    error(badarg);
-
-decode_message_name(<<2#101:3, _:5, 0:1, V:7, _/binary>>, msgpack) ->
-    message_name(V);
-
-decode_message_name(<<2#101:3, _:5, 16#CD, V:8, _/binary>>, msgpack) ->
-    message_name(V);
-
-decode_message_name(<<2#1001:4, _:4, 0:1, V:7, _/binary>>, msgpack) ->
-    message_name(V);
-
-decode_message_name(
-    <<2#1001:4, _:4, 16#CD, V:8/unsigned-integer, _/binary>>, msgpack) ->
-    %% We use msgpack list with len < 16
-    message_name(V);
-
-decode_message_name(_, msgpack) ->
-    error(badarg);
-
-decode_message_name(_, Enc) ->
-    error({unsupported_encoding, Enc}).
+    do_decode_message_name(Data, Enc).
 
 
 %% -----------------------------------------------------------------------------
@@ -119,8 +75,8 @@ decode_message_name(_, Enc) ->
 decode({ws, text, json}, Data) ->
     decode_text(Data, json, []);
 
-decode({ws, text, json_batched}, Data) ->
-    decode_text(Data, json_batched, []);
+decode({ws, text, Enc}, _) ->
+    error({unsupported_encoding, Enc});
 
 decode({ws, binary, Enc}, Data) ->
     decode_binary(Data, Enc, []);
@@ -157,10 +113,6 @@ encode(Message, bert) when is_list(Message) ->
 
 encode(Message, Format) when is_list(Message) ->
     error({unsupported_encoding, Format}).
-
-
-
-
 
 
 %% -----------------------------------------------------------------------------
@@ -283,6 +235,7 @@ pack_generic(Type, M) when is_tuple(M) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec unpack(list()) -> wamp_message() | no_return().
+
 unpack([?HELLO, RealmUri, Details]) ->
     wamp_message:hello(RealmUri, Details);
 
@@ -498,14 +451,59 @@ unpack([?YIELD, ReqId, Options, Args, Payload]) ->
 
 
 %% @private
--spec decode_text(binary(), json | json_batched, Acc0 :: [wamp_message()]) ->
+do_decode_message_name(<<131, 108, _:32, 97, Type, _/binary>>, erl) ->
+    message_name(Type);
+
+do_decode_message_name(<<131, 107, _Len:16, Type, _/binary>>, erl) ->
+    %% When all elements in the list are integers, erlang encodes it
+    %% with 107 :: string type
+    message_name(Type);
+
+do_decode_message_name(_, erl) ->
+    error(badarg);
+
+do_decode_message_name(Data, bert) ->
+    do_decode_message_name(Data, erl);
+
+do_decode_message_name(<<"[", Rest/binary>>, json) ->
+    case binary:match(Rest, [<<$,>>], []) of
+        nomatch ->
+            error(badarg);
+        {Pos, 1} ->
+            Type = binary:part(Rest, {0, Pos}),
+            message_name(binary_to_integer(Type))
+    end;
+
+do_decode_message_name(_, json) ->
+    error(badarg);
+
+do_decode_message_name(<<2#101:3, _:5, 0:1, V:7, _/binary>>, msgpack) ->
+    message_name(V);
+
+do_decode_message_name(<<2#101:3, _:5, 16#CD, V:8, _/binary>>, msgpack) ->
+    message_name(V);
+
+do_decode_message_name(<<2#1001:4, _:4, 0:1, V:7, _/binary>>, msgpack) ->
+    message_name(V);
+
+do_decode_message_name(
+    <<2#1001:4, _:4, 16#CD, V:8/unsigned-integer, _/binary>>, msgpack) ->
+    %% We use msgpack list with len < 16
+    message_name(V);
+
+do_decode_message_name(_, msgpack) ->
+    error(badarg);
+
+do_decode_message_name(_, Enc) ->
+    error({unsupported_encoding, Enc}).
+
+
+%% @private
+-spec decode_text(binary(), encoding(), Acc0 :: [wamp_message()]) ->
     {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
 
 decode_text(Data, json, Acc) ->
-    {decode_message(Data, json, Acc), <<>>};
-
-decode_text(Data, json_batched, Acc) ->
-    {decode_message(Data, json_batched, Acc), <<>>}.
+    {decode_message(Data, json, Acc), <<>>}.
 
 
 %% @private
@@ -518,6 +516,9 @@ decode_binary(Data, Enc, Acc) ->
 
 
 %% @private
+-spec decode_message(binary(), encoding(), [wamp_message()]) ->
+    [wamp_message()].
+
 decode_message(Data, json, Acc) ->
     M = jsx:decode(Data, [return_maps]),
     [unpack(M) | Acc];
@@ -533,11 +534,8 @@ decode_message(Data, bert, Acc) ->
 decode_message(Bin, erl, Acc) ->
     [unpack(binary_to_term(Bin)) | Acc];
 
-decode_message(_Data, json_batched, _Acc) ->
-    error(not_yet_implemented);
-
-decode_message(_Data, msgpack_batched, _Acc) ->
-    error(not_yet_implemented).
+decode_message(_Data, Enc, _Acc) ->
+    error({unsupported_encoding, Enc}).
 
 
 
@@ -560,6 +558,7 @@ pack_optionals(Args, undefined) -> [Args];
 pack_optionals(Args, Payload) -> [Args, Payload].
 
 
+-spec message_name(1..255) -> atom().
 
 message_name(?HELLO) -> hello;
 message_name(?WELCOME) -> welcome;

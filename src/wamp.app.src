@@ -7,7 +7,6 @@
    [kernel,
     stdlib,
     lager,
-    exometer_core,
     jsx,
     msgpack,
     bert

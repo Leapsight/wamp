@@ -1181,6 +1181,26 @@
 %                                     | rkey.
 
 
+
+
+%% =============================================================================
+%% META EBENT URIS
+%% =============================================================================
+
+
+-define(WAMP_REGISTRATION_ON_CREATE, <<"wamp.registration.on_create">>).
+-define(WAMP_REGISTRATION_ON_REGISTER, <<"wamp.registration.on_register">>).
+-define(WAMP_REGISTRATION_ON_UNREGISTER, <<"wamp.registration.on_unregister">>).
+-define(WAMP_REGISTRATION_ON_DELETE, <<"wamp.registration.on_delete">>).
+
+
+
+%% =============================================================================
+%% ERROR URIS
+%% =============================================================================
+
+
+
 %% INCORRECT URIs
 -define(WAMP_INVALID_URI, <<"wamp.error.invalid_uri">>).
 
