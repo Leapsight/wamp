@@ -929,6 +929,22 @@
     }
 }).
 
+-define(YIELD_OPTIONS_SPEC, #{
+    progress => #{
+        alias => <<"progress">>,
+        required => false,
+        datatype => boolean
+    }
+}).
+
+-define(RESULT_DETAILS_SPEC, #{
+    progress => #{
+        alias => <<"progress">>,
+        required => false,
+        datatype => boolean
+    }
+}).
+
 %% maps_utils:map_spec()
 -define(EVENT_DETAILS_SPEC, ?PUBLISH_OPTS_SPEC).
 
@@ -1192,6 +1208,14 @@
 -define(WAMP_REGISTRATION_ON_REGISTER, <<"wamp.registration.on_register">>).
 -define(WAMP_REGISTRATION_ON_UNREGISTER, <<"wamp.registration.on_unregister">>).
 -define(WAMP_REGISTRATION_ON_DELETE, <<"wamp.registration.on_delete">>).
+
+-define(WAMP_SUBCRIPTION_ON_CREATE, <<"wamp.subscription.on_create">>).
+-define(WAMP_SUBCRIPTION_ON_REGISTER, <<"wamp.subscription.on_subscribe">>).
+-define(WAMP_SUBCRIPTION_ON_UNREGISTER, <<"wamp.subscription.on_unsubscribe">>).
+-define(WAMP_SUBCRIPTION_ON_DELETE, <<"wamp.subscription.on_delete">>).
+
+-define(WAMP_SESSION_ON_JOIN, <<"wamp.session.on_join">>).
+-define(WAMP_SESSION_ON_LEAVE, <<"wamp.session.on_leave">>).
 
 
 

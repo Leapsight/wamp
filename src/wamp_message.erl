@@ -49,6 +49,7 @@
 %% @end
 %% -----------------------------------------------------------------------------
 -spec is_message(any()) -> boolean().
+
 is_message(Term) when is_record(Term, hello) -> true;
 is_message(Term) when is_record(Term, welcome) -> true;
 is_message(Term) when is_record(Term, abort) -> true;
@@ -80,10 +81,11 @@ is_message(_) -> false.
 %% @end
 %% -----------------------------------------------------------------------------
 -spec hello(uri(), map()) -> wamp_hello() | no_return().
+
 hello(RealmUri, Details) when is_binary(RealmUri) ->
     #hello{
         realm_uri = validate_uri(RealmUri),
-        details = validate_map(Details, ?HELLO_DETAILS_SPEC)
+        details = validate_details(hello, Details, ?HELLO_DETAILS_SPEC)
     }.
 
 
@@ -92,10 +94,11 @@ hello(RealmUri, Details) when is_binary(RealmUri) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec welcome(id(), map()) -> wamp_welcome() | no_return().
+
 welcome(SessionId, Details)   ->
     #welcome{
         session_id = validate_id(SessionId),
-        details = validate_map(Details, ?WELCOME_DETAILS_SPEC)
+        details = validate_details(welcome, Details, ?WELCOME_DETAILS_SPEC)
     }.
 
 %% -----------------------------------------------------------------------------
@@ -104,10 +107,11 @@ welcome(SessionId, Details)   ->
 %% -----------------------------------------------------------------------------
 %% "ABORT" gets sent only _before_ a _Session_ is established, while
 -spec abort(map(), uri()) -> wamp_abort() | no_return().
+
 abort(Details, ReasonUri) ->
     #abort{
-        details = validate_map(Details, ?ABORT_DETAILS_SPEC),
-        reason_uri = validate_uri(ReasonUri)
+        reason_uri = validate_uri(ReasonUri),
+        details = validate_details(abort, Details, ?ABORT_DETAILS_SPEC)
     }.
 
 
@@ -116,6 +120,7 @@ abort(Details, ReasonUri) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec challenge(binary(), map()) -> wamp_challenge() | no_return().
+
 challenge(AuthMethod, Extra) when is_map(Extra) ->
     #challenge{
         auth_method = AuthMethod,
@@ -128,6 +133,7 @@ challenge(AuthMethod, Extra) when is_map(Extra) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec authenticate(binary(), map()) -> wamp_authenticate() | no_return().
+
 authenticate(Signature, Extra) when is_map(Extra) ->
     #authenticate{
         signature = Signature,
@@ -141,10 +147,11 @@ authenticate(Signature, Extra) when is_map(Extra) ->
 %% -----------------------------------------------------------------------------
 %% "GOODBYE" is sent only _after_ a _Session_ is already established.
 -spec goodbye(map(), uri()) -> wamp_goodbye() | no_return().
+
 goodbye(Details, ReasonUri) ->
     #goodbye{
-        details = validate_map(Details, ?GOODBYE_DETAILS_SPEC),
-        reason_uri = validate_uri(ReasonUri)
+        reason_uri = validate_uri(ReasonUri),
+        details = validate_details(goodbye, Details, ?GOODBYE_DETAILS_SPEC)
     }.
 
 
@@ -153,6 +160,7 @@ goodbye(Details, ReasonUri) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec error(pos_integer(), id(), map(), uri()) -> wamp_error() | no_return().
+
 error(ReqType, ReqId, Details, ErrorUri) ->
     error(ReqType, ReqId, Details, ErrorUri, undefined, undefined).
 
@@ -163,6 +171,7 @@ error(ReqType, ReqId, Details, ErrorUri) ->
 %% -----------------------------------------------------------------------------
 -spec error(pos_integer(), id(), map(), uri(), list()) ->
     wamp_error() | no_return().
+
 error(ReqType, ReqId, Details, ErrorUri, Args) ->
     error(ReqType, ReqId, Details, ErrorUri, Args, undefined).
 
@@ -179,6 +188,7 @@ error(ReqType, ReqId, Details, ErrorUri, Args) ->
     list() | undefined,
     map() | undefined) ->
     wamp_error() | no_return().
+
 error(ReqType, ReqId, Details, ErrorUri, Args, Payload)
 when is_map(Details) ->
     #error{
@@ -196,6 +206,7 @@ when is_map(Details) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec publish(id(), map(), uri()) -> wamp_publish() | no_return().
+
 publish(ReqId, Options, TopicUri) ->
     publish(ReqId, Options, TopicUri, undefined, undefined).
 
@@ -205,6 +216,7 @@ publish(ReqId, Options, TopicUri) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec publish(id(), map(), uri(), list()) -> wamp_publish() | no_return().
+
 publish(ReqId, Options, TopicUri, Args) ->
     publish(ReqId, Options, TopicUri, Args, undefined).
 
@@ -215,10 +227,11 @@ publish(ReqId, Options, TopicUri, Args) ->
 %% -----------------------------------------------------------------------------
 -spec publish(id(), map(), uri(), list() | undefined, map() | undefined) ->
     wamp_publish() | no_return().
+
 publish(ReqId, Options, TopicUri, Args, Payload) ->
     #publish{
         request_id = validate_id(ReqId),
-        options = validate_map(Options, ?PUBLISH_OPTS_SPEC),
+        options = validate_options(publish, Options, ?PUBLISH_OPTS_SPEC),
         topic_uri = validate_uri(TopicUri),
         arguments = Args,
         arguments_kw = Payload
@@ -230,6 +243,7 @@ publish(ReqId, Options, TopicUri, Args, Payload) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec published(id(), id()) -> wamp_published() | no_return().
+
 published(ReqId, PubId) ->
     #published{
         request_id = validate_id(ReqId),
@@ -242,10 +256,11 @@ published(ReqId, PubId) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec subscribe(id(), map(), uri()) -> wamp_subscribe() | no_return().
+
 subscribe(ReqId, Options, TopicUri) when is_map(Options) ->
     #subscribe{
         request_id = validate_id(ReqId),
-        options = validate_map(Options, ?SUBSCRIBE_OPTS_SPEC),
+        options = validate_options(subscribe, Options, ?SUBSCRIBE_OPTS_SPEC),
         topic_uri = validate_uri(TopicUri)
     }.
 
@@ -255,6 +270,7 @@ subscribe(ReqId, Options, TopicUri) when is_map(Options) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec subscribed(id(), id()) -> wamp_subscribed() | no_return().
+
 subscribed(ReqId, SubsId) ->
     #subscribed{
         request_id = validate_id(ReqId),
@@ -267,6 +283,7 @@ subscribed(ReqId, SubsId) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec unsubscribe(id(), id()) -> wamp_unsubscribe() | no_return().
+
 unsubscribe(ReqId, SubsId) ->
     #unsubscribe{
         request_id = validate_id(ReqId),
@@ -279,6 +296,7 @@ unsubscribe(ReqId, SubsId) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec unsubscribed(id()) -> wamp_unsubscribed() | no_return().
+
 unsubscribed(ReqId) ->
     #unsubscribed{
         request_id = validate_id(ReqId)
@@ -290,6 +308,7 @@ unsubscribed(ReqId) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec event(id(), id(), map()) -> wamp_event() | no_return().
+
 event(SubsId, PubId, Details) ->
     event(SubsId, PubId, Details, undefined, undefined).
 
@@ -299,6 +318,7 @@ event(SubsId, PubId, Details) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec event(id(), id(), map(), list()) -> wamp_event() | no_return().
+
 event(SubsId, PubId, Details, Args) ->
     event(SubsId, PubId, Details, Args, undefined).
 
@@ -309,6 +329,7 @@ event(SubsId, PubId, Details, Args) ->
 %% -----------------------------------------------------------------------------
 -spec event(id(), id(), map(), list() | undefined, map() | undefined) ->
     wamp_event() | no_return().
+
 event(SubsId, PubId, Details, Args, Payload) when is_map(Details) ->
     #event{
         subscription_id = validate_id(SubsId),
@@ -324,6 +345,7 @@ event(SubsId, PubId, Details, Args, Payload) when is_map(Details) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec call(id(), map(), uri()) -> wamp_call() | no_return().
+
 call(ReqId, Options, ProcedureUri) ->
     call(ReqId, Options, ProcedureUri, undefined, undefined).
 
@@ -333,6 +355,7 @@ call(ReqId, Options, ProcedureUri) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec call(id(), map(), uri(), list()) -> wamp_call() | no_return().
+
 call(ReqId, Options, ProcedureUri, Args) ->
     call(ReqId, Options, ProcedureUri, Args, undefined).
 
@@ -343,10 +366,11 @@ call(ReqId, Options, ProcedureUri, Args) ->
 %% -----------------------------------------------------------------------------
 -spec call(id(), map(), uri(), list() | undefined, map() | undefined) ->
     wamp_call() | no_return().
+
 call(ReqId, Options, ProcedureUri, Args, Payload) ->
     #call{
         request_id = validate_id(ReqId),
-        options = validate_map(Options, ?CALL_OPTS_SPEC),
+        options = validate_options(call, Options, ?CALL_OPTS_SPEC),
         procedure_uri = validate_uri(ProcedureUri),
         arguments = Args,
         arguments_kw = Payload
@@ -358,10 +382,11 @@ call(ReqId, Options, ProcedureUri, Args, Payload) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec cancel(id(), map()) -> wamp_cancel() | no_return().
+
 cancel(ReqId, Options) ->
     #cancel{
         request_id = validate_id(ReqId),
-        options = validate_map(Options, ?CALL_CANCELLING_OPTS_SPEC)
+        options = validate_options(cancel, Options, ?CALL_CANCELLING_OPTS_SPEC)
     }.
 
 
@@ -370,6 +395,7 @@ cancel(ReqId, Options) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec result(id(), map()) -> wamp_result() | no_return().
+
 result(ReqId, Details) ->
     result(ReqId, Details, undefined, undefined).
 
@@ -379,6 +405,7 @@ result(ReqId, Details) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec result(id(), map(), list()) -> wamp_result() | no_return().
+
 result(ReqId, Details, Args) ->
     result(ReqId, Details, Args, undefined).
 
@@ -389,10 +416,11 @@ result(ReqId, Details, Args) ->
 %% -----------------------------------------------------------------------------
 -spec result(id(), map(), list() | undefined, map() | undefined) ->
     wamp_result() | no_return().
+
 result(ReqId, Details, Args, Payload) when is_map(Details) ->
     #result{
         request_id = validate_id(ReqId),
-        details = Details,
+        details = validate_details(result, Details, ?RESULT_DETAILS_SPEC),
         arguments = Args,
         arguments_kw = Payload
     }.
@@ -403,10 +431,11 @@ result(ReqId, Details, Args, Payload) when is_map(Details) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec register(id(), map(), uri()) -> wamp_register() | no_return().
+
 register(ReqId, Options, ProcedureUri) ->
     #register{
         request_id = validate_id(ReqId),
-        options = validate_map(Options, ?REGISTER_OPTS_SPEC),
+        options = validate_options(register, Options, ?REGISTER_OPTS_SPEC),
         procedure_uri = validate_uri(ProcedureUri)
     }.
 
@@ -416,6 +445,7 @@ register(ReqId, Options, ProcedureUri) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec registered(id(), id()) -> wamp_registered() | no_return().
+
 registered(ReqId, RegId) ->
     #registered{
         request_id = validate_id(ReqId),
@@ -428,6 +458,7 @@ registered(ReqId, RegId) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec unregister(id(), id()) -> wamp_unregister() | no_return().
+
 unregister(ReqId, RegId) ->
     #unregister{
         request_id = validate_id(ReqId),
@@ -440,6 +471,7 @@ unregister(ReqId, RegId) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec unregistered(id()) -> wamp_unregistered() | no_return().
+
 unregistered(ReqId) ->
     #unregistered{
         request_id = validate_id(ReqId)
@@ -451,6 +483,7 @@ unregistered(ReqId) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec invocation(id(), id(), map()) -> wamp_invocation() | no_return().
+
 invocation(ReqId, RegId, Details) ->
     invocation(ReqId, RegId, Details, undefined, undefined).
 
@@ -460,6 +493,7 @@ invocation(ReqId, RegId, Details) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec invocation(id(), id(), map(), list()) -> wamp_invocation() | no_return().
+
 invocation(ReqId, RegId, Details, Args) ->
     invocation(ReqId, RegId, Details, Args, undefined).
 
@@ -470,11 +504,13 @@ invocation(ReqId, RegId, Details, Args) ->
 %% -----------------------------------------------------------------------------
 -spec invocation(id(), id(), map(), list() | undefined, map() | undefined) ->
     wamp_invocation() | no_return().
-invocation(ReqId, RegId, Details, Args, Payload) ->
+
+invocation(ReqId, RegId, Details0, Args, Payload) ->
+    Details1 = validate_details(invocation, Details0, ?INVOCATION_DETAILS_SPEC),
     #invocation{
         request_id = validate_id(ReqId),
         registration_id = validate_id(RegId),
-        details = validate_map(Details, ?INVOCATION_DETAILS_SPEC),
+        details = Details1,
         arguments = Args,
         arguments_kw = Payload
     }.
@@ -485,10 +521,12 @@ invocation(ReqId, RegId, Details, Args, Payload) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec interrupt(id(), map()) -> wamp_interrupt() | no_return().
-interrupt(ReqId, Options) ->
+
+interrupt(ReqId, Opts0) ->
+    Opts1 = validate_options(interrupt, Opts0, ?CALL_CANCELLING_OPTS_SPEC),
     #interrupt{
         request_id = validate_id(ReqId),
-        options = validate_map(Options, ?CALL_CANCELLING_OPTS_SPEC)
+        options = Opts1
     }.
 
 
@@ -497,6 +535,7 @@ interrupt(ReqId, Options) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec yield(id(), map()) -> wamp_yield() | no_return().
+
 yield(ReqId, Options) ->
     yield(ReqId, Options, undefined, undefined).
 
@@ -506,6 +545,7 @@ yield(ReqId, Options) ->
 %% @end
 %% -----------------------------------------------------------------------------
 -spec yield(id(), map(), list()) -> wamp_yield() | no_return().
+
 yield(ReqId, Options, Args) ->
     yield(ReqId, Options, Args, undefined).
 
@@ -516,10 +556,12 @@ yield(ReqId, Options, Args) ->
 %% -----------------------------------------------------------------------------
 -spec yield(id(), map(), list() | undefined, map() | undefined) ->
     wamp_yield() | no_return().
-yield(ReqId, Options, Args, Payload) ->
+
+yield(ReqId, Opts0, Args, Payload) ->
+    Opts1 = validate_options(yield, Opts0, ?YIELD_OPTIONS_SPEC),
     #yield{
         request_id = validate_id(ReqId),
-        options = Options,
+        options = Opts1,
         arguments = Args,
         arguments_kw = Payload
     }.
@@ -533,19 +575,45 @@ yield(ReqId, Options, Args, Payload) ->
 %% =============================================================================
 
 
-%% -----------------------------------------------------------------------------
-%% @doc
-%% Calls maps_utils with options:
-%%
-%% * atomic = true
-%%
-%% @end
-%% -----------------------------------------------------------------------------
-validate_map(Map, Spec) ->
-    maps_utils:validate(Map, Spec, #{
+
+
+%% private
+validate_options(Type, Map, Spec) ->
+    Config = app_config:get(wamp, [extended_options, Type], any),
+    {NewSpec, Opts} = parse_config(Config, {Spec, maps:new()}),
+    validate_map(Map, NewSpec, Opts).
+
+%% private
+validate_details(Type, Map, Spec) ->
+    Config = app_config:get(wamp, [extended_details, Type], any),
+    {NewSpec, Opts} = parse_config(Config, {Spec, maps:new()}),
+    validate_map(Map, NewSpec, Opts).
+
+
+
+%% private
+parse_config(any, {Spec, Opts}) ->
+    {Spec, Opts#{keep_unknown => true}};
+
+parse_config(Keys, {Spec, Opts}) when is_list(Keys) ->
+    Fun =  fun(Key, Acc) ->
+        Value = #{required => false},
+        maps:put(Key, Value, Acc)
+    end,
+    NewSpec = lists:foldl(Fun, Spec, Keys),
+    {NewSpec, Opts#{keep_unknown => true}};
+
+parse_config(DeltaSpec, {Spec, Opts}) when is_map(Spec) ->
+    {maps:merge(DeltaSpec, Spec), Opts#{keep_unknown => false}}.
+
+
+%% private
+validate_map(Map, Spec, Opts0) ->
+    Opts1 = Opts0#{
         atomic => true, % Fail atomically for the whole map
         labels => atom  % This will only turn the defined keys to atoms
-    }).
+    },
+    maps_utils:validate(Map, Spec, Opts1).
 
 
 %% @private
