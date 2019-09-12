@@ -1,5 +1,6 @@
 -module(wamp_encoding_SUITE).
 -include_lib("common_test/include/ct.hrl").
+-include_lib("eunit/include/eunit.hrl").
 -compile(export_all).
 
 
@@ -1036,3 +1037,21 @@ yield_erl_3_test(_) ->
     yield = wamp_encoding:decode_message_name(
         {ws, binary, erl}, Bin),
     {[M], <<>>} = wamp_encoding:decode({ws, binary, erl}, Bin).
+
+
+
+%% =============================================================================
+%% EXTENSION KEYS VALIDATION
+%% =============================================================================
+
+
+validate_extension_key_1_test(_) ->
+    Opts = #{
+        <<"_xyz">> => foo,
+        %% This should be removed
+        <<"x">> => 1,
+        <<"_x">> => 1,
+        <<"_xy">> => 1
+    },
+    M = wamp_message:yield(1, Opts, [], #{}),
+    ?assertEqual(#{<<"_xyz">> => foo}, wamp_message:options(M)).

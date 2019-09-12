@@ -35,6 +35,8 @@
 -export([unsubscribed/1]).
 -export([welcome/2]).
 -export([yield/2, yield/3, yield/4]).
+-export([options/1]).
+-export([details/1]).
 -export([validate_options/2]).
 -export([validate_details/2]).
 
@@ -569,6 +571,26 @@ yield(ReqId, Opts0, Args, Payload) ->
     }.
 
 
+-spec options(
+    wamp_call()
+    | wamp_cancel()
+    | wamp_interrupt()
+    | wamp_publish()
+    | wamp_register()
+    | wamp_subscribe()
+    | wamp_yield()
+    ) -> ok | no_return().
+
+options(#call{options = Val}) -> Val;
+options(#cancel{options = Val}) -> Val;
+options(#interrupt{options = Val}) -> Val;
+options(#publish{options = Val}) -> Val;
+options(#register{options = Val}) -> Val;
+options(#subscribe{options = Val}) -> Val;
+options(#yield{options = Val}) -> Val;
+options(_) ->
+    error(badarg).
+
 
 %% -----------------------------------------------------------------------------
 %% @doc Fails with an exception if the Options maps is not valid.
@@ -585,15 +607,15 @@ yield(ReqId, Opts0, Args, Payload) ->
 %% Example:
 %%
 %% ```
-%% application:set_env(wamp, extended_details, [{result, [x, y]}).
+%% application:set_env(wamp, extended_details, [{result, [<<"_x">>, <<"_y">>]}).
 %% ```
 %% Using this configuration all messages but `result' would accept the
-%% properties `x', `y', and `z'; and result would accept only `x/ and `y'.
+%% properties `<<"_x">>', `<<"_y">>', and `<<"_z">>'; and result would accept only `<<"_x">>' and `<<"_y">>'.
 %%
 %% This is equivalente to:
 %% ```
 %% application:set_env(wamp, extended_details, [
-%%  {result, [x, y]},
+%%  {result, [<<"_x">>, y]},
 %%  {hello, any},
 %%  {welcome, any},
 %%  {abort, any},
@@ -627,6 +649,29 @@ validate_options(interrupt, Opts) ->
 
 validate_options(yield, Opts) ->
     validate_options(yield, Opts, ?YIELD_OPTIONS_SPEC).
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec details(
+    wamp_hello()
+    | wamp_welcome()
+    | wamp_abort()
+    | wamp_goodbye()
+    | wamp_result()
+    | wamp_invocation()
+    ) -> ok | no_return().
+
+details(#hello{details = Val}) -> Val;
+details(#welcome{details = Val}) -> Val;
+details(#abort{details = Val}) -> Val;
+details(#goodbye{details = Val}) -> Val;
+details(#result{details = Val}) -> Val;
+details(#invocation{details = Val}) -> Val;
+details(_) ->
+    error(badarg).
 
 
 %% -----------------------------------------------------------------------------
@@ -680,29 +725,63 @@ validate_options(Type, Map, Spec) ->
 
 %% private
 validate_details(Type, Map, Spec) ->
-    Config = app_config:get(wamp, [extended_details, Type], any),
-    {NewSpec, Opts} = parse_config(Config, {Spec, maps:new()}),
+    ExtensionKeys = app_config:get(wamp, [extended_details, Type], any),
+    {NewSpec, Opts} = parse_config(ExtensionKeys, {Spec, maps:new()}),
     validate_map(Map, NewSpec, Opts).
 
 
-
 %% private
-parse_config(any, {Spec, Opts}) ->
-    {Spec, Opts#{keep_unknown => true}};
+parse_config(any, {Spec, Opts0}) ->
+    Opts = Opts0#{
+        keep_unknown => true,
+        unknown_label_validator => fun(X) -> is_valid_extension_key(X) end
+    },
+    {Spec, Opts};
 
-parse_config(Keys, {Spec, Opts}) when is_list(Keys) ->
-    Fun =  fun(Key, Acc) ->
-        OptionSpec = #{
-            alias => atom_to_binary(Key, utf8),
-            required => false
-        },
-        maps:put(Key, OptionSpec, Acc)
+parse_config(ExtensionKeys, {Spec, Opts}) when is_list(ExtensionKeys) ->
+    Fun = fun(Key, Acc) ->
+        %% We ignore all invalid keys
+        case is_valid_extension_key(Key) of
+            true ->
+                %% We declare a new key for the configured ExtensionKeys
+                OptionSpec = #{
+                    alias => atom_to_binary(Key, utf8),
+                    required => false
+                },
+                maps:put(Key, OptionSpec, Acc);
+            false ->
+                Acc
+        end
     end,
-    NewSpec = lists:foldl(Fun, Spec, Keys),
+    NewSpec = lists:foldl(Fun, Spec, ExtensionKeys),
     {NewSpec, Opts#{keep_unknown => false}};
 
 parse_config(DeltaSpec, {Spec, Opts}) when is_map(Spec) ->
     {maps:merge(DeltaSpec, Spec), Opts#{keep_unknown => false}}.
+
+
+%% @private
+is_valid_extension_key(Key) when is_atom(Key) ->
+    is_valid_extension_key(atom_to_binary(Key, utf8));
+
+is_valid_extension_key(Key) when is_binary(Key) ->
+    re:run(Key, extension_key_pattern()) =/= nomatch.
+
+
+%% @private
+extension_key_pattern() ->
+    CompiledPattern = persistent_term:get({?MODULE, ekey_pattern}, undefined),
+    extension_key_pattern(CompiledPattern).
+
+
+%% @private
+extension_key_pattern(undefined) ->
+    {ok, Pattern} = re:compile("_[a-z0-9_]{3,}"),
+    ok = persistent_term:put({?MODULE, ekey_pattern}, Pattern),
+    Pattern;
+
+extension_key_pattern(CompiledPattern) ->
+    CompiledPattern.
 
 
 %% private
