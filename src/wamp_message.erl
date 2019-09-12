@@ -692,7 +692,10 @@ parse_config(any, {Spec, Opts}) ->
 
 parse_config(Keys, {Spec, Opts}) when is_list(Keys) ->
     Fun =  fun(Key, Acc) ->
-        OptionSpec = #{required => false},
+        OptionSpec = #{
+            alias => atom_to_binary(Key, utf8),
+            required => false
+        },
         maps:put(Key, OptionSpec, Acc)
     end,
     NewSpec = lists:foldl(Fun, Spec, Keys),
