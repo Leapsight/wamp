@@ -35,6 +35,8 @@
 -export([unsubscribed/1]).
 -export([welcome/2]).
 -export([yield/2, yield/3, yield/4]).
+-export([validate_options/2]).
+-export([validate_details/2]).
 
 
 
@@ -568,6 +570,99 @@ yield(ReqId, Opts0, Args, Payload) ->
 
 
 
+%% -----------------------------------------------------------------------------
+%% @doc Fails with an exception if the Options maps is not valid.
+%% A Options map is valid if all its properties (keys) are valid. A property is
+%% valid if it is a key defined by the WAMP Specification for the message type
+%% and its value is valid according to the same specification or when:
+%%
+%% 1. the key is found in the list of extended options configured in the
+%% application option `extended_options` or the keyword `any` was used instead
+%% of a list of keys;
+%% 2. there is no definition of the extended_options` application option for
+%% the given key e.g. the default is to allow any unknown property.
+%%
+%% Example:
+%%
+%% ```
+%% application:set_env(wamp, extended_details, [{result, [x, y]}).
+%% ```
+%% Using this configuration all messages but `result' would accept the
+%% properties `x', `y', and `z'; and result would accept only `x/ and `y'.
+%%
+%% This is equivalente to:
+%% ```
+%% application:set_env(wamp, extended_details, [
+%%  {result, [x, y]},
+%%  {hello, any},
+%%  {welcome, any},
+%%  {abort, any},
+%%  {goodbye, any},
+%%  {result, any},
+%%  {invocation, any}
+%% ]).
+%% ```
+
+%% -----------------------------------------------------------------------------
+-spec validate_options(MessageType :: atom(), Opts :: map()) ->
+    ok | no_return().
+
+validate_options(publish, Opts) ->
+    validate_options(publish, Opts, ?PUBLISH_OPTS_SPEC);
+
+validate_options(subscribe, Opts) ->
+    validate_options(subscribe, Opts, ?SUBSCRIBE_OPTS_SPEC);
+
+validate_options(call, Opts) ->
+    validate_options(call, Opts, ?CALL_OPTS_SPEC);
+
+validate_options(cancel, Opts) ->
+    validate_options(cancel, Opts, ?CALL_CANCELLING_OPTS_SPEC);
+
+validate_options(register, Opts) ->
+    validate_options(register, Opts, ?REGISTER_OPTS_SPEC);
+
+validate_options(interrupt, Opts) ->
+    validate_options(interrupt, Opts, ?CALL_CANCELLING_OPTS_SPEC);
+
+validate_options(yield, Opts) ->
+    validate_options(yield, Opts, ?YIELD_OPTIONS_SPEC).
+
+
+%% -----------------------------------------------------------------------------
+%% @doc Fails with an exception if the Details maps is not valid.
+%% A Details map is valid if all its properties (keys) are valid. A property is
+%% valid if it is a key defined by the WAMP Specification for the message type
+%% and its value is valid according to the same specification or when:
+%%
+%% 1. the key is found in the list of extended details configured in the
+%% application option `extended_details` or the keyword `any` was used instead
+%% of a list of keys;
+%% 2. there is no definition of the extended_details` application option for
+%% the given key e.g. the default is to allow any unknown property.
+%% @end
+%% -----------------------------------------------------------------------------
+-spec validate_details(MessageType :: atom(), Details :: map()) ->
+    ok | no_return().
+
+validate_details(hello, Details) ->
+    validate_details(hello, Details, ?HELLO_DETAILS_SPEC);
+
+validate_details(welcome, Details) ->
+    validate_details(welcome, Details, ?WELCOME_DETAILS_SPEC);
+
+validate_details(abort, Details) ->
+    validate_details(abort, Details, ?ABORT_DETAILS_SPEC);
+
+validate_details(goodbye, Details) ->
+    validate_details(goodbye, Details, ?GOODBYE_DETAILS_SPEC);
+
+validate_details(result, Details) ->
+    validate_details(result, Details, ?RESULT_DETAILS_SPEC);
+
+validate_details(invocation, Details) ->
+    validate_details(invocation, Details, ?INVOCATION_DETAILS_SPEC).
+
 
 
 %% =============================================================================
@@ -597,11 +692,11 @@ parse_config(any, {Spec, Opts}) ->
 
 parse_config(Keys, {Spec, Opts}) when is_list(Keys) ->
     Fun =  fun(Key, Acc) ->
-        Value = #{required => false},
-        maps:put(Key, Value, Acc)
+        OptionSpec = #{required => false},
+        maps:put(Key, OptionSpec, Acc)
     end,
     NewSpec = lists:foldl(Fun, Spec, Keys),
-    {NewSpec, Opts#{keep_unknown => true}};
+    {NewSpec, Opts#{keep_unknown => false}};
 
 parse_config(DeltaSpec, {Spec, Opts}) when is_map(Spec) ->
     {maps:merge(DeltaSpec, Spec), Opts#{keep_unknown => false}}.
