@@ -1046,12 +1046,35 @@ yield_erl_3_test(_) ->
 
 
 validate_extension_key_1_test(_) ->
-    Opts = #{
-        <<"_xyz">> => foo,
-        %% This should be removed
-        <<"x">> => 1,
-        <<"_x">> => 1,
-        <<"_xy">> => 1
+    Keys = [
+        '_xyz1',
+        '_xyz2',
+        '_xyz3',
+        %% This should be ignored
+        '_foo',
+        'bar'
+    ],
+    Allowed =[{yield, Keys}],
+    ok = app_config:set(wamp, extended_options, Allowed),
+    Keys = app_config:get(wamp, [extended_options, yield]),
+
+    Expected = #{
+        '_xyz1' => 1,
+        '_xyz2' => 2,
+        '_xyz3' => 3
     },
-    M = wamp_message:yield(1, Opts, [], #{}),
-    ?assertEqual(#{<<"_xyz">> => foo}, wamp_message:options(M)).
+    Opts = #{
+        <<"_xyz1">> => 1,
+        <<"_xyz2">> => 2,
+        <<"_xyz3">> => 3,
+        %% This should be removed
+        <<"foo">> => 1,
+        <<"_bar">> => 1,
+        <<"_x">> => 1
+    },
+
+    M1 = wamp_message:yield(1, Opts),
+    ?assertEqual(Expected, wamp_message:options(M1)),
+
+    M2 = wamp_message:cancel(1, Opts),
+    ?assertEqual(maps:new(), wamp_message:options(M2)).

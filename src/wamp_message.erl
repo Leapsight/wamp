@@ -39,6 +39,7 @@
 -export([details/1]).
 -export([validate_options/2]).
 -export([validate_details/2]).
+-export([is_valid_extension_key/1]).
 
 
 
@@ -596,35 +597,17 @@ options(_) ->
 %% @doc Fails with an exception if the Options maps is not valid.
 %% A Options map is valid if all its properties (keys) are valid. A property is
 %% valid if it is a key defined by the WAMP Specification for the message type
-%% and its value is valid according to the same specification or when:
-%%
-%% 1. the key is found in the list of extended options configured in the
-%% application option `extended_options` or the keyword `any` was used instead
-%% of a list of keys;
-%% 2. there is no definition of the extended_options` application option for
-%% the given key e.g. the default is to allow any unknown property.
+%% or when the key is found in the list of extended_options configured in the
+%% application environment and in both cases the key is valid according to the
+%% WAMP regex specification.
 %%
 %% Example:
 %%
 %% ```
-%% application:set_env(wamp, extended_details, [{result, [<<"_x">>, <<"_y">>]}).
+%% application:set_env(wamp, extende_options, [{call, [<<"_x">>, <<"_y">>]}).
 %% ```
-%% Using this configuration all messages but `result' would accept the
-%% properties `<<"_x">>', `<<"_y">>', and `<<"_z">>'; and result would accept only `<<"_x">>' and `<<"_y">>'.
 %%
-%% This is equivalente to:
-%% ```
-%% application:set_env(wamp, extended_details, [
-%%  {result, [<<"_x">>, y]},
-%%  {hello, any},
-%%  {welcome, any},
-%%  {abort, any},
-%%  {goodbye, any},
-%%  {result, any},
-%%  {invocation, any}
-%% ]).
-%% ```
-
+%% Using this configuration only `call' messages would accept `<<"_x">>' and `<<"_y">>' properties.
 %% -----------------------------------------------------------------------------
 -spec validate_options(MessageType :: atom(), Opts :: map()) ->
     ok | no_return().
@@ -678,13 +661,17 @@ details(_) ->
 %% @doc Fails with an exception if the Details maps is not valid.
 %% A Details map is valid if all its properties (keys) are valid. A property is
 %% valid if it is a key defined by the WAMP Specification for the message type
-%% and its value is valid according to the same specification or when:
+%% or when the key is found in the list of extended_details configured in the
+%% application environment and in both cases the key is valid according to the
+%% WAMP regex specification.
 %%
-%% 1. the key is found in the list of extended details configured in the
-%% application option `extended_details` or the keyword `any` was used instead
-%% of a list of keys;
-%% 2. there is no definition of the extended_details` application option for
-%% the given key e.g. the default is to allow any unknown property.
+%% Example:
+%%
+%% ```
+%% application:set_env(wamp, extended_details, [{result, [<<"_x">>, <<"_y">>]}).
+%% ```
+%%
+%% Using this configuration only `result' messages would accept `<<"_x">>' and `<<"_y">>' properties.
 %% @end
 %% -----------------------------------------------------------------------------
 -spec validate_details(MessageType :: atom(), Details :: map()) ->
@@ -710,62 +697,91 @@ validate_details(invocation, Details) ->
 
 
 
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+is_valid_extension_key(Key) ->
+    try
+        _ = to_valid_extension_key(Key),
+        true
+    catch
+        throw:invalid_key ->
+            false
+    end.
+
+
+
 %% =============================================================================
 %% PRIVATE
 %% =============================================================================
 
 
 
-
 %% private
 validate_options(Type, Map, Spec) ->
-    Config = app_config:get(wamp, [extended_options, Type], any),
-    {NewSpec, Opts} = parse_config(Config, {Spec, maps:new()}),
-    validate_map(Map, NewSpec, Opts).
+    validate_map(Type, Map, Spec, extended_options).
 
 %% private
 validate_details(Type, Map, Spec) ->
-    ExtensionKeys = app_config:get(wamp, [extended_details, Type], any),
-    {NewSpec, Opts} = parse_config(ExtensionKeys, {Spec, maps:new()}),
-    validate_map(Map, NewSpec, Opts).
-
-
-%% private
-parse_config(any, {Spec, Opts0}) ->
-    Opts = Opts0#{
-        keep_unknown => true,
-        unknown_label_validator => fun(X) -> is_valid_extension_key(X) end
-    },
-    {Spec, Opts};
-
-parse_config(ExtensionKeys, {Spec, Opts}) when is_list(ExtensionKeys) ->
-    Fun = fun(Key, Acc) ->
-        %% We ignore all invalid keys
-        case is_valid_extension_key(Key) of
-            true ->
-                %% We declare a new key for the configured ExtensionKeys
-                OptionSpec = #{
-                    alias => atom_to_binary(Key, utf8),
-                    required => false
-                },
-                maps:put(Key, OptionSpec, Acc);
-            false ->
-                Acc
-        end
-    end,
-    NewSpec = lists:foldl(Fun, Spec, ExtensionKeys),
-    {NewSpec, Opts#{keep_unknown => false}};
-
-parse_config(DeltaSpec, {Spec, Opts}) when is_map(Spec) ->
-    {maps:merge(DeltaSpec, Spec), Opts#{keep_unknown => false}}.
+    validate_map(Type, Map, Spec, extended_details).
 
 
 %% @private
-is_valid_extension_key(Key) when is_atom(Key) ->
-    is_valid_extension_key(atom_to_binary(Key, utf8));
+validate_map(Type, Map, Spec, Option)
+when Option ==  extended_options orelse Option == extended_details ->
+    Opts = #{
+        atomic => true, % Fail atomically for the whole map
+        labels => atom,  % This will only turn the defined keys to atoms
+        keep_unknown => false % Remove all unknown options
+    },
+    ExtensionKeys = app_config:get(wamp, [Option, Type], []),
+    NewSpec = maybe_add_extension_keys(ExtensionKeys, Spec),
+    maps_utils:validate(Map, NewSpec, Opts).
 
-is_valid_extension_key(Key) when is_binary(Key) ->
-    re:run(Key, extension_key_pattern()) =/= nomatch.
+
+%% private
+maybe_add_extension_keys(Keys, Spec) when is_list(Keys) ->
+    MaybeAdd = fun(Key, Acc) -> maybe_add_extension_key(Key, Acc) end,
+    lists:foldl(MaybeAdd, Spec, Keys);
+
+maybe_add_extension_keys([], Spec) ->
+    Spec.
+
+
+
+maybe_add_extension_key(Key, Acc) ->
+    try
+        %% We add a maps_utils key specification for the known
+        NewKey = to_valid_extension_key(Key),
+        NewKeySpec = #{
+            %% we alias it so that maps_utils:validate/2 can find the key
+            %% and replace it with NewKey.
+            alias => atom_to_binary(Key, utf8),
+            required => false
+        },
+        maps:put(NewKey, NewKeySpec, Acc)
+    catch
+        throw:invalid_key ->
+            Acc
+    end.
+
+
+%% @private
+to_valid_extension_key(Key) when is_atom(Key) ->
+    to_valid_extension_key(atom_to_binary(Key, utf8));
+
+to_valid_extension_key(Key) when is_binary(Key) ->
+    try
+        {match, _} = re:run(Key, extension_key_pattern()),
+        %% We add a maps_utils key specification for the known
+        binary_to_existing_atom(Key, utf8)
+    catch
+        error:{badmatch, nomatch} ->
+            throw(invalid_key);
+        error:badarg ->
+            throw(invalid_key)
+    end.
 
 
 %% @private
@@ -782,15 +798,6 @@ extension_key_pattern(undefined) ->
 
 extension_key_pattern(CompiledPattern) ->
     CompiledPattern.
-
-
-%% private
-validate_map(Map, Spec, Opts0) ->
-    Opts1 = Opts0#{
-        atomic => true, % Fail atomically for the whole map
-        labels => atom  % This will only turn the defined keys to atoms
-    },
-    maps_utils:validate(Map, Spec, Opts1).
 
 
 %% @private
