@@ -167,6 +167,10 @@
 
 %% maps_utils:map_spec()
 -define(BROKER_FEATURES_SPEC, #{
+    retained_events => #{
+        alias => <<"retained_events">>,
+        required => false,
+        datatype => boolean},
     event_history => #{
         alias => <<"event_history">>,
         required => false,
@@ -351,6 +355,10 @@
 
 %% maps_utils:map_spec()
 -define(PUBLISHER_FEATURES_SPEC, #{
+    retained_events => #{
+        alias => <<"retained_events">>,
+        required => false,
+        datatype => boolean},
     publisher_exclusion => #{
         alias => <<"publisher_exclusion">>,
         required => false,
@@ -849,6 +857,11 @@
         alias => <<"nkey">>,
         required => false,
         datatype => binary
+    },
+    get_retained => #{
+        alias => <<"get_retained">>,
+        required => false,
+        datatype => boolean
     }
 }).
 
@@ -907,6 +920,11 @@
         alias => <<"eligible_authrole">>,
         required => false,
         datatype => {list, binary}
+    },
+    retain => #{
+        alias => <<"retain">>,
+        required => false,
+        datatype => boolean
     }
 }).
 

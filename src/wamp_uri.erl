@@ -43,6 +43,9 @@ is_valid(Uri) ->
 %% -----------------------------------------------------------------------------
 -spec is_valid(Uri :: uri(), Rule :: rule()) -> boolean().
 
+is_valid(<<>>, _) ->
+    false;
+
 is_valid(Uri, Rule) when is_binary(Uri) ->
     re:run(Uri, uri_pattern(Rule)) =/= nomatch;
 
