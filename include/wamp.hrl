@@ -167,8 +167,8 @@
 
 %% maps_utils:map_spec()
 -define(BROKER_FEATURES_SPEC, #{
-    retained_events => #{
-        alias => <<"retained_events">>,
+    message_retention => #{
+        alias => <<"message_retention">>,
         required => false,
         datatype => boolean},
     event_history => #{
@@ -355,8 +355,8 @@
 
 %% maps_utils:map_spec()
 -define(PUBLISHER_FEATURES_SPEC, #{
-    retained_events => #{
-        alias => <<"retained_events">>,
+    message_retention => #{
+        alias => <<"message_retention">>,
         required => false,
         datatype => boolean},
     publisher_exclusion => #{
@@ -964,7 +964,13 @@
 }).
 
 %% maps_utils:map_spec()
--define(EVENT_DETAILS_SPEC, ?PUBLISH_OPTS_SPEC).
+-define(EVENT_DETAILS_SPEC, ?PUBLISH_OPTS_SPEC#{
+    retained => #{
+        alias => <<"retained">>,
+        required => false,
+        datatype => boolean
+    }
+}).
 
 
 
