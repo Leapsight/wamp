@@ -51,21 +51,6 @@
 %% =============================================================================
 
 
-
--define(ANON_AUTH, <<"anonymous">>).
--define(COOKIE_AUTH, <<"cookie">>).
--define(TICKET_AUTH, <<"ticket">>).
--define(TLS_AUTH, <<"tls">>).
--define(WAMPCRA_AUTH, <<"wampcra">>).
-
--define(WAMP_AUTH_METHODS, [
-    ?ANON_AUTH,
-    ?COOKIE_AUTH,
-    ?TICKET_AUTH,
-    ?TLS_AUTH,
-    ?WAMPCRA_AUTH
-]).
-
 -define(WAMP_ENCODINGS, [
     json,
     msgpack,
@@ -536,7 +521,7 @@
         % description => Used by the client to announce the authentication methods it is prepared to perform.">>,
         alias => <<"authmethods">>,
         required => false,
-        datatype => {list, {in, ?WAMP_AUTH_METHODS}}
+        datatype => {list, binary}
     },
     authid => #{
         % description => <<"Te authentication ID (e.g. username) the client wishes to authenticate as.">>,
