@@ -47,7 +47,7 @@ is_valid(<<>>, _) ->
     false;
 
 is_valid(Uri, Rule) when is_binary(Uri) ->
-    re:run(Uri, uri_pattern(Rule)) =/= nomatch;
+    re:run(Uri, uri_regex(Rule)) =/= nomatch;
 
 is_valid(_, _) ->
     false.
@@ -74,6 +74,7 @@ components(Uri) ->
 
 
 
+
 %% =============================================================================
 %% PRIVATE
 %% =============================================================================
@@ -81,31 +82,32 @@ components(Uri) ->
 
 
 %% @private
-uri_pattern(Rule) ->
-    CompiledPattern = persistent_term:get({?MODULE, Rule}, undefined),
-    uri_pattern(Rule, CompiledPattern).
+uri_regex(Rule) ->
+    Regex = persistent_term:get({?MODULE, Rule}, undefined),
+    uri_regex(Rule, Regex).
 
 
 %% @private
-uri_pattern(loose = Rule, undefined) ->
-    {ok, Pattern} = re:compile("^([^\s\.#]+\.)*([^\s\.#]+)$"),
-    ok = persistent_term:put({?MODULE, Rule}, Pattern),
-    Pattern;
+uri_regex(loose = Rule, undefined) ->
+    {ok, Regex} = re:compile("^([^\s\.#]+\.)*([^\s\.#]+)$"),
+    ok = persistent_term:put({?MODULE, Rule}, Regex),
+    Regex;
 
-uri_pattern(loose_allow_empty = Rule, undefined) ->
-    {ok, Pattern} = re:compile("^(([^\s\.#]+\.)|\.)*([^\s\.#]+)?$"),
-    ok = persistent_term:put({?MODULE, Rule}, Pattern),
-    Pattern;
+uri_regex(loose_allow_empty = Rule, undefined) ->
+    {ok, Regex} = re:compile("^(([^\s\.#]+\.)|\.)*([^\s\.#]+)?$"),
+    ok = persistent_term:put({?MODULE, Rule}, Regex),
+    Regex;
 
-uri_pattern(strict = Rule, undefined) ->
-    {ok, Pattern} = re:compile("^([0-9a-z_]+\.)*([0-9a-z_]+)$"),
-    ok = persistent_term:put({?MODULE, Rule}, Pattern),
-    Pattern;
+uri_regex(strict = Rule, undefined) ->
+    {ok, Regex} = re:compile("^([0-9a-z_]+\.)*([0-9a-z_]+)$"),
+    ok = persistent_term:put({?MODULE, Rule}, Regex),
+    Regex;
 
-uri_pattern(strict_allow_empty = Rule, undefined) ->
-    {ok, Pattern} = re:compile("^(([0-9a-z_]+\.)|\.)*([0-9a-z_]+)?$"),
-    ok = persistent_term:put({?MODULE, Rule}, Pattern),
-    Pattern;
+uri_regex(strict_allow_empty = Rule, undefined) ->
+    {ok, Regex} = re:compile("^(([0-9a-z_]+\.)|\.)*([0-9a-z_]+)?$"),
+    ok = persistent_term:put({?MODULE, Rule}, Regex),
+    Regex;
 
-uri_pattern(_, CompiledPattern) ->
-    CompiledPattern.
+uri_regex(_, Regex) ->
+    Regex.
+
