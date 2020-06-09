@@ -752,7 +752,7 @@ maybe_add_extensions([], Spec) ->
 maybe_add_extension({invoke, Options}, Acc) ->
     #{datatype := {in, L}} = KeySpec = maps:get(invoke, Acc),
     NewKeySpec = KeySpec#{
-        invoke => {in, lists:append(L, Options)}
+        datatype => {in, lists:append(L, Options)}
     },
     maps:put(invoke, NewKeySpec, Acc);
 
