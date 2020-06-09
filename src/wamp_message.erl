@@ -729,28 +729,34 @@ validate_details(Type, Map, Spec) ->
 
 %% @private
 validate_map(Type, Map, Spec, Option)
-when Option ==  extended_options orelse Option == extended_details ->
+when Option == extended_options orelse Option == extended_details ->
     Opts = #{
         atomic => true, % Fail atomically for the whole map
         labels => atom,  % This will only turn the defined keys to atoms
         keep_unknown => false % Remove all unknown options
     },
-    ExtensionKeys = app_config:get(wamp, [Option, Type], []),
-    NewSpec = maybe_add_extension_keys(ExtensionKeys, Spec),
+    Extensions = app_config:get(wamp, [Option, Type], []),
+    NewSpec = maybe_add_extensions(Extensions, Spec),
     maps_utils:validate(Map, NewSpec, Opts).
 
 
 %% private
-maybe_add_extension_keys(Keys, Spec) when is_list(Keys) ->
-    MaybeAdd = fun(Key, Acc) -> maybe_add_extension_key(Key, Acc) end,
+maybe_add_extensions(Keys, Spec) when is_list(Keys) ->
+    MaybeAdd = fun(Key, Acc) -> maybe_add_extension(Key, Acc) end,
     lists:foldl(MaybeAdd, Spec, Keys);
 
-maybe_add_extension_keys([], Spec) ->
+maybe_add_extensions([], Spec) ->
     Spec.
 
 
+maybe_add_extension({invoke, Options}, Acc) ->
+    #{datatype := {in, L}} = KeySpec = maps:get(invoke, Acc),
+    NewKeySpec = KeySpec#{
+        invoke => {in, lists:append(L, Options)}
+    },
+    maps:put(invoke, NewKeySpec, Acc);
 
-maybe_add_extension_key(Key, Acc) ->
+maybe_add_extension(Key, Acc) ->
     try
         %% We add a maps_utils key specification for the known
         NewKey = to_valid_extension_key(Key),
