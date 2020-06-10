@@ -339,7 +339,7 @@ event(SubsId, PubId, Details, Args, Payload) when is_map(Details) ->
     #event{
         subscription_id = validate_id(SubsId),
         publication_id = validate_id(PubId),
-        details = Details,
+        details = validate_details(event, Details, ?EVENT_DETAILS_SPEC),
         arguments = Args,
         arguments_kw = Payload
     }.
@@ -688,6 +688,9 @@ validate_details(abort, Details) ->
 
 validate_details(goodbye, Details) ->
     validate_details(goodbye, Details, ?GOODBYE_DETAILS_SPEC);
+
+validate_details(event, Details) ->
+    validate_details(event, Details, ?EVENT_DETAILS_SPEC);
 
 validate_details(result, Details) ->
     validate_details(result, Details, ?RESULT_DETAILS_SPEC);
