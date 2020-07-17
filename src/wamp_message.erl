@@ -1,5 +1,5 @@
 %% -----------------------------------------------------------------------------
-%% Copyright (C) Ngineo Limited 2015 - 2017. All rights reserved.
+%% Copyright (C) Ngineo Limited 2015 - 2020. All rights reserved.
 %% -----------------------------------------------------------------------------
 
 %% =============================================================================
@@ -37,10 +37,6 @@
 -export([yield/2, yield/3, yield/4]).
 -export([options/1]).
 -export([details/1]).
--export([validate_options/2]).
--export([validate_details/2]).
--export([is_valid_extension_key/1]).
--export([update_event/3]).
 
 
 
@@ -90,8 +86,8 @@ is_message(_) -> false.
 
 hello(RealmUri, Details) when is_binary(RealmUri) ->
     #hello{
-        realm_uri = validate_uri(RealmUri),
-        details = validate_details(hello, Details, ?HELLO_DETAILS_SPEC)
+        realm_uri = wamp_uri:validate(RealmUri),
+        details = wamp_details:new(hello, Details)
     }.
 
 
@@ -103,8 +99,8 @@ hello(RealmUri, Details) when is_binary(RealmUri) ->
 
 welcome(SessionId, Details)   ->
     #welcome{
-        session_id = validate_id(SessionId),
-        details = validate_details(welcome, Details, ?WELCOME_DETAILS_SPEC)
+        session_id = wamp_utils:validate_id(SessionId),
+        details = wamp_details:new(welcome, Details)
     }.
 
 %% -----------------------------------------------------------------------------
@@ -116,8 +112,8 @@ welcome(SessionId, Details)   ->
 
 abort(Details, ReasonUri) ->
     #abort{
-        reason_uri = validate_uri(ReasonUri),
-        details = validate_details(abort, Details, ?ABORT_DETAILS_SPEC)
+        reason_uri = wamp_uri:validate(ReasonUri),
+        details = wamp_details:new(abort, Details)
     }.
 
 
@@ -156,8 +152,8 @@ authenticate(Signature, Extra) when is_map(Extra) ->
 
 goodbye(Details, ReasonUri) ->
     #goodbye{
-        reason_uri = validate_uri(ReasonUri),
-        details = validate_details(goodbye, Details, ?GOODBYE_DETAILS_SPEC)
+        reason_uri = wamp_uri:validate(ReasonUri),
+        details = wamp_details:new(goodbye, Details)
     }.
 
 
@@ -199,9 +195,9 @@ error(ReqType, ReqId, Details, ErrorUri, Args, Payload)
 when is_map(Details) ->
     #error{
         request_type = ReqType,
-        request_id = validate_id(ReqId),
+        request_id = wamp_utils:validate_id(ReqId),
         details = Details, % any
-        error_uri = validate_uri(ErrorUri),
+        error_uri = wamp_uri:validate(ErrorUri),
         arguments = Args,
         arguments_kw = Payload
     }.
@@ -236,9 +232,9 @@ publish(ReqId, Options, TopicUri, Args) ->
 
 publish(ReqId, Options, TopicUri, Args, Payload) ->
     #publish{
-        request_id = validate_id(ReqId),
-        options = validate_options(publish, Options, ?PUBLISH_OPTS_SPEC),
-        topic_uri = validate_uri(TopicUri),
+        request_id = wamp_utils:validate_id(ReqId),
+        options = wamp_options:new(publish, Options),
+        topic_uri = wamp_uri:validate(TopicUri),
         arguments = Args,
         arguments_kw = Payload
     }.
@@ -252,8 +248,8 @@ publish(ReqId, Options, TopicUri, Args, Payload) ->
 
 published(ReqId, PubId) ->
     #published{
-        request_id = validate_id(ReqId),
-        publication_id = validate_id(PubId)
+        request_id = wamp_utils:validate_id(ReqId),
+        publication_id = wamp_utils:validate_id(PubId)
     }.
 
 
@@ -265,9 +261,9 @@ published(ReqId, PubId) ->
 
 subscribe(ReqId, Options, TopicUri) when is_map(Options) ->
     #subscribe{
-        request_id = validate_id(ReqId),
-        options = validate_options(subscribe, Options, ?SUBSCRIBE_OPTS_SPEC),
-        topic_uri = validate_uri(TopicUri)
+        request_id = wamp_utils:validate_id(ReqId),
+        options = wamp_options:new(subscribe, Options),
+        topic_uri = wamp_uri:validate(TopicUri)
     }.
 
 
@@ -279,8 +275,8 @@ subscribe(ReqId, Options, TopicUri) when is_map(Options) ->
 
 subscribed(ReqId, SubsId) ->
     #subscribed{
-        request_id = validate_id(ReqId),
-        subscription_id = validate_id(SubsId)
+        request_id = wamp_utils:validate_id(ReqId),
+        subscription_id = wamp_utils:validate_id(SubsId)
     }.
 
 
@@ -292,8 +288,8 @@ subscribed(ReqId, SubsId) ->
 
 unsubscribe(ReqId, SubsId) ->
     #unsubscribe{
-        request_id = validate_id(ReqId),
-        subscription_id = validate_id(SubsId)
+        request_id = wamp_utils:validate_id(ReqId),
+        subscription_id = wamp_utils:validate_id(SubsId)
     }.
 
 
@@ -305,7 +301,7 @@ unsubscribe(ReqId, SubsId) ->
 
 unsubscribed(ReqId) ->
     #unsubscribed{
-        request_id = validate_id(ReqId)
+        request_id = wamp_utils:validate_id(ReqId)
     }.
 
 
@@ -336,27 +332,16 @@ event(SubsId, PubId, Details, Args) ->
 -spec event(id(), id(), map(), list() | undefined, map() | undefined) ->
     wamp_event() | no_return().
 
-event(SubsId, PubId, Details, Args, Payload) when is_map(Details) ->
+event(SubsId, PubId, Details, Args, Payload) ->
     #event{
-        subscription_id = validate_id(SubsId),
-        publication_id = validate_id(PubId),
-        details = validate_details(event, Details, ?EVENT_DETAILS_SPEC),
+        subscription_id = wamp_utils:validate_id(SubsId),
+        publication_id = wamp_utils:validate_id(PubId),
+        details = wamp_details:new(event, Details),
         arguments = Args,
         arguments_kw = Payload
     }.
 
 
-%% -----------------------------------------------------------------------------
-%% @doc
-%% @end
-%% -----------------------------------------------------------------------------
--spec update_event(id(), id(), wamp_event()) -> wamp_event() | no_return().
-
-update_event(SubsId, PubId, #event{} = Event) ->
-    Event#event{
-        subscription_id = validate_id(SubsId),
-        publication_id = validate_id(PubId)
-    }.
 
 %% -----------------------------------------------------------------------------
 %% @doc
@@ -387,9 +372,9 @@ call(ReqId, Options, ProcedureUri, Args) ->
 
 call(ReqId, Options, ProcedureUri, Args, Payload) ->
     #call{
-        request_id = validate_id(ReqId),
-        options = validate_options(call, Options, ?CALL_OPTS_SPEC),
-        procedure_uri = validate_uri(ProcedureUri),
+        request_id = wamp_utils:validate_id(ReqId),
+        options = wamp_options:new(call, Options),
+        procedure_uri = wamp_uri:validate(ProcedureUri),
         arguments = Args,
         arguments_kw = Payload
     }.
@@ -403,8 +388,8 @@ call(ReqId, Options, ProcedureUri, Args, Payload) ->
 
 cancel(ReqId, Options) ->
     #cancel{
-        request_id = validate_id(ReqId),
-        options = validate_options(cancel, Options, ?CALL_CANCELLING_OPTS_SPEC)
+        request_id = wamp_utils:validate_id(ReqId),
+        options = wamp_options:new(cancel, Options)
     }.
 
 
@@ -437,8 +422,8 @@ result(ReqId, Details, Args) ->
 
 result(ReqId, Details, Args, Payload) when is_map(Details) ->
     #result{
-        request_id = validate_id(ReqId),
-        details = validate_details(result, Details, ?RESULT_DETAILS_SPEC),
+        request_id = wamp_utils:validate_id(ReqId),
+        details = wamp_details:new(result, Details),
         arguments = Args,
         arguments_kw = Payload
     }.
@@ -452,9 +437,9 @@ result(ReqId, Details, Args, Payload) when is_map(Details) ->
 
 register(ReqId, Options, ProcedureUri) ->
     #register{
-        request_id = validate_id(ReqId),
-        options = validate_options(register, Options, ?REGISTER_OPTS_SPEC),
-        procedure_uri = validate_uri(ProcedureUri)
+        request_id = wamp_utils:validate_id(ReqId),
+        options = wamp_options:new(register, Options),
+        procedure_uri = wamp_uri:validate(ProcedureUri)
     }.
 
 
@@ -466,8 +451,8 @@ register(ReqId, Options, ProcedureUri) ->
 
 registered(ReqId, RegId) ->
     #registered{
-        request_id = validate_id(ReqId),
-        registration_id = validate_id(RegId)
+        request_id = wamp_utils:validate_id(ReqId),
+        registration_id = wamp_utils:validate_id(RegId)
     }.
 
 
@@ -479,8 +464,8 @@ registered(ReqId, RegId) ->
 
 unregister(ReqId, RegId) ->
     #unregister{
-        request_id = validate_id(ReqId),
-        registration_id = validate_id(RegId)
+        request_id = wamp_utils:validate_id(ReqId),
+        registration_id = wamp_utils:validate_id(RegId)
     }.
 
 
@@ -492,7 +477,7 @@ unregister(ReqId, RegId) ->
 
 unregistered(ReqId) ->
     #unregistered{
-        request_id = validate_id(ReqId)
+        request_id = wamp_utils:validate_id(ReqId)
     }.
 
 
@@ -523,12 +508,11 @@ invocation(ReqId, RegId, Details, Args) ->
 -spec invocation(id(), id(), map(), list() | undefined, map() | undefined) ->
     wamp_invocation() | no_return().
 
-invocation(ReqId, RegId, Details0, Args, Payload) ->
-    Details1 = validate_details(invocation, Details0, ?INVOCATION_DETAILS_SPEC),
+invocation(ReqId, RegId, Details, Args, Payload) ->
     #invocation{
-        request_id = validate_id(ReqId),
-        registration_id = validate_id(RegId),
-        details = Details1,
+        request_id = wamp_utils:validate_id(ReqId),
+        registration_id = wamp_utils:validate_id(RegId),
+        details = wamp_details:new(invocation, Details),
         arguments = Args,
         arguments_kw = Payload
     }.
@@ -540,11 +524,10 @@ invocation(ReqId, RegId, Details0, Args, Payload) ->
 %% -----------------------------------------------------------------------------
 -spec interrupt(id(), map()) -> wamp_interrupt() | no_return().
 
-interrupt(ReqId, Opts0) ->
-    Opts1 = validate_options(interrupt, Opts0, ?CALL_CANCELLING_OPTS_SPEC),
+interrupt(ReqId, Options) ->
     #interrupt{
-        request_id = validate_id(ReqId),
-        options = Opts1
+        request_id = wamp_utils:validate_id(ReqId),
+        options = wamp_options:new(interrupt, Options)
     }.
 
 
@@ -575,11 +558,10 @@ yield(ReqId, Options, Args) ->
 -spec yield(id(), map(), list() | undefined, map() | undefined) ->
     wamp_yield() | no_return().
 
-yield(ReqId, Opts0, Args, Payload) ->
-    Opts1 = validate_options(yield, Opts0, ?YIELD_OPTIONS_SPEC),
+yield(ReqId, Options, Args, Payload) ->
     #yield{
-        request_id = validate_id(ReqId),
-        options = Opts1,
+        request_id = wamp_utils:validate_id(ReqId),
+        options = wamp_options:new(yield, Options),
         arguments = Args,
         arguments_kw = Payload
     }.
@@ -607,47 +589,6 @@ options(_) ->
 
 
 %% -----------------------------------------------------------------------------
-%% @doc Fails with an exception if the Options maps is not valid.
-%% A Options map is valid if all its properties (keys) are valid. A property is
-%% valid if it is a key defined by the WAMP Specification for the message type
-%% or when the key is found in the list of extended_options configured in the
-%% application environment and in both cases the key is valid according to the
-%% WAMP regex specification.
-%%
-%% Example:
-%%
-%% ```
-%% application:set_env(wamp, extende_options, [{call, [<<"_x">>, <<"_y">>]}).
-%% ```
-%%
-%% Using this configuration only `call' messages would accept `<<"_x">>' and `<<"_y">>' properties.
-%% -----------------------------------------------------------------------------
--spec validate_options(MessageType :: atom(), Opts :: map()) ->
-    ok | no_return().
-
-validate_options(publish, Opts) ->
-    validate_options(publish, Opts, ?PUBLISH_OPTS_SPEC);
-
-validate_options(subscribe, Opts) ->
-    validate_options(subscribe, Opts, ?SUBSCRIBE_OPTS_SPEC);
-
-validate_options(call, Opts) ->
-    validate_options(call, Opts, ?CALL_OPTS_SPEC);
-
-validate_options(cancel, Opts) ->
-    validate_options(cancel, Opts, ?CALL_CANCELLING_OPTS_SPEC);
-
-validate_options(register, Opts) ->
-    validate_options(register, Opts, ?REGISTER_OPTS_SPEC);
-
-validate_options(interrupt, Opts) ->
-    validate_options(interrupt, Opts, ?CALL_CANCELLING_OPTS_SPEC);
-
-validate_options(yield, Opts) ->
-    validate_options(yield, Opts, ?YIELD_OPTIONS_SPEC).
-
-
-%% -----------------------------------------------------------------------------
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
@@ -669,166 +610,3 @@ details(#invocation{details = Val}) -> Val;
 details(_) ->
     error(badarg).
 
-
-%% -----------------------------------------------------------------------------
-%% @doc Fails with an exception if the Details maps is not valid.
-%% A Details map is valid if all its properties (keys) are valid. A property is
-%% valid if it is a key defined by the WAMP Specification for the message type
-%% or when the key is found in the list of extended_details configured in the
-%% application environment and in both cases the key is valid according to the
-%% WAMP regex specification.
-%%
-%% Example:
-%%
-%% ```
-%% application:set_env(wamp, extended_details, [{result, [<<"_x">>, <<"_y">>]}).
-%% ```
-%%
-%% Using this configuration only `result' messages would accept `<<"_x">>' and `<<"_y">>' properties.
-%% @end
-%% -----------------------------------------------------------------------------
--spec validate_details(MessageType :: atom(), Details :: map()) ->
-    ok | no_return().
-
-validate_details(hello, Details) ->
-    validate_details(hello, Details, ?HELLO_DETAILS_SPEC);
-
-validate_details(welcome, Details) ->
-    validate_details(welcome, Details, ?WELCOME_DETAILS_SPEC);
-
-validate_details(abort, Details) ->
-    validate_details(abort, Details, ?ABORT_DETAILS_SPEC);
-
-validate_details(goodbye, Details) ->
-    validate_details(goodbye, Details, ?GOODBYE_DETAILS_SPEC);
-
-validate_details(event, Details) ->
-    validate_details(event, Details, ?EVENT_DETAILS_SPEC);
-
-validate_details(result, Details) ->
-    validate_details(result, Details, ?RESULT_DETAILS_SPEC);
-
-validate_details(invocation, Details) ->
-    validate_details(invocation, Details, ?INVOCATION_DETAILS_SPEC).
-
-
-
-%% -----------------------------------------------------------------------------
-%% @doc
-%% @end
-%% -----------------------------------------------------------------------------
-is_valid_extension_key(Key) ->
-    try
-        _ = to_valid_extension_key(Key),
-        true
-    catch
-        throw:invalid_key ->
-            false
-    end.
-
-
-
-%% =============================================================================
-%% PRIVATE
-%% =============================================================================
-
-
-
-%% private
-validate_options(Type, Map, Spec) ->
-    validate_map(Type, Map, Spec, extended_options).
-
-%% private
-validate_details(Type, Map, Spec) ->
-    validate_map(Type, Map, Spec, extended_details).
-
-
-%% @private
-validate_map(Type, Map, Spec, Option)
-when Option == extended_options orelse Option == extended_details ->
-    Opts = #{
-        atomic => true, % Fail atomically for the whole map
-        labels => atom,  % This will only turn the defined keys to atoms
-        keep_unknown => false % Remove all unknown options
-    },
-    Extensions = app_config:get(wamp, [Option, Type], []),
-    NewSpec = maybe_add_extensions(Extensions, Spec),
-    maps_utils:validate(Map, NewSpec, Opts).
-
-
-%% private
-maybe_add_extensions(Keys, Spec) when is_list(Keys) ->
-    MaybeAdd = fun(Key, Acc) -> maybe_add_extension(Key, Acc) end,
-    lists:foldl(MaybeAdd, Spec, Keys);
-
-maybe_add_extensions([], Spec) ->
-    Spec.
-
-
-maybe_add_extension({invoke, Options}, Acc) ->
-    #{datatype := {in, L}} = KeySpec = maps:get(invoke, Acc),
-    NewKeySpec = KeySpec#{
-        datatype => {in, lists:append(L, Options)}
-    },
-    maps:put(invoke, NewKeySpec, Acc);
-
-maybe_add_extension(Key, Acc) ->
-    try
-        %% We add a maps_utils key specification for the known
-        NewKey = to_valid_extension_key(Key),
-        NewKeySpec = #{
-            %% we alias it so that maps_utils:validate/2 can find the key
-            %% and replace it with NewKey.
-            alias => atom_to_binary(Key, utf8),
-            required => false
-        },
-        maps:put(NewKey, NewKeySpec, Acc)
-    catch
-        throw:invalid_key ->
-            Acc
-    end.
-
-
-%% @private
-to_valid_extension_key(Key) when is_atom(Key) ->
-    to_valid_extension_key(atom_to_binary(Key, utf8));
-
-to_valid_extension_key(Key) when is_binary(Key) ->
-    try
-        {match, _} = re:run(Key, extension_key_pattern()),
-        %% We add a maps_utils key specification for the known
-        binary_to_existing_atom(Key, utf8)
-    catch
-        error:{badmatch, nomatch} ->
-            throw(invalid_key);
-        error:badarg ->
-            throw(invalid_key)
-    end.
-
-
-%% @private
-extension_key_pattern() ->
-    CompiledPattern = persistent_term:get({?MODULE, ekey_pattern}, undefined),
-    extension_key_pattern(CompiledPattern).
-
-
-%% @private
-extension_key_pattern(undefined) ->
-    {ok, Pattern} = re:compile("_[a-z0-9_]{3,}"),
-    ok = persistent_term:put({?MODULE, ekey_pattern}, Pattern),
-    Pattern;
-
-extension_key_pattern(CompiledPattern) ->
-    CompiledPattern.
-
-
-%% @private
-validate_id(Id) ->
-    wamp_utils:is_valid_id(Id) == true orelse error({invalid_id, Id}),
-    Id.
-
-
-%% @private
-validate_uri(Uri) ->
-    wamp_uri:is_valid(Uri) == true orelse error({invalid_uri, Uri}),
-    Uri.

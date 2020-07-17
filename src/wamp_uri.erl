@@ -16,6 +16,7 @@
 
 -export([is_valid/1]).
 -export([is_valid/2]).
+-export([validate/1]).
 -export([components/1]).
 
 
@@ -51,6 +52,16 @@ is_valid(Uri, Rule) when is_binary(Uri) ->
 
 is_valid(_, _) ->
     false.
+
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+validate(Uri) ->
+    is_valid(Uri) == true orelse error({invalid_uri, Uri}),
+    Uri.
 
 
 %% -----------------------------------------------------------------------------
