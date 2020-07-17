@@ -537,7 +537,8 @@
     authextra => #{
         % description => <<"Not in RFC">>,
         alias => <<"authextra">>,
-        required => false
+        required => false,
+        datatype => map
     },
     roles => #{
         alias => <<"roles">>,
@@ -630,9 +631,9 @@
         datatype => binary
     },
     authextra => #{
-        % description => <<"Not in RFC">>,
         alias => <<"authextra">>,
-        required => false
+        required => false,
+        datatype => map
     },
     roles => #{
         alias => <<"roles">>,
@@ -1068,7 +1069,7 @@
     options         ::  map(),
     procedure_uri   ::  uri(),
     arguments       ::  list() | undefined,
-    arguments_kw         ::  map() | undefined
+    arguments_kw    ::  map() | undefined
 }).
 -type wamp_call()       ::  #call{}.
 
