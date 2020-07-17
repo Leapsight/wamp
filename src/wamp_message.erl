@@ -40,6 +40,7 @@
 -export([validate_options/2]).
 -export([validate_details/2]).
 -export([is_valid_extension_key/1]).
+-export([update_event/3]).
 
 
 
@@ -344,6 +345,18 @@ event(SubsId, PubId, Details, Args, Payload) when is_map(Details) ->
         arguments_kw = Payload
     }.
 
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec update_event(id(), id(), wamp_event()) -> wamp_event() | no_return().
+
+update_event(SubsId, PubId, #event{} = Event) ->
+    Event#event{
+        subscription_id = validate_id(SubsId),
+        publication_id = validate_id(PubId)
+    }.
 
 %% -----------------------------------------------------------------------------
 %% @doc
