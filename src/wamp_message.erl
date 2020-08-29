@@ -10,12 +10,28 @@
 -module(wamp_message).
 -include("wamp.hrl").
 
+-type error_source()    ::  wamp_subscribe()
+                            | wamp_unsubscribe()
+                            | wamp_publish()
+                            | wamp_register()
+                            | wamp_unregister()
+                            | wamp_call()
+                            | wamp_invocation().
+
+-export_type([error_source/0]).
+
+
 -export([abort/2]).
 -export([authenticate/2]).
 -export([call/3, call/4, call/5]).
 -export([cancel/2]).
 -export([challenge/2]).
--export([error/4, error/5, error/6]).
+-export([error/4]).
+-export([error/5]).
+-export([error/6]).
+-export([error_from/3]).
+-export([error_from/4]).
+-export([error_from/5]).
 -export([event/3, event/4, event/5]).
 -export([goodbye/2]).
 -export([hello/2]).
@@ -201,6 +217,64 @@ when is_map(Details) ->
         arguments = Args,
         arguments_kw = Payload
     }.
+
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec error_from(error_source(), map(), uri()) -> wamp_error() | no_return().
+
+error_from(M, Details, ErrorUri) ->
+    error_from(M, Details, ErrorUri, undefined, undefined).
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec error_from(error_source(), map(), uri(), list()) ->
+    wamp_error() | no_return().
+
+error_from(M, Details, ErrorUri, Args) ->
+    error_from(M, Details, ErrorUri, Args, undefined).
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec error_from(
+    error_source(),
+    map(),
+    uri(),
+    list() | undefined,
+    map() | undefined) ->
+    wamp_error() | no_return().
+
+
+error_from(#subscribe{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
+    error(?SUBSCRIBE, ReqId, Details, ErrorUri, Args, Payload);
+
+error_from(
+    #unsubscribe{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
+    error(?UNSUBSCRIBE, ReqId, Details, ErrorUri, Args, Payload);
+
+error_from(#publish{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
+    error(?PUBLISH, ReqId, Details, ErrorUri, Args, Payload);
+
+error_from(#register{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
+    error(?REGISTER, ReqId, Details, ErrorUri, Args, Payload);
+
+error_from(#unregister{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
+    error(?UNREGISTER, ReqId, Details, ErrorUri, Args, Payload);
+
+error_from(#call{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
+    error(?CALL, ReqId, Details, ErrorUri, Args, Payload);
+
+error_from(#invocation{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
+    error(?INVOCATION, ReqId, Details, ErrorUri, Args, Payload).
 
 
 %% -----------------------------------------------------------------------------
