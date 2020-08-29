@@ -16,7 +16,8 @@
                             | wamp_register()
                             | wamp_unregister()
                             | wamp_call()
-                            | wamp_invocation().
+                            | wamp_invocation()
+                            | wamp_cancel().
 
 -export_type([error_source/0]).
 
@@ -274,7 +275,10 @@ error_from(#call{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
     error(?CALL, ReqId, Details, ErrorUri, Args, Payload);
 
 error_from(#invocation{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
-    error(?INVOCATION, ReqId, Details, ErrorUri, Args, Payload).
+    error(?INVOCATION, ReqId, Details, ErrorUri, Args, Payload);
+
+error_from(#cancel{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
+    error(?CANCEL, ReqId, Details, ErrorUri, Args, Payload).
 
 
 %% -----------------------------------------------------------------------------
