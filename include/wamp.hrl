@@ -1,5 +1,5 @@
 %% -----------------------------------------------------------------------------
-%% Copyright (C) Ngineo Limited 2015 - 2017. All rights reserved.
+%% Copyright (C) Leapsight 2015 - 2021. All rights reserved.
 %% -----------------------------------------------------------------------------
 
 
@@ -1106,6 +1106,14 @@
 }).
 -type wamp_unregister()       ::  #unregister{}.
 
+%% Used for Registration Revocation feature
+-record(unregister_ext, {
+    request_id      ::  id(),
+    registration_id ::  id(),
+    details         ::  map()
+}).
+-type wamp_unregister_ext()       ::  #unregister{}.
+
 -record(unregistered, {
     request_id      ::  id()
 }).
@@ -1238,10 +1246,16 @@
 %% INCORRECT URIs
 -define(WAMP_INVALID_URI, <<"wamp.error.invalid_uri">>).
 
+%% SERIALIZATION
+-define(WAMP_INVALID_URI, <<"wamp.error.invalid_payload">>).
+-define(WAMP_INVALID_URI, <<"wamp.error.payload_size_exceeded">>).
+
 %% INTERACTION URIs
 -define(WAMP_NO_SUCH_PROCEDURE, <<"wamp.error.no_such_procedure">>).
 -define(WAMP_PROCEDURE_ALREADY_EXISTS,
     <<"wamp.error.procedure_already_exists">>).
+-define(WAMP_PROCEDURE_EXISTS_WITH_DIFF_POLICY,
+    <<"wamp.error.procedure_exists_with_different_invocation_policy">>).
 -define(WAMP_NO_SUCH_REGISTRATION, <<"wamp.error.no_such_registration">>).
 -define(WAMP_NO_SUCH_SUBSCRIPTION, <<"wamp.error.no_such_subscription">>).
 -define(WAMP_INVALID_ARGUMENT, <<"wamp.error.invalid_argument">>).
@@ -1252,14 +1266,19 @@
 -define(WAMP_GOODBYE_AND_OUT, <<"wamp.close.goodbye_and_out">>).
 -define(WAMP_PROTOCOL_VIOLATION, <<"wamp.error.protocol_violation">>).
 
-%% AUTORIZATION
--define(WAMP_NOT_AUTHORIZED, <<"wamp.error.not_authorized">>).
--define(WAMP_AUTHORIZATION_FAILED, <<"wamp.error.authorization_failed">>).
+%% AUTH
+%% No authmethod the peer offered is available
+-define(WAMP_NOT_AUTH_METHOD, <<"wamp.error.not_auth_method">>).
 -define(WAMP_NO_SUCH_REALM, <<"wamp.error.no_such_realm">>).
 -define(WAMP_NO_SUCH_ROLE, <<"wamp.error.no_such_role">>).
+-define(WAMP_NO_SUCH_PRINCIPAL, <<"wamp.error.no_such_principal">>).
+-define(WAMP_AUTHORIZATION_FAILED, <<"wamp.error.authorization_failed">>).
+-define(WAMP_AUTHENTICATION_FAILED, <<"wamp.error.authentication_failed">>).
+-define(WAMP_NOT_AUTHORIZED, <<"wamp.error.not_authorized">>).
 
-%% ADVANCES
+%% ADVANCED
 -define(WAMP_CANCELLED, <<"wamp.error.canceled">>).
+-define(WAMP_TIMEOUT, <<"wamp.error.timeout">>).
 -define(WAMP_OPTION_NOT_ALLOWED, <<"wamp.error.option_not_allowed">>).
 -define(WAMP_NO_ELIGIBLE_CALLE, <<"wamp.error.no_eligible_callee">>).
 -define(WAMP_OPTION_DISALLOWED_DISCLOSE_ME,
@@ -1270,6 +1289,7 @@
 
 -define(WAMP_NO_SUCH_SESSION, <<"wamp.error.no_such_session">>).
 
+-define(WAMP_TYPE_CHECK_ERROR, <<"wamp.error.type_check_error">>).
 
 
 

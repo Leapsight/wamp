@@ -1,5 +1,5 @@
 %% -----------------------------------------------------------------------------
-%% Copyright (C) Ngineo Limited 2015 - 2020. All rights reserved.
+%%  Copyright (c) 2015-2021 Leapsight. All rights reserved.
 %% -----------------------------------------------------------------------------
 
 %% =============================================================================
@@ -544,6 +544,20 @@ unregister(ReqId, RegId) ->
     #unregister{
         request_id = wamp_utils:validate_id(ReqId),
         registration_id = wamp_utils:validate_id(RegId)
+    }.
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec registration_revocation(id(), id()) -> wamp_unregister() | no_return().
+
+registration_revocation(RegId, Reason) when is_binary(Reason) ->
+    Id = wamp_utils:validate_id(RegId),
+    #registration_revocation{
+        request_id = 0,
+        details = #{registration => Id, reason => Reason}
     }.
 
 
