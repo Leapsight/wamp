@@ -551,14 +551,14 @@ unregister(ReqId, RegId) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec registration_revocation(id(), id()) -> wamp_unregister() | no_return().
+% -spec registration_revocation(id(), id()) -> wamp_unregister() | no_return().
 
-registration_revocation(RegId, Reason) when is_binary(Reason) ->
-    Id = wamp_utils:validate_id(RegId),
-    #registration_revocation{
-        request_id = 0,
-        details = #{registration => Id, reason => Reason}
-    }.
+% registration_revocation(RegId, Reason) when is_binary(Reason) ->
+%     Id = wamp_utils:validate_id(RegId),
+%     #unregister_ext{
+%         request_id = 0,
+%         details = #{registration => Id, reason => Reason}
+%     }.
 
 
 %% -----------------------------------------------------------------------------

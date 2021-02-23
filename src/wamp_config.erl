@@ -24,7 +24,15 @@
 -behaviour(app_config).
 
 -define(APP, wamp).
+-define(JSON_ENCODE_OPTS, [
+    undefined_as_null,
+    {datetime_format, iso8601},
+    {object_key_type, string}
+]).
 
+-define(JSON_DECODE_OPTS, [
+    undefined_as_null
+]).
 
 -export([get/1]).
 -export([get/2]).
@@ -48,6 +56,7 @@
 init() ->
     ok = app_config:init(?APP, #{callback_mod => ?MODULE}),
     _ = lager:info("Wamp configuration initialised"),
+    ok = init_json_serialization_opts(),
     ok.
 
 
@@ -86,3 +95,40 @@ set(status, Value) ->
 
 set(Key, Value) ->
     app_config:set(?APP, Key, Value).
+
+
+
+
+%% =============================================================================
+%% PRIVATE
+%% =============================================================================
+
+
+init_json_serialization_opts() ->
+    case get([serialization, json, encode], undefined) of
+        undefined ->
+            set([serialization, json, encode], ?JSON_ENCODE_OPTS);
+        EncodeOpts0 ->
+            EncodeOpts = validate_json_opts(EncodeOpts0, ?JSON_ENCODE_OPTS),
+            set([serialization, json, encode], EncodeOpts)
+    end,
+
+    case get([serialization, json, decode], undefined) of
+        undefined ->
+            set([serialization, json, decode], ?JSON_DECODE_OPTS);
+        DecodeOpts0 ->
+            DecodeOpts = validate_json_opts(DecodeOpts0, ?JSON_DECODE_OPTS),
+            set([serialization, json, decode], DecodeOpts)
+    end,
+
+    ok.
+
+
+
+
+validate_json_opts(Opts, Default) when is_list(Opts) ->
+    validate_json_opts(maps:from_list(proplists:unfold(Opts)), Default);
+
+validate_json_opts(Opts, Default0) when is_map(Opts) ->
+    Default1 = maps:from_list(proplists:unfold(Default0)),
+    proplists:compact(maps:to_list(maps:merge(Default1, Opts))).

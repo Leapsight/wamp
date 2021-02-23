@@ -6,7 +6,6 @@
 
 
 all() ->
-
     common:all().
 
 groups() ->
@@ -20,6 +19,13 @@ groups() ->
 %% =============================================================================
 
 
+init_per_suite(Config) ->
+    _ = application:ensure_all_started(wamp),
+    ok = wamp_config:init(),
+    Config.
+
+end_per_suite(_) ->
+    ok.
 
 
 hello_json_test(_) ->

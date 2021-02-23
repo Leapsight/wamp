@@ -23,7 +23,9 @@
 -export([pack/1]).
 -export([unpack/1]).
 -export([encode/2]).
+-export([encode/3]).
 -export([decode/2]).
+-export([decode/3]).
 -export([is_encoding/1]).
 
 -export([message_name/1]).
@@ -72,17 +74,38 @@ decode_message_name({_, _, Enc}, Data) ->
 -spec decode(subprotocol(), Data :: binary()) ->
     {Messages :: [wamp_message()], Rest :: binary()} | no_return().
 
-decode({ws, text, json}, Data) ->
-    decode_text(Data, json, []);
+decode({ws, text, json = Enc}, Data) ->
+    decode({ws, text, json}, Data, opts(Enc, decode));
 
 decode({ws, text, Enc}, _) ->
     error({unsupported_encoding, Enc});
 
 decode({ws, binary, Enc}, Data) ->
-    decode_binary(Data, Enc, []);
+    decode_binary(Data, Enc, opts(Enc, decode), []);
 
 decode({raw, binary, Enc}, Data) ->
-    decode_binary(Data, Enc, []).
+    decode_binary(Data, Enc, opts(Enc, decode), []).
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec decode(subprotocol(), Data :: binary(), Opts :: list()) ->
+    {Messages :: [wamp_message()], Rest :: binary()} | no_return().
+
+decode({ws, text, json}, Data, Opts) ->
+    decode_text(Data, json, Opts, []);
+
+decode({ws, text, Enc}, _, _) ->
+    error({unsupported_encoding, Enc});
+
+decode({ws, binary, Enc}, Data, Opts) ->
+    decode_binary(Data, Enc, Opts, []);
+
+decode({raw, binary, Enc}, Data, Opts) ->
+    decode_binary(Data, Enc, Opts, []).
+
 
 
 %% -----------------------------------------------------------------------------
@@ -91,27 +114,50 @@ decode({raw, binary, Enc}, Data) ->
 %% -----------------------------------------------------------------------------
 -spec encode(wamp_message() | list(), encoding()) -> binary() | no_return().
 
-encode(Message, Encoding) when is_tuple(Message) ->
-    encode(pack(Message), Encoding);
+encode(Message, Enc) when is_tuple(Message) ->
+    encode(pack(Message), Enc);
 
-encode(Message, erl) when is_list(Message) ->
-    term_to_binary(Message);
+encode(Message, erl = Enc) when is_list(Message) ->
+    encode(Message, Enc, opts(Enc, encode));
 
-encode(Message, json) when is_list(Message) ->
-    jsx:encode(Message);
+encode(Message, json = Enc) when is_list(Message) ->
+    encode(Message, Enc, opts(Enc, encode));
 
-encode(Message, msgpack) when is_list(Message) ->
+encode(Message, msgpack = Enc) when is_list(Message) ->
     %% We want binary keys always
-    Opts = [
-        {pack_str, from_binary},
-        {map_format, map}
-    ],
-    msgpack:pack(Message, Opts);
+    encode(Message, msgpack, opts(Enc, encode));
 
-encode(Message, bert) when is_list(Message) ->
-    bert:encode(Message);
+encode(Message, bert = Enc) when is_list(Message) ->
+    encode(Message, bert, opts(Enc, encode));
 
 encode(Message, Format) when is_list(Message) ->
+    error({unsupported_encoding, Format}).
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec encode(wamp_message() | list(), encoding(), Opts :: list()) ->
+    binary() | no_return().
+
+
+encode(Message, Encoding, Opts) when is_tuple(Message) ->
+    encode(pack(Message), Encoding, Opts);
+
+encode(Message, erl, _) when is_list(Message) ->
+    term_to_binary(Message);
+
+encode(Message, bert, _) when is_list(Message) ->
+    bert:encode(Message);
+
+encode(Message, json, Opts) when is_list(Message) ->
+    jsone:encode(Message, Opts);
+
+encode(Message, msgpack, Opts) when is_list(Message) ->
+    msgpack:pack(Message, Opts);
+
+encode(Message, Format, _) when is_list(Message) ->
     error({unsupported_encoding, Format}).
 
 
@@ -450,6 +496,26 @@ unpack([?YIELD, ReqId, Options, Args, Payload]) ->
 
 
 
+opts(erl, _) ->
+    [];
+
+opts(bert, _) ->
+    [];
+
+opts(json, encode) ->
+    wamp_config:get([serialization, json, encode]);
+
+opts(json, decode) ->
+    wamp_config:get([serialization, json, decode]);
+
+opts(msgpack, encode) ->
+    [{map_format, map}, {pack_str, from_binary}];
+
+opts(msgpack, decode) ->
+    [{map_format, map}, {unpack_str, as_binary}].
+
+
+
 %% @private
 do_decode_message_name(<<131, 108, _:32, 97, Type, _/binary>>, erl) ->
     message_name(Type);
@@ -499,42 +565,43 @@ do_decode_message_name(_, Enc) ->
 
 
 %% @private
--spec decode_text(binary(), encoding(), Acc0 :: [wamp_message()]) ->
+-spec decode_text(
+    binary(), encoding(), Opts :: list(), Acc0 :: [wamp_message()]) ->
     {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
 
-decode_text(Data, json, Acc) ->
-    {decode_message(Data, json, Acc), <<>>}.
+decode_text(Data, json, Opts, Acc) ->
+    {decode_message(Data, json, Opts, Acc), <<>>}.
 
 
 %% @private
--spec decode_binary(binary(), encoding(), Acc0 :: [wamp_message()]) ->
+-spec decode_binary(
+    binary(), encoding(), Opts :: list(), Acc0 :: [wamp_message()]) ->
     {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
 
-decode_binary(Data, Enc, Acc) ->
-    {decode_message(Data, Enc, Acc), <<>>}.
+decode_binary(Data, Enc, Opts, Acc) ->
+    {decode_message(Data, Enc, Opts, Acc), <<>>}.
 
 
 
 %% @private
--spec decode_message(binary(), encoding(), [wamp_message()]) ->
+-spec decode_message(binary(), encoding(), Opts :: list(), [wamp_message()]) ->
     [wamp_message()].
 
-decode_message(Data, json, Acc) ->
-    M = jsx:decode(Data, [return_maps]),
+decode_message(Data, json, Opts, Acc) ->
+    M = jsone:decode(Data, Opts),
     [unpack(M) | Acc];
 
-decode_message(Data, msgpack, Acc) ->
-    Opts = [{map_format, map}, {unpack_str, as_binary}],
+decode_message(Data, msgpack, Opts, Acc) ->
     {ok, M} = msgpack:unpack(Data, Opts),
     [unpack(M) | Acc];
 
-decode_message(Data, bert, Acc) ->
+decode_message(Data, bert, _, Acc) ->
     [unpack(bert:decode(Data)) | Acc];
 
-decode_message(Bin, erl, Acc) ->
+decode_message(Bin, erl, _, Acc) ->
     [unpack(binary_to_term(Bin)) | Acc];
 
-decode_message(_Data, Enc, _Acc) ->
+decode_message(_Data, Enc, _, _Acc) ->
     error({unsupported_encoding, Enc}).
 
 

@@ -1247,8 +1247,8 @@
 -define(WAMP_INVALID_URI, <<"wamp.error.invalid_uri">>).
 
 %% SERIALIZATION
--define(WAMP_INVALID_URI, <<"wamp.error.invalid_payload">>).
--define(WAMP_INVALID_URI, <<"wamp.error.payload_size_exceeded">>).
+-define(WAMP_INVALID_PAYLOAD, <<"wamp.error.invalid_payload">>).
+-define(WAMP_PAYLOAD_SIZE_EXCEEDED, <<"wamp.error.payload_size_exceeded">>).
 
 %% INTERACTION URIs
 -define(WAMP_NO_SUCH_PROCEDURE, <<"wamp.error.no_such_procedure">>).
