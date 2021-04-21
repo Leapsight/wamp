@@ -16,8 +16,7 @@
        {ref,"6818dc14fe5d90d2561b1fa8ab8aea523a900128"}},
   1},
  {<<"goldrush">>,{pkg,<<"goldrush">>,<<"0.1.9">>},1},
- {<<"jsone">>,{pkg,<<"jsone">>,<<"1.5.5">>},0},
- {<<"jsx">>,{pkg,<<"jsx">>,<<"2.8.2">>},0},
+ {<<"jsone">>,{pkg,<<"jsone">>,<<"1.5.7">>},0},
  {<<"key_value">>,
   {git,"https://gitlab.com/leapsight/key_value.git",
        {ref,"8fffd1b7ca520cf488251c9d32ffd0959c2ab039"}},
@@ -26,7 +25,7 @@
   {git,"https://gitlab.com/leapsight/ksuid.git",
        {ref,"c1f00dabddac1e3108bfaf5917cb6674f3b843f2"}},
   1},
- {<<"lager">>,{pkg,<<"lager">>,<<"3.2.4">>},0},
+ {<<"lager">>,{pkg,<<"lager">>,<<"3.6.10">>},0},
  {<<"msgpack">>,{pkg,<<"msgpack">>,<<"0.7.0">>},0},
  {<<"utils">>,
   {git,"git@gitlab.com:leapsight/utils.git",
@@ -35,14 +34,12 @@
 [
 {pkg_hash,[
  {<<"goldrush">>, <<"F06E5D5F1277DA5C413E84D5A2924174182FB108DABB39D5EC548B27424CD106">>},
- {<<"jsone">>, <<"E88519CA0427C83D0106C773AFA7231429D0221AAE9A4A4B11F9CA73EC18978A">>},
- {<<"jsx">>, <<"7ACC7D785B5ABE8A6E9ADBDE926A24E481F29956DD8B4DF49E3E4E7BCC92A018">>},
- {<<"lager">>, <<"A6DEB74DAE7927F46BD13255268308EF03EB206EC784A94EAF7C1C0F3B811615">>},
+ {<<"jsone">>, <<"036EC290BF3B2B3348B2EEC199A0FCDA62CE296AB6B736A403A6A440C5203618">>},
+ {<<"lager">>, <<"6172B43AB720AC33914CCD0AEB21FDBDF88213847707D4B91E6AF57B2AE5C4D2">>},
  {<<"msgpack">>, <<"128AE0A2227C7E7A2847C0F0F73551C268464F8C1EE96BFFB920BC0A5712B295">>}]},
 {pkg_hash_ext,[
  {<<"goldrush">>, <<"99CB4128CFFCB3227581E5D4D803D5413FA643F4EB96523F77D9E6937D994CEB">>},
- {<<"jsone">>, <<"ECB60CBA1323679209686EEB56EB10A57B31CEB601D96840B04D8C6D39FB9CF5">>},
- {<<"jsx">>, <<"B4C5D3230B397C8D95579E4A3D72826BB6463160130CCF4182F5BE8579B5F44C">>},
- {<<"lager">>, <<"EEC0B676776ADCFC4F281ADD4ACAD1806B2F399774EAAA30F9EC47D2B7881B58">>},
+ {<<"jsone">>, <<"5F146CBF953469667EEE145FB066D6EE6B9B181BCFD547295317526E7464D732">>},
+ {<<"lager">>, <<"5D10499461826B79C5ABEE18BB594B3949CBDF76D9D9FD7E66D0A558137C21C9">>},
  {<<"msgpack">>, <<"4649353DA003E6F438D105E4B1E0F17757F6F5EC8687A6F30875FF3AC4CE2A51">>}]}
 ].
