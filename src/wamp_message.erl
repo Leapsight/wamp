@@ -103,7 +103,7 @@ is_message(_) -> false.
 
 hello(RealmUri, Details) when is_binary(RealmUri) ->
     #hello{
-        realm_uri = wamp_uri:validate(RealmUri),
+        realm_uri = wamp_uri:validate(RealmUri, strict),
         details = wamp_details:new(hello, Details)
     }.
 
@@ -129,7 +129,7 @@ welcome(SessionId, Details)   ->
 
 abort(Details, ReasonUri) ->
     #abort{
-        reason_uri = wamp_uri:validate(ReasonUri),
+        reason_uri = wamp_uri:validate(ReasonUri, strict),
         details = wamp_details:new(abort, Details)
     }.
 
@@ -169,7 +169,7 @@ authenticate(Signature, Extra) when is_map(Extra) ->
 
 goodbye(Details, ReasonUri) ->
     #goodbye{
-        reason_uri = wamp_uri:validate(ReasonUri),
+        reason_uri = wamp_uri:validate(ReasonUri, strict),
         details = wamp_details:new(goodbye, Details)
     }.
 
@@ -214,7 +214,7 @@ when is_map(Details) ->
         request_type = ReqType,
         request_id = wamp_utils:validate_id(ReqId),
         details = Details, % any
-        error_uri = wamp_uri:validate(ErrorUri),
+        error_uri = wamp_uri:validate(ErrorUri, strict),
         arguments = Args,
         arguments_kw = Payload
     }.
@@ -312,7 +312,7 @@ publish(ReqId, Options, TopicUri, Args, Payload) ->
     #publish{
         request_id = wamp_utils:validate_id(ReqId),
         options = wamp_options:new(publish, Options),
-        topic_uri = wamp_uri:validate(TopicUri),
+        topic_uri = wamp_uri:validate(TopicUri, strict),
         arguments = Args,
         arguments_kw = Payload
     }.
@@ -337,11 +337,14 @@ published(ReqId, PubId) ->
 %% -----------------------------------------------------------------------------
 -spec subscribe(id(), map(), uri()) -> wamp_subscribe() | no_return().
 
-subscribe(ReqId, Options, TopicUri) when is_map(Options) ->
+subscribe(ReqId, Options0, TopicUri) when is_map(Options0) ->
+    Options = wamp_options:new(subscribe, Options0),
+    Match = maps:get(match, Options, ?EXACT_MATCH),
+
     #subscribe{
         request_id = wamp_utils:validate_id(ReqId),
-        options = wamp_options:new(subscribe, Options),
-        topic_uri = wamp_uri:validate(TopicUri)
+        options = Options,
+        topic_uri = wamp_uri:validate_match(TopicUri, Match)
     }.
 
 
@@ -452,7 +455,7 @@ call(ReqId, Options, ProcedureUri, Args, Payload) ->
     #call{
         request_id = wamp_utils:validate_id(ReqId),
         options = wamp_options:new(call, Options),
-        procedure_uri = wamp_uri:validate(ProcedureUri),
+        procedure_uri = wamp_uri:validate(ProcedureUri, strict),
         arguments = Args,
         arguments_kw = Payload
     }.
@@ -513,11 +516,15 @@ result(ReqId, Details, Args, Payload) when is_map(Details) ->
 %% -----------------------------------------------------------------------------
 -spec register(id(), map(), uri()) -> wamp_register() | no_return().
 
-register(ReqId, Options, ProcedureUri) ->
+register(ReqId0, Options0, ProcedureUri) ->
+    ReqId = wamp_utils:validate_id(ReqId0),
+    Options = wamp_options:new(register, Options0),
+    Match = maps:get(match, Options, ?EXACT_MATCH),
+
     #register{
-        request_id = wamp_utils:validate_id(ReqId),
-        options = wamp_options:new(register, Options),
-        procedure_uri = wamp_uri:validate(ProcedureUri)
+        request_id = ReqId,
+        options = Options,
+        procedure_uri = wamp_uri:validate_match(ProcedureUri, Match)
     }.
 
 

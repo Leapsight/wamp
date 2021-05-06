@@ -813,6 +813,7 @@
     match => #{
         alias => <<"match">>,
         required => false,
+        default => ?EXACT_MATCH,
         datatype => {in, ?MATCH_STRATEGIES}
     },
     invoke => #{
@@ -835,7 +836,8 @@
 -define(SUBSCRIBE_OPTS_SPEC, #{
     match => #{
         alias => <<"match">>,
-        required => false,
+        required => true,
+        default => ?EXACT_MATCH,
         datatype => {in, ?MATCH_STRATEGIES}
     },
     %% node key
