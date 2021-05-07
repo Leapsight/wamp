@@ -10,9 +10,10 @@
 -module (wamp_uri).
 -include("wamp.hrl").
 
--type t()       ::  binary().
--type rule()    ::  loose | loose_prefix | loose_allow_empty
-                    | strict | strict_prefix | strict_allow_empty.
+-type t()               ::  binary().
+-type rule()            ::  loose | loose_prefix | loose_allow_empty
+                            | strict | strict_prefix | strict_allow_empty.
+-type match_strategy()  ::  binary().
 
 -export_type([t/0]).
 -export_type([rule/0]).
@@ -21,7 +22,6 @@
 -export([is_valid/2]).
 -export([validate/1]).
 -export([validate/2]).
--export([validate_match/2]).
 -export([components/1]).
 
 
@@ -38,6 +38,7 @@
 %% -----------------------------------------------------------------------------
 -spec is_valid(uri()) -> boolean().
 
+
 is_valid(Uri) when is_binary(Uri) andalso byte_size(Uri) > 0 ->
     is_valid(Uri, loose_allow_empty);
 
@@ -50,7 +51,10 @@ is_valid(_) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec is_valid(Uri :: uri(), Rule :: rule()) -> boolean().
+-spec is_valid(Uri :: uri(), Rule :: rule()) -> boolean() | no_return().
+
+is_valid(Uri, Strategy) when is_binary(Strategy) ->
+    is_valid(Uri, rule_for_strategy(Strategy));
 
 is_valid(Uri, Rule) when is_binary(Uri) andalso byte_size(Uri) > 0 ->
     re:run(Uri, uri_regex(Rule)) =/= nomatch;
@@ -77,29 +81,14 @@ validate(Uri) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec validate(Uri :: binary(), Rule :: rule()) -> Uri :: t().
+-spec validate(Uri :: binary(), RuleOrStrategy :: rule() | match_strategy()) ->
+    Uri :: t().
 
 validate(Uri, Rule) when is_binary(Uri) andalso byte_size(Uri) > 0  ->
     maybe_error(is_valid(Uri, Rule), Uri);
 
 validate(Uri, _) ->
     maybe_error(false, Uri).
-
-
-%% -----------------------------------------------------------------------------
-%% @doc
-%% @end
-%% -----------------------------------------------------------------------------
--spec validate_match(Uri :: binary(), Strategy :: binary()) -> Uri :: t().
-
-validate_match(Uri, ?EXACT_MATCH) ->
-    maybe_error(is_valid(Uri, strict), Uri);
-
-validate_match(Uri, ?PREFIX_MATCH) ->
-    maybe_error(is_valid(Uri, strict_prefix), Uri);
-
-validate_match(Uri, ?WILDCARD_MATCH) ->
-    maybe_error(is_valid(Uri, strict_allow_empty), Uri).
 
 
 
@@ -172,6 +161,9 @@ uri_regex(strict_allow_empty = Rule, undefined) ->
     ok = persistent_term:put({?MODULE, Rule}, Regex),
     Regex;
 
+uri_regex(_, undefined) ->
+    error(badrule);
+
 uri_regex(_, Regex) ->
     Regex.
 
@@ -182,3 +174,10 @@ maybe_error(true, Uri) ->
 
 maybe_error(false, Uri) ->
     error({invalid_uri, Uri}).
+
+
+
+rule_for_strategy(?EXACT_MATCH) -> strict;
+rule_for_strategy(?PREFIX_MATCH) -> strict_prefix;
+rule_for_strategy(?WILDCARD_MATCH) -> strict_allow_empty;
+rule_for_strategy(_) -> error(badstrategy).

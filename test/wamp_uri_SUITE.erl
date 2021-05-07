@@ -37,7 +37,7 @@ exact_match(_) ->
         fun(URI) ->
             ?assertEqual(
                 URI,
-                wamp_uri:validate_match(URI, ?EXACT_MATCH)
+                wamp_uri:validate(URI, ?EXACT_MATCH)
             )
         end,
         List
@@ -60,7 +60,7 @@ exact_match_error(_) ->
         fun(URI) ->
             ?assertError(
                 {invalid_uri, URI},
-                wamp_uri:validate_match(URI, ?EXACT_MATCH)
+                wamp_uri:validate(URI, ?EXACT_MATCH)
             )
         end,
         List
@@ -79,7 +79,7 @@ prefix_match(_) ->
         fun(URI) ->
             ?assertEqual(
                 URI,
-                wamp_uri:validate_match(URI, ?PREFIX_MATCH)
+                wamp_uri:validate(URI, ?PREFIX_MATCH)
             )
         end,
         List
@@ -99,7 +99,7 @@ prefix_match_error(_) ->
         fun(URI) ->
             ?assertError(
                 {invalid_uri, URI},
-                wamp_uri:validate_match(URI, ?PREFIX_MATCH)
+                wamp_uri:validate(URI, ?PREFIX_MATCH)
             )
         end,
         List
@@ -121,7 +121,7 @@ wildcard_match(_) ->
         fun(URI) ->
             ?assertEqual(
                 URI,
-                wamp_uri:validate_match(URI, ?WILDCARD_MATCH)
+                wamp_uri:validate(URI, ?WILDCARD_MATCH)
             )
         end,
         List

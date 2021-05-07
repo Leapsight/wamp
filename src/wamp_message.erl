@@ -344,7 +344,7 @@ subscribe(ReqId, Options0, TopicUri) when is_map(Options0) ->
     #subscribe{
         request_id = wamp_utils:validate_id(ReqId),
         options = Options,
-        topic_uri = wamp_uri:validate_match(TopicUri, Match)
+        topic_uri = wamp_uri:validate(TopicUri, Match)
     }.
 
 
@@ -524,7 +524,7 @@ register(ReqId0, Options0, ProcedureUri) ->
     #register{
         request_id = ReqId,
         options = Options,
-        procedure_uri = wamp_uri:validate_match(ProcedureUri, Match)
+        procedure_uri = wamp_uri:validate(ProcedureUri, Match)
     }.
 
 
