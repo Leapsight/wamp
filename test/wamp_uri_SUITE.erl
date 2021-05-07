@@ -7,11 +7,12 @@
 
 all() ->
     [
-        exact_match,
-        exact_match_error,
-        prefix_match,
-        prefix_match_error,
-        wildcard_match
+        validate_exact,
+        validate_exact_error,
+        validate_prefix,
+        validate_prefix_error,
+        validate_wildcard,
+        match
     ].
 
 
@@ -25,7 +26,7 @@ end_per_suite(_) ->
     ok.
 
 
-exact_match(_) ->
+validate_exact(_) ->
     List = [
         <<"a">>,
         <<"a.foo">>,
@@ -43,7 +44,7 @@ exact_match(_) ->
         List
     ).
 
-exact_match_error(_) ->
+validate_exact_error(_) ->
     List = [
         <<"a.">>,
         <<"a.foo.">>,
@@ -67,7 +68,7 @@ exact_match_error(_) ->
     ).
 
 
-prefix_match(_) ->
+validate_prefix(_) ->
     List = [
         <<"a">>,
         <<"a.">>,
@@ -85,7 +86,7 @@ prefix_match(_) ->
         List
     ).
 
-prefix_match_error(_) ->
+validate_prefix_error(_) ->
     List = [
         <<".">>,
         <<"..">>,
@@ -106,7 +107,7 @@ prefix_match_error(_) ->
     ).
 
 
-wildcard_match(_) ->
+validate_wildcard(_) ->
     List = [
         <<".">>,
         <<"..">>,
@@ -126,3 +127,23 @@ wildcard_match(_) ->
         end,
         List
     ).
+
+
+match(_) ->
+    ?assertError(badarg, wamp_uri:match(<<>>, <<"a">>, ?EXACT_MATCH)),
+    ?assertError(badarg, wamp_uri:match(<<>>, <<"a">>, ?PREFIX_MATCH)),
+    ?assertError(badarg, wamp_uri:match(<<>>, <<"a">>, ?WILDCARD_MATCH)),
+
+    ?assertEqual(false, wamp_uri:match(<<"a">>, <<"b">>, ?EXACT_MATCH)),
+    ?assert(wamp_uri:match(<<"a">>, <<"a">>, ?EXACT_MATCH)),
+
+    ?assert(wamp_uri:match(<<"a">>, <<"a">>, ?PREFIX_MATCH)),
+    ?assert(wamp_uri:match(<<"a.">>, <<"a">>, ?PREFIX_MATCH)),
+    ?assert(wamp_uri:match(<<"a.b">>, <<"a">>, ?PREFIX_MATCH)),
+
+    ?assert(wamp_uri:match(<<"a">>, <<"a">>, ?WILDCARD_MATCH)),
+    ?assert(wamp_uri:match(<<"a.b">>, <<".">>, ?WILDCARD_MATCH)),
+    ?assert(wamp_uri:match(<<"a.b">>, <<"a.">>, ?WILDCARD_MATCH)),
+    ?assert(wamp_uri:match(<<"a.b">>, <<".b">>, ?WILDCARD_MATCH)),
+    ?assert(wamp_uri:match(<<"a.b">>, <<"a.b">>, ?WILDCARD_MATCH)).
+

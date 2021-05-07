@@ -23,6 +23,7 @@
 -export([validate/1]).
 -export([validate/2]).
 -export([components/1]).
+-export([match/3]).
 
 
 
@@ -91,6 +92,38 @@ validate(Uri, _) ->
     maybe_error(false, Uri).
 
 
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec match(Uri :: t(), Pattern :: t(), Strategy :: match_strategy()) -> any().
+
+match(Uri, Uri, ?EXACT_MATCH)
+when is_binary(Uri) andalso byte_size(Uri) > 0 ->
+    true;
+
+match(Uri, Pattern, ?PREFIX_MATCH)
+when is_binary(Uri) andalso byte_size(Uri) > 0 ->
+    binary:longest_common_prefix([Uri, Pattern]) >= byte_size(Pattern);
+
+match(Uri, Pattern, ?WILDCARD_MATCH)
+when is_binary(Uri) andalso byte_size(Uri) > 0 ->
+    subsumes(
+        binary:split(Pattern, [<<$.>>], [global]),
+        binary:split(Uri, [<<$.>>], [global])
+    );
+
+match(Uri, _, _)
+when is_binary(Uri) andalso byte_size(Uri) > 0 ->
+    false;
+
+match(_, _, _) ->
+    error(badarg).
+
+
+
+
+
 
 %% -----------------------------------------------------------------------------
 %% @doc
@@ -117,10 +150,6 @@ components(Uri) ->
 %% =============================================================================
 %% PRIVATE
 %% =============================================================================
-
-%% URI components (the parts between two .s, the head part up to the first .,
-%% the tail part after the last .) MUST NOT contain a ., # or whitespace
-%% characters and MUST NOT be empty (zero-length strings).
 
 
 
@@ -168,7 +197,29 @@ uri_regex(_, Regex) ->
     Regex.
 
 
+%% @private
+-spec subsumes(Pattern :: binary(), Uri :: binary()) -> boolean().
 
+subsumes(Term, Term) ->
+    true;
+
+subsumes(Term1, Term2) when length(Term1) =/= length(Term2) ->
+    false;
+
+subsumes([H|T1], [H|T2]) ->
+    subsumes(T1, T2);
+
+subsumes([<<>>|T1], [_|T2]) ->
+    subsumes(T1, T2);
+
+subsumes([], []) ->
+    true;
+
+subsumes(_, _) ->
+    false.
+
+
+%% @private
 maybe_error(true, Uri) ->
     Uri;
 
@@ -176,7 +227,7 @@ maybe_error(false, Uri) ->
     error({invalid_uri, Uri}).
 
 
-
+%% @private
 rule_for_strategy(?EXACT_MATCH) -> strict;
 rule_for_strategy(?PREFIX_MATCH) -> strict_prefix;
 rule_for_strategy(?WILDCARD_MATCH) -> strict_allow_empty;
