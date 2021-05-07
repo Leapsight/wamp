@@ -50,7 +50,7 @@ is_valid(_) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec is_valid(Uri :: uri(), RuleOrStrategy :: rule() | strategy()) ->
+-spec is_valid(Uri :: uri(), RuleOrStrategy :: rule() | match_strategy()) ->
     boolean() | no_return().
 
 is_valid(Uri, Strategy) when is_binary(Strategy) ->
