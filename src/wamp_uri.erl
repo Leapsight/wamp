@@ -38,7 +38,6 @@
 %% -----------------------------------------------------------------------------
 -spec is_valid(uri()) -> boolean().
 
-
 is_valid(Uri) when is_binary(Uri) andalso byte_size(Uri) > 0 ->
     is_valid(Uri, loose_allow_empty);
 
@@ -51,7 +50,8 @@ is_valid(_) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec is_valid(Uri :: uri(), Rule :: rule()) -> boolean() | no_return().
+-spec is_valid(Uri :: uri(), RuleOrStrategy :: rule() | strategy()) ->
+    boolean() | no_return().
 
 is_valid(Uri, Strategy) when is_binary(Strategy) ->
     is_valid(Uri, rule_for_strategy(Strategy));
