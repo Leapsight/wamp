@@ -535,20 +535,22 @@
         datatype => {list, binary}
     },
     authid => #{
-        % description => <<"Te authentication ID (e.g. username) the client wishes to authenticate as.">>,
+        % description => <<"The authentication ID (e.g. username) the client wishes to authenticate as.">>,
         alias => <<"authid">>,
         required => false,
-        datatype => binary
+        datatype => [binary, atom]
     },
     authrole => #{
         alias => <<"authrole">>,
         required => false,
-        datatype => binary
+        datatype => [binary, atom]
     },
     authextra => #{
         % description => <<"Not in RFC">>,
         alias => <<"authextra">>,
         required => false,
+        allow_undefined => true,
+        allow_null => false,
         datatype => map
     },
     roles => #{
@@ -599,19 +601,36 @@
         required => false,
         datatype => binary
     },
-    salt => #{
-        alias => <<"salt">>,
-        required => false,
-        datatype => binary
-    },
+    %% For WAMP-CRA
     keylen => #{
         alias => <<"keylen">>,
         required => false,
         datatype => integer
     },
+    %% For WAMP-CRA & WAMP-SCRAM
+    salt => #{
+        alias => <<"salt">>,
+        required => false,
+        datatype => binary
+    },
+    %% For WAMP-CRA & WAMP-SCRAM
     iterations => #{
         alias => <<"iterations">>,
         required => false,
+        datatype => integer
+    },
+    %% For WAMP-SCRAM
+    nonce => #{
+        alias => <<"nonce">>,
+        required => false,
+        datatype => binary
+    },
+    %% For WAMP-SCRAM
+    memory => #{
+        alias => <<"memory">>,
+        required => false,
+        allow_undefined => true,
+        allow_null => false,
         datatype => integer
     }
 }).
@@ -644,6 +663,8 @@
     authextra => #{
         alias => <<"authextra">>,
         required => false,
+        allow_undefined => true,
+        allow_null => false,
         datatype => map
     },
     roles => #{
