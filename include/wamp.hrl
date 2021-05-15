@@ -1289,16 +1289,18 @@
 -define(WAMP_SUBCRIPTION_ON_DELETE, <<"wamp.subscription.on_delete">>).
 -define(WAMP_SUBCRIPTION_ON_REGISTER, <<"wamp.subscription.on_subscribe">>).
 -define(WAMP_SUBCRIPTION_ON_UNREGISTER, <<"wamp.subscription.on_unsubscribe">>).
--define(WAMP_SUBS_COUNT_SUBS,       <<"wamp.subscription.count_subscribers">>).
--define(WAMP_SUBS_GET,                  <<"wamp.subscription.get">>).
--define(WAMP_SUBS_LIST,                 <<"wamp.subscription.list">>).
--define(WAMP_SUBS_LIST_SUBSCRIBERS, <<"wamp.subscription.list_subscribers">>).
--define(WAMP_SUBS_LOOKUP,               <<"wamp.subscription.lookup">>).
--define(WAMP_SUBS_MATCH,                <<"wamp.subscription.match">>).
--define(WAMP_SUBS_ON_CREATE,            <<"wamp.subscription.on_create">>).
--define(WAMP_SUBS_ON_DELETE,            <<"wamp.subscription.on_delete">>).
--define(WAMP_SUBS_ON_SUBSCRIBE,         <<"wamp.subscription.on_subscribe">>).
--define(WAMP_SUBS_ON_UNSUBSCRIBE,       <<"wamp.subscription.on_unsubscribe">>).
+-define(WAMP_SUBSCRIPTION_COUNT_SUBSCRIBERS,
+    <<"wamp.subscription.count_subscribers">>).
+-define(WAMP_SUBSCRIPTION_GET,                  <<"wamp.subscription.get">>).
+-define(WAMP_SUBSCRIPTION_LIST,                 <<"wamp.subscription.list">>).
+-define(WAMP_SUBSCRIPTION_LIST_SUBSCRIBERS,
+    <<"wamp.subscription.list_subscribers">>).
+-define(WAMP_SUBSCRIPTION_LOOKUP,               <<"wamp.subscription.lookup">>).
+-define(WAMP_SUBSCRIPTION_MATCH,                <<"wamp.subscription.match">>).
+-define(WAMP_SUBSCRIPTION_ON_CREATE,            <<"wamp.subscription.on_create">>).
+-define(WAMP_SUBSCRIPTION_ON_DELETE,            <<"wamp.subscription.on_delete">>).
+-define(WAMP_SUBSCRIPTION_ON_SUBSCRIBE,         <<"wamp.subscription.on_subscribe">>).
+-define(WAMP_SUBSCRIPTION_ON_UNSUBSCRIBE,       <<"wamp.subscription.on_unsubscribe">>).
 -define(WAMP_SYSTEM_SHUTDOWN,           <<"wamp.close.system_shutdown">>).
 -define(WAMP_TIMEOUT,                   <<"wamp.error.timeout">>).
 -define(WAMP_TYPE_CHECK_ERROR,          <<"wamp.error.type_check_error">>).
