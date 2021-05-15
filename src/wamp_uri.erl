@@ -9,7 +9,6 @@
 %% =============================================================================
 -module (wamp_uri).
 -include("wamp.hrl").
--include("wamp_uris.hrl").
 
 -type t()               ::  binary().
 -type rule()            ::  loose | loose_prefix | loose_allow_empty

@@ -5,6 +5,11 @@
 
 
 
+
+
+
+
+
 -define(WAMP2_JSON, <<"wamp.2.json">>).
 -define(WAMP2_MSGPACK, <<"wamp.2.msgpack">>).
 -define(WAMP2_BERT, <<"wamp.2.bert">>).
@@ -435,6 +440,12 @@
 
 -define(MAX_ID, 9007199254740993).
 
+%% Adictionary describing *features* supported by the peer for that role.
+%% This MUST be empty for WAMP Basic Profile implementations, and MUST
+%% be used by implementations implementing parts of the Advanced Profile
+%% to list the specific set of features they support.
+-type uri()             ::  binary().
+-type id()              ::  0..?MAX_ID.
 
 
 -define(HELLO, 1).
@@ -1218,15 +1229,76 @@
 
 
 
-
-
-
-%% Adictionary describing *features* supported by the peer for that role.
-%% This MUST be empty for WAMP Basic Profile implementations, and MUST
-%% be used by implementations implementing parts of the Advanced Profile
-%% to list the specific set of features they support.
--type uri()             ::  binary().
--type id()              ::  0..?MAX_ID.
-
-
-
+-define(WAMP_AUTHENTICATION_FAILED, <<"wamp.error.authentication_failed">>).
+-define(WAMP_AUTHORIZATION_FAILED, <<"wamp.error.authorization_failed">>).
+-define(WAMP_CANCELLED, <<"wamp.error.canceled">>).
+-define(WAMP_CLOSE_REALM, <<"wamp.close.close_realm">>).
+-define(WAMP_COUNT_CALLEES,             <<"wamp.registration.count_callees">>).
+-define(WAMP_DISCLOSE_ME_NOT_ALLOWED, <<"wamp.error.disclose_me.not_allowed">>).
+-define(WAMP_ERROR_INVALID_URI,         <<"wamp.error.invalid_uri">>).
+-define(WAMP_ERROR_NO_SUCH_SESSION,     <<"wamp.error.no_such_session">>).
+-define(WAMP_GOODBYE_AND_OUT, <<"wamp.close.goodbye_and_out">>).
+-define(WAMP_INVALID_ARGUMENT, <<"wamp.error.invalid_argument">>).
+-define(WAMP_INVALID_PAYLOAD, <<"wamp.error.invalid_payload">>).
+-define(WAMP_INVALID_URI, <<"wamp.error.invalid_uri">>).
+-define(WAMP_LIST_CALLEES,              <<"wamp.registration.list_callees">>).
+-define(WAMP_NET_FAILURE, <<"wamp.error.network_failure">>).
+-define(WAMP_NOT_AUTHORIZED, <<"wamp.error.not_authorized">>).
+-define(WAMP_NOT_AUTH_METHOD, <<"wamp.error.not_auth_method">>).
+-define(WAMP_NO_ELIGIBLE_CALLE, <<"wamp.error.no_eligible_callee">>).
+-define(WAMP_NO_SUCH_PRINCIPAL, <<"wamp.error.no_such_principal">>).
+-define(WAMP_NO_SUCH_PROCEDURE, <<"wamp.error.no_such_procedure">>).
+-define(WAMP_NO_SUCH_REALM, <<"wamp.error.no_such_realm">>).
+-define(WAMP_NO_SUCH_REGISTRATION, <<"wamp.error.no_such_registration">>).
+-define(WAMP_NO_SUCH_ROLE, <<"wamp.error.no_such_role">>).
+-define(WAMP_NO_SUCH_SESSION, <<"wamp.error.no_such_session">>).
+-define(WAMP_NO_SUCH_SUBSCRIPTION, <<"wamp.error.no_such_subscription">>).
+-define(WAMP_OPTION_DISALLOWED_DISCLOSE_ME,
+    <<"wamp.error.option_disallowed.disclose_me">>).
+-define(WAMP_OPTION_NOT_ALLOWED,
+    <<"wamp.error.option_not_allowed">>).
+-define(WAMP_PAYLOAD_SIZE_EXCEEDED,
+    <<"wamp.error.payload_size_exceeded">>).
+-define(WAMP_PROCEDURE_ALREADY_EXISTS,
+    <<"wamp.error.procedure_already_exists">>).
+-define(WAMP_PROCEDURE_EXISTS_WITH_DIFF_POLICY,
+    <<"wamp.error.procedure_exists_with_different_invocation_policy">>).
+-define(WAMP_PROTOCOL_VIOLATION,    <<"wamp.error.protocol_violation">>).
+-define(WAMP_REGISTRATION_ON_CREATE,    <<"wamp.registration.on_create">>).
+-define(WAMP_REGISTRATION_ON_DELETE,    <<"wamp.registration.on_delete">>).
+-define(WAMP_REGISTRATION_ON_REGISTER,  <<"wamp.registration.on_register">>).
+-define(WAMP_REGISTRATION_ON_UNREGISTER, <<"wamp.registration.on_unregister">>).
+-define(WAMP_REG_GET,                   <<"wamp.registration.get">>).
+-define(WAMP_REG_LIST,                  <<"wamp.registration.list">>).
+-define(WAMP_REG_LOOKUP,                <<"wamp.registration.lookup">>).
+-define(WAMP_REG_MATCH,                 <<"wamp.registration.match">>).
+-define(WAMP_REG_ON_CREATE,             <<"wamp.registration.on_create">>).
+-define(WAMP_REG_ON_DELETE,             <<"wamp.registration.on_delete">>).
+-define(WAMP_REG_ON_REGISTER,           <<"wamp.registration.on_register">>).
+-define(WAMP_REG_ON_UNREGISTER,         <<"wamp.registration.on_unregister">>).
+-define(WAMP_SESSION_COUNT,             <<"wamp.session.count">>).
+-define(WAMP_SESSION_GET,               <<"wamp.session.get">>).
+-define(WAMP_SESSION_KILL,              <<"wamp.session.kill">>).
+-define(WAMP_SESSION_KILL_ALL,          <<"wamp.session.kill_all">>).
+-define(WAMP_SESSION_KILL_BY_AUTHID,    <<"wamp.session.kill_by_authid">>).
+-define(WAMP_SESSION_KILL_BY_AUTHROLE,  <<"wamp.session.kill_by_authrole">>).
+-define(WAMP_SESSION_LIST,              <<"wamp.session.list">>).
+-define(WAMP_SESSION_ON_JOIN,           <<"wamp.session.on_join">>).
+-define(WAMP_SESSION_ON_LEAVE,          <<"wamp.session.on_leave">>).
+-define(WAMP_SUBCRIPTION_ON_CREATE, <<"wamp.subscription.on_create">>).
+-define(WAMP_SUBCRIPTION_ON_DELETE, <<"wamp.subscription.on_delete">>).
+-define(WAMP_SUBCRIPTION_ON_REGISTER, <<"wamp.subscription.on_subscribe">>).
+-define(WAMP_SUBCRIPTION_ON_UNREGISTER, <<"wamp.subscription.on_unsubscribe">>).
+-define(WAMP_SUBS_COUNT_SUBS,       <<"wamp.subscription.count_subscribers">>).
+-define(WAMP_SUBS_GET,                  <<"wamp.subscription.get">>).
+-define(WAMP_SUBS_LIST,                 <<"wamp.subscription.list">>).
+-define(WAMP_SUBS_LIST_SUBSCRIBERS, <<"wamp.subscription.list_subscribers">>).
+-define(WAMP_SUBS_LOOKUP,               <<"wamp.subscription.lookup">>).
+-define(WAMP_SUBS_MATCH,                <<"wamp.subscription.match">>).
+-define(WAMP_SUBS_ON_CREATE,            <<"wamp.subscription.on_create">>).
+-define(WAMP_SUBS_ON_DELETE,            <<"wamp.subscription.on_delete">>).
+-define(WAMP_SUBS_ON_SUBSCRIBE,         <<"wamp.subscription.on_subscribe">>).
+-define(WAMP_SUBS_ON_UNSUBSCRIBE,       <<"wamp.subscription.on_unsubscribe">>).
+-define(WAMP_SYSTEM_SHUTDOWN,           <<"wamp.close.system_shutdown">>).
+-define(WAMP_TIMEOUT,                   <<"wamp.error.timeout">>).
+-define(WAMP_TYPE_CHECK_ERROR,          <<"wamp.error.type_check_error">>).
