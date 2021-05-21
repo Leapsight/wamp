@@ -6,6 +6,7 @@
 -export([is_valid_id/1]).
 -export([validate_id/1]).
 -export([validate_map/3]).
+-export([validate_map/4]).
 
 
 
@@ -60,6 +61,20 @@ validate_map(Map, Spec, Extensions) ->
         labels => atom,  % This will only turn the defined keys to atoms
         keep_unknown => false % Remove all unknown options
     },
+    validate_map(Map, Spec, Extensions, Opts).
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+validate_map(Map, Spec, Extensions, Opts0) ->
+    Defaults = #{
+        atomic => true, % Fail atomically for the whole map
+        labels => atom,  % This will only turn the defined keys to atoms
+        keep_unknown => false % Remove all unknown options
+    },
+    Opts = maps:merge(Defaults, Opts0),
     NewSpec = maybe_add_extensions(Extensions, Spec),
     maps_utils:validate(Map, NewSpec, Opts).
 

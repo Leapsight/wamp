@@ -34,8 +34,15 @@ hello_json_test(_) ->
             <<"caller">> => #{}
         }}),
     Bin = wamp_encoding:encode(M, json),
-    hello = wamp_encoding:decode_message_name({ws, text, json}, Bin),
-    {[M], <<>>} = wamp_encoding:decode({ws, text, json}, Bin).
+
+    ?assertEqual(
+        hello,
+        wamp_encoding:decode_message_name({ws, text, json}, Bin)
+    ),
+    ?assertMatch(
+        {[M], <<>>},
+        wamp_encoding:decode({ws, text, json}, Bin)
+    ).
 
 welcome_json_test(_) ->
     M = wamp_message:welcome(1, #{
@@ -49,7 +56,7 @@ welcome_json_test(_) ->
     {[M], <<>>} = wamp_encoding:decode({ws, text, json}, Bin).
 
 abort_json_test(_) ->
-    M = wamp_message:abort(#{message => <<"foo">>}, <<"wamp.error.foo">>),
+    M = wamp_message:abort(#{<<"message">> => <<"foo">>}, <<"wamp.error.foo">>),
     Bin = wamp_encoding:encode(M, json),
     abort = wamp_encoding:decode_message_name(
         {ws, text, json}, Bin),
@@ -71,13 +78,20 @@ authenticate_json_test(_) ->
 
 goodbye_json_test(_) ->
     M = wamp_message:goodbye(
-        #{message => <<"The host is shutting down now.">>},
+        #{<<"message">> => <<"The host is shutting down now.">>},
         <<"wamp.error.system_shutdown">>
     ),
     Bin = wamp_encoding:encode(M, json),
-    goodbye = wamp_encoding:decode_message_name(
-        {ws, text, json}, Bin),
-    {[M], <<>>} = wamp_encoding:decode({ws, text, json}, Bin).
+    ?assertEqual(
+        goodbye,
+        wamp_encoding:decode_message_name(
+            {ws, text, json}, Bin
+        )
+    ),
+    ?assertMatch(
+        {[M], <<>>},
+        wamp_encoding:decode({ws, text, json}, Bin)
+    ).
 
 
 error_json_test(_) ->
@@ -334,7 +348,7 @@ welcome_msgpack_test(_) ->
     {[M], <<>>} = wamp_encoding:decode({ws, binary, msgpack}, Bin).
 
 abort_msgpack_test(_) ->
-    M = wamp_message:abort(#{message => <<"foo">>}, <<"wamp.error.foo">>),
+    M = wamp_message:abort(#{<<"message">> => <<"foo">>}, <<"wamp.error.foo">>),
     Bin = wamp_encoding:encode(M, msgpack),
     abort = wamp_encoding:decode_message_name(
         {ws, binary, msgpack}, Bin),
@@ -356,7 +370,7 @@ authenticate_msgpack_test(_) ->
 
 goodbye_msgpack_test(_) ->
     M = wamp_message:goodbye(
-        #{message => <<"The host is shutting down now.">>},
+        #{<<"message">> => <<"The host is shutting down now.">>},
         <<"wamp.error.system_shutdown">>
     ),
     Bin = wamp_encoding:encode(M, msgpack),
@@ -615,8 +629,11 @@ welcome_bert_test(_) ->
     {[M], <<>>} = wamp_encoding:decode({ws, binary, bert}, wamp_encoding:encode(M, bert)).
 
 abort_bert_test(_) ->
-    M = wamp_message:abort(#{message => <<"foo">>}, <<"wamp.error.foo">>),
-    {[M], <<>>} = wamp_encoding:decode({ws, binary, bert}, wamp_encoding:encode(M, bert)).
+    M = wamp_message:abort(#{<<"message">> => <<"foo">>}, <<"wamp.error.foo">>),
+    ?assertMatch(
+        {[M], <<>>},
+        wamp_encoding:decode({ws, binary, bert}, wamp_encoding:encode(M, bert))
+    ).
 
 challenge_bert_test(_) ->
     M = wamp_message:challenge(<<"foo">>, #{}),
@@ -628,7 +645,7 @@ authenticate_bert_test(_) ->
 
 goodbye_bert_test(_) ->
     M = wamp_message:goodbye(
-        #{message => <<"The host is shutting down now.">>},
+        #{<<"message">> => <<"The host is shutting down now.">>},
         <<"wamp.error.system_shutdown">>
     ),
     {[M], <<>>} = wamp_encoding:decode({ws, binary, bert}, wamp_encoding:encode(M, bert)).
@@ -789,7 +806,7 @@ welcome_erl_test(_) ->
     {[M], <<>>} = wamp_encoding:decode({ws, binary, erl}, Bin).
 
 abort_erl_test(_) ->
-    M = wamp_message:abort(#{message => <<"foo">>}, <<"wamp.error.foo">>),
+    M = wamp_message:abort(#{<<"message">> => <<"foo">>}, <<"wamp.error.foo">>),
     Bin = wamp_encoding:encode(M, erl),
     abort = wamp_encoding:decode_message_name(
         {ws, binary, erl}, Bin),
@@ -811,7 +828,7 @@ authenticate_erl_test(_) ->
 
 goodbye_erl_test(_) ->
     M = wamp_message:goodbye(
-        #{message => <<"The host is shutting down now.">>},
+        #{<<"message">> => <<"The host is shutting down now.">>},
         <<"wamp.error.system_shutdown">>
     ),
     Bin = wamp_encoding:encode(M, erl),

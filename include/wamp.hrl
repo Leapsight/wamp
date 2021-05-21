@@ -652,7 +652,7 @@
     authrole => #{
         alias => <<"authrole">>,
         required => false,
-        datatype => binary
+        datatype => [binary, atom]
     },
     authprovider => #{
         alias => <<"authprovider">>,
@@ -696,17 +696,6 @@
     }
 }).
 
-%% maps_utils:map_spec()
--define(GOODBYE_DETAILS_SPEC, #{
-    message => #{
-        alias => <<"message">>,
-        required => false,
-        datatype => binary
-    }
-}).
-
-%% maps_utils:map_spec()
--define(ABORT_DETAILS_SPEC, ?GOODBYE_DETAILS_SPEC).
 
 %% maps_utils:map_spec()
 -define(CALL_CANCELLING_OPTS_SPEC, #{
@@ -787,7 +776,7 @@
         alias => <<"timeout">>,
         required => false,
         default => 0,
-        datatype => timeout
+        datatype => non_neg_integer
     },
     receive_progress => #{
         alias => <<"receive_progress">>,

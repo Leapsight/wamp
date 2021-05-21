@@ -53,9 +53,17 @@
 -spec new(MessageType :: type(), Details :: map()) -> ok | no_return().
 
 new(Type, Details) ->
-    Spec = spec(Type),
     Extensions = app_config:get(wamp, [extended_details, Type], []),
-    wamp_utils:validate_map(Details, Spec, Extensions).
+    case spec(Type) of
+        undefined ->
+            Opts = #{
+                keep_unknown => true
+            },
+            wamp_utils:validate_map(Details, #{}, Extensions, Opts);
+        Spec ->
+
+            wamp_utils:validate_map(Details, Spec, Extensions)
+    end.
 
 
 
@@ -72,9 +80,9 @@ spec(hello) ->
 spec(welcome) ->
     ?WELCOME_DETAILS_SPEC;
 spec(abort) ->
-    ?ABORT_DETAILS_SPEC;
+    undefined;
 spec(goodbye) ->
-    ?GOODBYE_DETAILS_SPEC;
+    undefined;
 spec(event) ->
     ?EVENT_DETAILS_SPEC;
 spec(result) ->
