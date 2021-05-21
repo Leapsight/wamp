@@ -124,7 +124,7 @@ welcome(SessionId, Details)   ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
-%% "ABORT" gets sent only _before_ a _Session_ is established, while
+%% "ABORT" gets sent only _before_ a _Session_ is established
 -spec abort(map(), uri()) -> wamp_abort() | no_return().
 
 abort(Details, ReasonUri) ->
