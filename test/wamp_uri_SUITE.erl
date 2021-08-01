@@ -7,6 +7,7 @@
 
 all() ->
     [
+        test_strict,
         validate_exact,
         validate_exact_error,
         validate_prefix,
@@ -25,6 +26,21 @@ init_per_suite(Config) ->
 end_per_suite(_) ->
     ok.
 
+
+test_strict(_) ->
+    List = [
+        <<"foo.b-a-r">>,
+        <<"foo.b a r">>
+    ],
+    lists:foreach(
+        fun(URI) ->
+            ?assertEqual(
+                false,
+                wamp_uri:is_valid(URI, strict)
+            )
+        end,
+        List
+    ).
 
 validate_exact(_) ->
     List = [

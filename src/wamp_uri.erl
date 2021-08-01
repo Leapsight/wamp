@@ -161,32 +161,32 @@ uri_regex(Rule) ->
 
 %% @private
 uri_regex(loose = Rule, undefined) ->
-    {ok, Regex} = re:compile("^([^\s\.#]+\.)*([^\s\.#]+)$"),
+    {ok, Regex} = re:compile("^([^\s\\.#]+\\.)*([^\s\\.#]+)$"),
     ok = persistent_term:put({?MODULE, Rule}, Regex),
     Regex;
 
 uri_regex(loose_prefix = Rule, undefined) ->
-    {ok, Regex} = re:compile("^([^\s\.#]+\.)*([^\s\.#]+)[.]?$"),
+    {ok, Regex} = re:compile("^([^\s\\.#]+\\.)*([^\s\\.#]+)[.]?$"),
     ok = persistent_term:put({?MODULE, Rule}, Regex),
     Regex;
 
 uri_regex(loose_allow_empty = Rule, undefined) ->
-    {ok, Regex} = re:compile("^(([^\s\.#]+\.)|\.)*([^\s\.#]+)?$"),
+    {ok, Regex} = re:compile("^(([^\s\\.#]+\\.)|\\.)*([^\s\\.#]+)?$"),
     ok = persistent_term:put({?MODULE, Rule}, Regex),
     Regex;
 
 uri_regex(strict = Rule, undefined) ->
-    {ok, Regex} = re:compile("^([0-9a-z_]+\.)*([0-9a-z_]+)$"),
+    {ok, Regex} = re:compile("^([0-9a-z_]+\\.)*([0-9a-z_]+)$"),
     ok = persistent_term:put({?MODULE, Rule}, Regex),
     Regex;
 
 uri_regex(strict_prefix = Rule, undefined) ->
-    {ok, Regex} = re:compile("^([0-9a-z_]+\.)*([0-9a-z_]+)[.]?$"),
+    {ok, Regex} = re:compile("^([0-9a-z_]+\\.)*([0-9a-z_]+)[.]?$"),
     ok = persistent_term:put({?MODULE, Rule}, Regex),
     Regex;
 
 uri_regex(strict_allow_empty = Rule, undefined) ->
-    {ok, Regex} = re:compile("^(([0-9a-z_]+\.)|\.)*([0-9a-z_]+)?$"),
+    {ok, Regex} = re:compile("^(([0-9a-z_]+\\.)|\\.)*([0-9a-z_]+)?$"),
     ok = persistent_term:put({?MODULE, Rule}, Regex),
     Regex;
 
