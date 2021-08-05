@@ -103,7 +103,7 @@ is_message(_) -> false.
 
 hello(RealmUri, Details) when is_binary(RealmUri) ->
     #hello{
-        realm_uri = wamp_uri:validate(RealmUri, strict),
+        realm_uri = wamp_uri:validate(RealmUri),
         details = wamp_details:new(hello, Details)
     }.
 
@@ -129,7 +129,7 @@ welcome(SessionId, Details)   ->
 
 abort(Details, ReasonUri) ->
     #abort{
-        reason_uri = wamp_uri:validate(ReasonUri, strict),
+        reason_uri = wamp_uri:validate(ReasonUri),
         details = wamp_details:new(abort, Details)
     }.
 
@@ -169,7 +169,7 @@ authenticate(Signature, Extra) when is_map(Extra) ->
 
 goodbye(Details, ReasonUri) ->
     #goodbye{
-        reason_uri = wamp_uri:validate(ReasonUri, strict),
+        reason_uri = wamp_uri:validate(ReasonUri),
         details = wamp_details:new(goodbye, Details)
     }.
 
@@ -214,7 +214,7 @@ when is_map(Details) ->
         request_type = ReqType,
         request_id = wamp_utils:validate_id(ReqId),
         details = Details, % any
-        error_uri = wamp_uri:validate(ErrorUri, strict),
+        error_uri = wamp_uri:validate(ErrorUri),
         arguments = Args,
         arguments_kw = Payload
     }.
@@ -312,7 +312,7 @@ publish(ReqId, Options, TopicUri, Args, Payload) ->
     #publish{
         request_id = wamp_utils:validate_id(ReqId),
         options = wamp_options:new(publish, Options),
-        topic_uri = wamp_uri:validate(TopicUri, strict),
+        topic_uri = wamp_uri:validate(TopicUri),
         arguments = Args,
         arguments_kw = Payload
     }.
@@ -455,7 +455,7 @@ call(ReqId, Options, ProcedureUri, Args, Payload) ->
     #call{
         request_id = wamp_utils:validate_id(ReqId),
         options = wamp_options:new(call, Options),
-        procedure_uri = wamp_uri:validate(ProcedureUri, strict),
+        procedure_uri = wamp_uri:validate(ProcedureUri),
         arguments = Args,
         arguments_kw = Payload
     }.
