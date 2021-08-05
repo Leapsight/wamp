@@ -57,6 +57,7 @@ init() ->
     ok = app_config:init(?APP, #{callback_mod => ?MODULE}),
     _ = lager:info("Wamp configuration initialised"),
     ok = init_json_serialization_opts(),
+    ok = init_defaults(),
     ok.
 
 
@@ -102,6 +103,15 @@ set(Key, Value) ->
 %% =============================================================================
 %% PRIVATE
 %% =============================================================================
+
+
+init_defaults() ->
+    case get(uri_strictness, undefined) of
+        undefined ->
+            set(uri_strictness, loose);
+        _ ->
+            ok
+    end.
 
 
 init_json_serialization_opts() ->

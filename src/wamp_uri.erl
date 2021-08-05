@@ -11,8 +11,14 @@
 -include("wamp.hrl").
 
 -type t()               ::  binary().
--type rule()            ::  loose | loose_prefix | loose_allow_empty
-                            | strict | strict_prefix | strict_allow_empty.
+-type rule()            ::  loose
+                            | loose_prefix
+                            | loose_allow_empty
+                            | prefix
+                            | allow_empty
+                            | strict
+                            | strict_prefix
+                            | strict_allow_empty.
 -type match_strategy()  ::  binary().
 
 -export_type([t/0]).
@@ -34,13 +40,13 @@
 
 
 %% -----------------------------------------------------------------------------
-%% @doc Sames as `is_valid(Uri, loose_allow_empty)'.
+%% @doc Sames as `is_valid(Uri, wamp_config:get(uri_strictness))'.
 %% @end
 %% -----------------------------------------------------------------------------
 -spec is_valid(uri()) -> boolean().
 
 is_valid(Uri) when is_binary(Uri) andalso byte_size(Uri) > 0 ->
-    is_valid(Uri, loose_allow_empty);
+    is_valid(Uri, wamp_config:get(uri_strictness));
 
 is_valid(_) ->
     false.
@@ -121,10 +127,6 @@ match(_, _, _) ->
     error(badarg).
 
 
-
-
-
-
 %% -----------------------------------------------------------------------------
 %% @doc
 %% Example:
@@ -190,6 +192,20 @@ uri_regex(strict_allow_empty = Rule, undefined) ->
     ok = persistent_term:put({?MODULE, Rule}, Regex),
     Regex;
 
+uri_regex(prefix, undefined) ->
+    Rule = case wamp_config:get(uri_strictness) of
+        loose -> loose_prefix;
+        strict -> strict_prefix
+    end,
+    uri_regex(Rule, undefined);
+
+uri_regex(allow_empty, undefined) ->
+    Rule = case wamp_config:get(uri_strictness) of
+        loose -> loose_allow_empty;
+        strict -> strict_allow_empty
+    end,
+    uri_regex(Rule, undefined);
+
 uri_regex(_, undefined) ->
     error(badrule);
 
@@ -228,7 +244,15 @@ maybe_error(false, Uri) ->
 
 
 %% @private
-rule_for_strategy(?EXACT_MATCH) -> strict;
-rule_for_strategy(?PREFIX_MATCH) -> strict_prefix;
-rule_for_strategy(?WILDCARD_MATCH) -> strict_allow_empty;
-rule_for_strategy(_) -> error(badstrategy).
+rule_for_strategy(Strategy) ->
+    rule_for_strategy(Strategy, wamp_config:get(uri_strictness)).
+
+
+rule_for_strategy(?EXACT_MATCH, Rule) -> Rule;
+rule_for_strategy(?PREFIX_MATCH, loose) -> strict_prefix;
+rule_for_strategy(?PREFIX_MATCH, strict) -> loose_prefix;
+rule_for_strategy(?WILDCARD_MATCH, loose) -> loose_allow_empty;
+rule_for_strategy(?WILDCARD_MATCH, strict) -> strict_allow_empty;
+rule_for_strategy(_, _) -> error(badstrategy).
+
+
