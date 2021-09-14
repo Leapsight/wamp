@@ -682,7 +682,7 @@ request_info([?RESULT, ReqId | _]) ->
     #{request_type => ?RESULT, request_id => ReqId};
 
 request_info([?REGISTER, ReqId | _]) ->
-    #{request_type => ?REGISTERED, request_id => ReqId};
+    #{request_type => ?REGISTER, request_id => ReqId};
 
 request_info([?REGISTERED, ReqId | _]) ->
     #{request_type => ?REGISTERED, request_id => ReqId};
