@@ -486,7 +486,10 @@ unpack([?YIELD, ReqId, Options, Args, Payload]) ->
         Options,
         Args,
         Payload
-    ).
+    );
+
+unpack(M) ->
+    error({invalid_message, M}).
 
 
 
@@ -579,32 +582,47 @@ decode_text(Data, json, Opts, Acc) ->
     {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
 
 decode_binary(Data, Enc, Opts, Acc) ->
+    %% At the moment we do not support batched encoding
+    %% so Data is a single message
     {decode_message(Data, Enc, Opts, Acc), <<>>}.
 
 
 
 %% @private
 -spec decode_message(binary(), encoding(), Opts :: list(), [wamp_message()]) ->
-    [wamp_message()].
+    [wamp_message()] | no_return().
 
 decode_message(Data, json, Opts, Acc) ->
+    %% Decode might failed with badarg exception if not a proper JSON
     M = jsone:decode(Data, Opts),
-    [unpack(M) | Acc];
+    unpack(M, Acc);
 
 decode_message(Data, msgpack, Opts, Acc) ->
     {ok, M} = msgpack:unpack(Data, Opts),
-    [unpack(M) | Acc];
+    unpack(M, Acc);
 
 decode_message(Data, bert, _, Acc) ->
-    [unpack(bert:decode(Data)) | Acc];
+    M = bert:decode(Data),
+    unpack(M, Acc);
 
 decode_message(Bin, erl, _, Acc) ->
-    [unpack(binary_to_term(Bin)) | Acc];
+    M = binary_to_term(Bin),
+    unpack(M, Acc);
 
 decode_message(_Data, Enc, _, _Acc) ->
     error({unsupported_encoding, Enc}).
 
 
+
+unpack(M, Acc) ->
+    try
+        [unpack(M) | Acc]
+    catch
+        error:{invalid_argument, Reason} ->
+            error({invalid_argument, Reason, M});
+        error:{invalid_uri, Uri} ->
+            error({invalid_uri, Uri, M})
+    end.
 
 
 %% =============================================================================
