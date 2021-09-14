@@ -76,6 +76,7 @@ validate_map(Map, Spec, Extensions, Opts0) ->
     },
     Opts = maps:merge(Defaults, Opts0),
     NewSpec = maybe_add_extensions(Extensions, Spec),
+
     try
         maps_utils:validate(Map, NewSpec, Opts)
     catch
