@@ -81,7 +81,7 @@ validate_map(Map, Spec, Extensions, Opts0) ->
         maps_utils:validate(Map, NewSpec, Opts)
     catch
         error:Reason when is_map(Reason) ->
-            error({invalid_argument, Reason})
+            error({validation_failed, Reason})
     end.
 
 
