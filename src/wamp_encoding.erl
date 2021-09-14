@@ -486,7 +486,10 @@ unpack([?YIELD, ReqId, Options, Args, Payload]) ->
         Options,
         Args,
         Payload
-    ).
+    );
+
+unpack(M) ->
+    error({invalid_message, M}).
 
 
 
@@ -579,30 +582,122 @@ decode_text(Data, json, Opts, Acc) ->
     {Acc1 :: [wamp_message()], Buffer :: binary()} | no_return().
 
 decode_binary(Data, Enc, Opts, Acc) ->
+    %% At the moment we do not support batched encoding
+    %% so Data is a single message
     {decode_message(Data, Enc, Opts, Acc), <<>>}.
 
 
 
 %% @private
 -spec decode_message(binary(), encoding(), Opts :: list(), [wamp_message()]) ->
-    [wamp_message()].
+    [wamp_message()] | no_return().
 
 decode_message(Data, json, Opts, Acc) ->
+    %% Decode might failed with badarg exception if not a proper JSON
     M = jsone:decode(Data, Opts),
-    [unpack(M) | Acc];
+    unpack(M, Acc);
 
 decode_message(Data, msgpack, Opts, Acc) ->
     {ok, M} = msgpack:unpack(Data, Opts),
-    [unpack(M) | Acc];
+    unpack(M, Acc);
 
 decode_message(Data, bert, _, Acc) ->
-    [unpack(bert:decode(Data)) | Acc];
+    M = bert:decode(Data),
+    unpack(M, Acc);
 
 decode_message(Bin, erl, _, Acc) ->
-    [unpack(binary_to_term(Bin)) | Acc];
+    M = binary_to_term(Bin),
+    unpack(M, Acc);
 
 decode_message(_Data, Enc, _, _Acc) ->
     error({unsupported_encoding, Enc}).
+
+
+
+unpack(M, Acc) ->
+    try
+        [unpack(M) | Acc]
+    catch
+        error:{validation_failed, Reason} ->
+            error({validation_failed, Reason, request_info(M)});
+        error:{invalid_uri, Uri} ->
+            error({invalid_uri, Uri, request_info(M)})
+    end.
+
+
+
+
+request_info([?HELLO, _, _]) ->
+    #{request_type => ?HELLO, request_id => undefined};
+
+request_info([?WELCOME, _, _]) ->
+    #{request_type => ?WELCOME, request_id => undefined};
+
+request_info([?CHALLENGE, _, _]) ->
+    #{request_type => ?CHALLENGE, request_id => undefined};
+
+request_info([?AUTHENTICATE, _, _]) ->
+    #{request_type => ?AUTHENTICATE, request_id => undefined};
+
+request_info([?ABORT, _, _]) ->
+    #{request_type => ?ABORT, request_id => undefined};
+
+request_info([?GOODBYE, _, _]) ->
+    #{request_type => ?GOODBYE, request_id => undefined};
+
+request_info([?ERROR | _])->
+    #{request_type => ?ERROR, request_id => undefined};
+
+request_info([?PUBLISH, ReqId | _]) ->
+    #{request_type => ?PUBLISH, request_id => ReqId};
+
+request_info([?PUBLISHED, ReqId | _]) ->
+    #{request_type => ?PUBLISHED, request_id => ReqId};
+
+request_info([?SUBSCRIBE, ReqId | _]) ->
+    #{request_type => ?SUBSCRIBE, request_id => ReqId};
+
+request_info([?SUBSCRIBED, ReqId | _]) ->
+    #{request_type => ?SUBSCRIBED, request_id => ReqId};
+
+request_info([?UNSUBSCRIBE, ReqId | _]) ->
+    #{request_type => ?UNSUBSCRIBE, request_id => ReqId};
+
+request_info([?UNSUBSCRIBED, ReqId]) ->
+    #{request_type => ?UNSUBSCRIBED, request_id => ReqId};
+
+request_info([?EVENT | _]) ->
+    #{request_type => ?EVENT, request_id => undefined};
+
+request_info([?CALL, ReqId | _]) ->
+    #{request_type => ?CALL, request_id => ReqId};
+
+request_info([?CANCEL, ReqId | _]) ->
+    #{request_type => ?CANCEL, request_id => ReqId};
+
+request_info([?INTERRUPT, ReqId | _]) ->
+    #{request_type => ?INTERRUPT, request_id => ReqId};
+
+request_info([?RESULT, ReqId | _]) ->
+    #{request_type => ?RESULT, request_id => ReqId};
+
+request_info([?REGISTER, ReqId | _]) ->
+    #{request_type => ?REGISTERED, request_id => ReqId};
+
+request_info([?REGISTERED, ReqId | _]) ->
+    #{request_type => ?REGISTERED, request_id => ReqId};
+
+request_info([?UNREGISTER, ReqId | _]) ->
+    #{request_type => ?UNREGISTER, request_id => ReqId};
+
+request_info([?UNREGISTERED, ReqId]) ->
+    #{request_type => ?UNREGISTERED, request_id => ReqId};
+
+request_info([?INVOCATION, ReqId | _]) ->
+    #{request_type => ?INVOCATION, request_id => ReqId};
+
+request_info([?YIELD, ReqId | _]) ->
+    #{request_type => ?YIELD, request_id => ReqId}.
 
 
 
