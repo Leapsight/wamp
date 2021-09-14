@@ -618,8 +618,8 @@ unpack(M, Acc) ->
     try
         [unpack(M) | Acc]
     catch
-        error:{invalid_argument, Reason} ->
-            error({invalid_argument, Reason, request_info(M)});
+        error:{validation_failed, Reason} ->
+            error({validation_failed, Reason, request_info(M)});
         error:{invalid_uri, Uri} ->
             error({invalid_uri, Uri, request_info(M)})
     end.
