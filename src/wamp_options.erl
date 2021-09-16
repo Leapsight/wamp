@@ -50,7 +50,7 @@
 %% Using this configuration only `call' messages would accept `<<"_x">>'
 %% and `<<"_y">>' properties.
 %% -----------------------------------------------------------------------------
--spec new(MessageType :: type(), Opts :: map()) -> ok | no_return().
+-spec new(MessageType :: type(), Opts :: map()) -> map() | no_return().
 
 new(Type, Opts) ->
     Spec = spec(Type),

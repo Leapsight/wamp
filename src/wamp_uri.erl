@@ -81,7 +81,7 @@ validate(Uri) when is_binary(Uri) andalso byte_size(Uri) > 0 ->
     maybe_error(is_valid(Uri), Uri);
 
 validate(Uri) ->
-    maybe_error(false, Uri).
+    error({invalid_uri, Uri}).
 
 
 %% -----------------------------------------------------------------------------
@@ -95,7 +95,7 @@ validate(Uri, Rule) when is_binary(Uri) andalso byte_size(Uri) > 0  ->
     maybe_error(is_valid(Uri, Rule), Uri);
 
 validate(Uri, _) ->
-    maybe_error(false, Uri).
+    error({invalid_uri, Uri}).
 
 
 %% -----------------------------------------------------------------------------
@@ -214,7 +214,9 @@ uri_regex(_, Regex) ->
 
 
 %% @private
--spec subsumes(Pattern :: binary(), Uri :: binary()) -> boolean().
+-spec subsumes(
+    Pattern :: binary() | [binary()],
+    Uri :: binary() | [binary()]) -> boolean().
 
 subsumes(Term, Term) ->
     true;

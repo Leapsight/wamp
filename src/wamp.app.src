@@ -6,10 +6,10 @@
   {applications,
    [kernel,
     stdlib,
-    lager,
     jsone,
     msgpack,
-    bert
+    bert,
+    utils
    ]},
   {env,[]},
   {modules, []},
