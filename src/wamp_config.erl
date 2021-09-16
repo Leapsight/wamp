@@ -55,7 +55,6 @@
 %% -----------------------------------------------------------------------------
 init() ->
     ok = app_config:init(?APP, #{callback_mod => ?MODULE}),
-    _ = lager:info("Wamp configuration initialised"),
     ok = init_json_serialization_opts(),
     ok = init_defaults(),
     ok.

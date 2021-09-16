@@ -535,7 +535,7 @@ do_decode_message_name(Data, bert) ->
     do_decode_message_name(Data, erl);
 
 do_decode_message_name(<<"[", Rest/binary>>, json) ->
-    case binary:match(Rest, [<<$,>>], []) of
+    case binary:match(Rest, [<< $, >>], []) of
         nomatch ->
             error(badarg);
         {Pos, 1} ->

@@ -674,7 +674,7 @@ yield(ReqId, Options, Args, Payload) ->
     | wamp_register()
     | wamp_subscribe()
     | wamp_yield()
-    ) -> ok | no_return().
+    ) -> map() | no_return().
 
 options(#call{options = Val}) -> Val;
 options(#cancel{options = Val}) -> Val;
@@ -698,7 +698,7 @@ options(_) ->
     | wamp_goodbye()
     | wamp_result()
     | wamp_invocation()
-    ) -> ok | no_return().
+    ) -> map() | no_return().
 
 details(#hello{details = Val}) -> Val;
 details(#welcome{details = Val}) -> Val;
