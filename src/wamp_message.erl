@@ -24,26 +24,39 @@
 
 -export([abort/2]).
 -export([authenticate/2]).
--export([call/3, call/4, call/5]).
+-export([call/3]).
+-export([call/4]).
+-export([call/5]).
 -export([cancel/2]).
 -export([challenge/2]).
+-export([details/1]).
 -export([error/4]).
 -export([error/5]).
 -export([error/6]).
 -export([error_from/3]).
 -export([error_from/4]).
 -export([error_from/5]).
--export([event/3, event/4, event/5]).
+-export([event/3]).
+-export([event/4]).
+-export([event/5]).
 -export([goodbye/2]).
 -export([hello/2]).
 -export([interrupt/2]).
--export([invocation/3, invocation/4, invocation/5]).
+-export([invocation/3]).
+-export([invocation/4]).
+-export([invocation/5]).
 -export([is_message/1]).
--export([publish/3, publish/4, publish/5]).
+-export([options/1]).
+-export([publish/3]).
+-export([publish/4]).
+-export([publish/5]).
 -export([published/2]).
 -export([register/3]).
 -export([registered/2]).
--export([result/2, result/3, result/4]).
+-export([request_id/1]).
+-export([result/2]).
+-export([result/3]).
+-export([result/4]).
 -export([subscribe/3]).
 -export([subscribed/2]).
 -export([unregister/2]).
@@ -51,9 +64,9 @@
 -export([unsubscribe/2]).
 -export([unsubscribed/1]).
 -export([welcome/2]).
--export([yield/2, yield/3, yield/4]).
--export([options/1]).
--export([details/1]).
+-export([yield/2]).
+-export([yield/3]).
+-export([yield/4]).
 
 
 
@@ -709,3 +722,44 @@ details(#invocation{details = Val}) -> Val;
 details(_) ->
     error(badarg).
 
+
+
+-spec request_id(
+    wamp_call()
+    | wamp_cancel()
+    | wamp_error()
+    | wamp_interrupt()
+    | wamp_invocation()
+    | wamp_publish()
+    | wamp_published()
+    | wamp_register()
+    | wamp_registered()
+    | wamp_result()
+    | wamp_subscribe()
+    | wamp_subscribed()
+    | wamp_unregister()
+    | wamp_unregistered()
+    | wamp_unsubscribe()
+    | wamp_unsubscribed()
+    | wamp_yield()
+    ) -> map() | no_return().
+
+request_id(#call{request_id = Val}) -> Val;
+request_id(#cancel{request_id = Val}) -> Val;
+request_id(#error{request_id = Val}) -> Val;
+request_id(#interrupt{request_id = Val}) -> Val;
+request_id(#invocation{request_id = Val}) -> Val;
+request_id(#publish{request_id = Val}) -> Val;
+request_id(#published{request_id = Val}) -> Val;
+request_id(#register{request_id = Val}) -> Val;
+request_id(#registered{request_id = Val}) -> Val;
+request_id(#result{request_id = Val}) -> Val;
+request_id(#subscribe{request_id = Val}) -> Val;
+request_id(#subscribed{request_id = Val}) -> Val;
+request_id(#unregister{request_id = Val}) -> Val;
+request_id(#unregistered{request_id = Val}) -> Val;
+request_id(#unsubscribe{request_id = Val}) -> Val;
+request_id(#unsubscribed{request_id = Val}) -> Val;
+request_id(#yield{request_id = Val}) -> Val;
+request_id(_) ->
+    error(badarg).
