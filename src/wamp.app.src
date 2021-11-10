@@ -1,6 +1,6 @@
 {application, wamp,
  [{description, "An OTP library implementing the WAMP encoding and decoding using JSON."},
-  {vsn, "0.8.6"},
+  {vsn, "0.8.7"},
   {registered, []},
   {mod, {wamp_app, []}},
   {applications,

@@ -145,8 +145,8 @@ encode(Message, Format) when is_list(Message) ->
 encode(Message, Encoding, Opts) when is_tuple(Message) ->
     encode(pack(Message), Encoding, Opts);
 
-encode(Message, erl, _) when is_list(Message) ->
-    term_to_binary(Message);
+encode(Message, erl, Opts) when is_list(Message) ->
+    term_to_binary(wamp_erl:encode(Message, Opts));
 
 encode(Message, bert, _) when is_list(Message) ->
     bert:encode(Message);
@@ -499,8 +499,11 @@ unpack(M) ->
 
 
 
-opts(erl, _) ->
-    [];
+opts(erl, encode) ->
+    wamp_config:get([serialization, erl, encode], []);
+
+opts(erl, decode) ->
+    wamp_config:get([serialization, erl, decode], []);
 
 opts(bert, _) ->
     [];
@@ -605,8 +608,8 @@ decode_message(Data, bert, _, Acc) ->
     M = bert:decode(Data),
     unpack(M, Acc);
 
-decode_message(Bin, erl, _, Acc) ->
-    M = binary_to_term(Bin),
+decode_message(Bin, erl, Opts, Acc) ->
+    M = wamp_erl:decode(binary_to_term(Bin), Opts),
     unpack(M, Acc);
 
 decode_message(_Data, Enc, _, _Acc) ->
