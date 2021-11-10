@@ -211,6 +211,21 @@ call_json_3_test(_) ->
         {ws, text, json}, Bin),
     {[M], <<>>} = wamp_encoding:decode({ws, text, json}, Bin).
 
+call_json_4_test(_) ->
+    Args = [
+        [{bar, pid_to_list(self())}]
+    ],
+    M0 = wamp_message:call(1, #{}, <<"foo">>, Args, #{}),
+    Bin = wamp_encoding:encode(M0, json),
+    call = wamp_encoding:decode_message_name(
+        {ws, text, json}, Bin),
+    {[M1], <<>>} = wamp_encoding:decode({ws, text, json}, Bin),
+    ?assertMatch(
+        {call, 1, _, <<"foo">>, [#{<<"bar">> := _}],
+        #{}},
+        M1
+    ).
+
 cancel_json_test(_) ->
     M = wamp_message:cancel(1, #{}),
     Bin = wamp_encoding:encode(M, json),
@@ -805,6 +820,17 @@ welcome_erl_test(_) ->
         {ws, binary, erl}, Bin),
     {[M], <<>>} = wamp_encoding:decode({ws, binary, erl}, Bin).
 
+welcome_erl_test_2(_) ->
+    M = wamp_message:welcome(1, #{
+        roles => #{
+            dealer => #{},
+            broker => #{}
+        }}),
+    Bin = wamp_encoding:encode(M, erl),
+    welcome = wamp_encoding:decode_message_name(
+        {ws, binary, erl}, Bin),
+    {[M], <<>>} = wamp_encoding:decode({ws, binary, erl}, Bin).
+
 abort_erl_test(_) ->
     M = wamp_message:abort(#{<<"message">> => <<"foo">>}, <<"wamp.error.foo">>),
     Bin = wamp_encoding:encode(M, erl),
@@ -955,6 +981,21 @@ call_erl_3_test(_) ->
     call = wamp_encoding:decode_message_name(
         {ws, binary, erl}, Bin),
     {[M], <<>>} = wamp_encoding:decode({ws, binary, erl}, Bin).
+
+call_erl_4_test(_) ->
+    Args = [
+        [{bar, self()}]
+    ],
+    M0 = wamp_message:call(1, #{}, <<"foo">>, Args, #{}),
+    Bin = wamp_encoding:encode(M0, erl),
+    call = wamp_encoding:decode_message_name(
+        {ws, binary, erl}, Bin),
+    {[M1], <<>>} = wamp_encoding:decode({ws, binary, erl}, Bin),
+    ?assertMatch(
+        {call, 1, _, <<"foo">>, [#{<<"bar">> := _}],
+        #{}},
+        M1
+    ).
 
 cancel_erl_test(_) ->
     M = wamp_message:cancel(1, #{}),
