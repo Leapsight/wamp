@@ -3,11 +3,9 @@
 %% -----------------------------------------------------------------------------
 
 
-
-
-
-
-
+%% =============================================================================
+%% COMMON
+%% =============================================================================
 
 
 -define(WAMP2_JSON, <<"wamp.2.json">>).
@@ -19,11 +17,47 @@
 -define(WAMP2_BERT_BATCHED,<<"wamp.2.bert.batched">>).
 -define(WAMP2_ERL_BATCHED,<<"wamp.2.erl.batched">>).
 
+-define(WAMP_ENCODINGS, [
+    json,
+    msgpack,
+    bert,
+    erl,
+    json_batched,
+    msgpack_batched,
+    bert_batched,
+    erl_batched
+]).
+
+-define(MAX_ID, 9007199254740993).
+
+-type maybe(T)          ::  T | undefined.
+
+-type encoding()        ::  json
+                            | msgpack
+                            | bert
+                            | erl
+                            | json_batched
+                            | msgpack_batched
+                            | bert_batched
+                            | erl_batched.
+
+-type frame_type()      ::  text | binary.
+-type transport()       ::  ws | raw.
+-type subprotocol()     ::  {transport(), frame_type(), encoding()}.
+
+
+%% Adictionary describing *features* supported by the peer for that role.
+%% This MUST be empty for WAMP Basic Profile implementations, and MUST
+%% be used by implementations implementing parts of the Advanced Profile
+%% to list the specific set of features they support.
+-type uri()             ::  binary().
+-type id()              ::  0..?MAX_ID.
+
+
 
 %% =============================================================================
-%% RAW
+%% RAW_SOCKET
 %% =============================================================================
-
 
 
 -define(RAW_MAGIC, 16#7F).
@@ -37,50 +71,30 @@
 %% 3: use of reserved bits (unsupported feature)
 %% 4: maximum connection count reached
 %% 5 - 15: reserved for future errors
--define(RAW_ERROR(Upper), <<?RAW_MAGIC:8, Upper:4, 0:20>>).
+-define(RAW_ERROR(Upper),
+    <<?RAW_MAGIC:8, Upper:4, 0:20>>
+).
+
 -define(RAW_FRAME(Bin),
     <<(?RAW_MSG_PREFIX)/binary, (byte_size(Bin)):24, Bin/binary>>
 ).
 
--type raw_error()           ::  invalid_response
-                                | invalid_socket
-                                | invalid_handshake
-                                | maximum_connection_count_reached
-                                | maximum_message_length_unacceptable
-                                | maximum_message_length_exceeded
-                                | serializer_unsupported
-                                | use_of_reserved_bits.
+
+-type raw_error()   ::
+    invalid_response
+    | invalid_socket
+    | invalid_handshake
+    | maximum_connection_count_reached
+    | maximum_message_length_unacceptable
+    | maximum_message_length_exceeded
+    | serializer_unsupported
+    | use_of_reserved_bits.
+
 
 %% =============================================================================
 %% AUTH
 %% =============================================================================
 
-
--define(WAMP_ENCODINGS, [
-    json,
-    msgpack,
-    bert,
-    erl,
-    json_batched,
-    msgpack_batched,
-    bert_batched,
-    erl_batched
-]).
-
-
--type encoding()        ::  json
-                            | msgpack
-                            | bert
-                            | erl
-                            | json_batched
-                            | msgpack_batched
-                            | bert_batched
-                            | erl_batched.
-
-
--type frame_type()          ::  text | binary.
--type transport()           ::  ws | raw.
--type subprotocol()         ::  {transport(), frame_type(), encoding()}.
 
 
 
@@ -90,7 +104,6 @@
 
 
 
-%% maps_utils:map_spec()
 -define(DEALER_FEATURES_SPEC, ?WAMP_DEALER_FEATURES_SPEC#{
     call_retries => #{
         alias => <<"call_retries">>,
@@ -99,7 +112,6 @@
 }).
 
 
-%% maps_utils:map_spec()
 -define(WAMP_DEALER_FEATURES_SPEC, #{
     progressive_call_results => #{
         alias => <<"progressive_call_results">>,
@@ -155,10 +167,9 @@
         datatype => boolean}
 }).
 
-%% maps_utils:map_spec()
 -define(BROKER_FEATURES_SPEC, #{
-    message_retention => #{
-        alias => <<"message_retention">>,
+    event_retention => #{
+        alias => <<"event_retention">>,
         required => false,
         datatype => boolean},
     event_history => #{
@@ -200,10 +211,29 @@
     topic_reflection => #{
         alias => <<"topic_reflection">>,
         required => false,
+        datatype => boolean},
+    payload_transparency => #{
+        alias => <<"payload_transparency">>,
+        required => false,
+        datatype => boolean},
+    payload_encryption_cryptobox => #{
+        alias => <<"payload_encryption_cryptobox">>,
+        required => false,
+        datatype => boolean},
+    acknowledge_event_received => #{
+        alias => <<"acknowledge_event_received">>,
+        required => false,
+        datatype => boolean},
+    acknowledge_subscriber_received => #{
+        alias => <<"acknowledge_subscriber_received">>,
+        required => false,
+        datatype => boolean},
+    subscription_revocation => #{
+        alias => <<"subscription_revocation">>,
+        required => false,
         datatype => boolean}
 }).
 
-%% maps_utils:map_spec()
 -define(BROKER_ROLE_SPEC, #{
     features => #{
         alias => <<"features">>,
@@ -213,7 +243,6 @@
     }
 }).
 
-%% maps_utils:map_spec()
 -define(DEALER_ROLE_SPEC, #{
     features => #{
         alias => <<"features">>,
@@ -223,7 +252,6 @@
     }
 }).
 
-%% maps_utils:map_spec()
 -define(ROUTER_ROLES_SPEC, #{
     broker => #{
         alias => <<"broker">>,
@@ -236,9 +264,6 @@
         datatype => map,
         validator => ?DEALER_ROLE_SPEC}
 }).
-
-
-%% maps_utils:map_spec()
 
 -define(CALLEE_FEATURES_SPEC, #{
     progressive_call_results => #{
@@ -287,8 +312,6 @@
         datatype => boolean}
 }).
 
-%% maps_utils:map_spec()
-
 -define(CALLER_FEATURES_SPEC, ?WAMP_CALLER_FEATURES_SPEC#{
     call_retries => #{
         alias => <<"call_retries">>,
@@ -319,7 +342,6 @@
         datatype => boolean}
 }).
 
-%% maps_utils:map_spec()
 -define(SUBSCRIBER_FEATURES_SPEC, #{
     event_history => #{
         alias => <<"event_history">>,
@@ -340,13 +362,28 @@
     sharded_subscription => #{
         alias => <<"sharded_subscription">>,
         required => false,
+        datatype => boolean},
+    payload_transparency => #{
+        alias => <<"payload_transparency">>,
+        required => false,
+        datatype => boolean},
+    payload_encryption_cryptobox => #{
+        alias => <<"payload_encryption_cryptobox">>,
+        required => false,
+        datatype => boolean},
+    acknowledge_subscriber_received => #{
+        alias => <<"acknowledge_subscriber_received">>,
+        required => false,
+        datatype => boolean},
+    subscription_revocation => #{
+        alias => <<"subscription_revocation">>,
+        required => false,
         datatype => boolean}
 }).
 
-%% maps_utils:map_spec()
 -define(PUBLISHER_FEATURES_SPEC, #{
-    message_retention => #{
-        alias => <<"message_retention">>,
+    event_retention => #{
+        alias => <<"event_retention">>,
         required => false,
         datatype => boolean},
     publisher_exclusion => #{
@@ -360,10 +397,21 @@
     subscriber_blackwhite_listing => #{
         alias => <<"subscriber_blackwhite_listing">>,
         required => false,
+        datatype => boolean},
+    payload_transparency => #{
+        alias => <<"payload_transparency">>,
+        required => false,
+        datatype => boolean},
+    payload_encryption_cryptobox => #{
+        alias => <<"payload_encryption_cryptobox">>,
+        required => false,
+        datatype => boolean},
+    acknowledge_event_received => #{
+        alias => <<"acknowledge_event_received">>,
+        required => false,
         datatype => boolean}
 }).
 
-%% maps_utils:map_spec()
 -define(PUBLISHER_ROLE_SPEC, #{
     features => #{
         alias => <<"features">>,
@@ -373,7 +421,6 @@
     }
 }).
 
-%% maps_utils:map_spec()
 -define(SUBSCRIBER_ROLE_SPEC, #{
     features => #{
         alias => <<"features">>,
@@ -383,7 +430,6 @@
     }
 }).
 
-%% maps_utils:map_spec()
 -define(CALLER_ROLE_SPEC, #{
     features => #{
         alias => <<"features">>,
@@ -393,7 +439,6 @@
     }
 }).
 
-%% maps_utils:map_spec()
 -define(CALLEE_ROLE_SPEC, #{
     features => #{
         alias => <<"features">>,
@@ -403,8 +448,6 @@
     }
 }).
 
-
-%% maps_utils:map_spec()
 -define(CLIENT_ROLES_SPEC, #{
     publisher => #{
         alias => <<"publisher">>,
@@ -432,20 +475,9 @@
 
 
 %% =============================================================================
-%% MESSAGES
+%% WAMP MESSAGES
 %% =============================================================================
 
-
-
-
--define(MAX_ID, 9007199254740993).
-
-%% Adictionary describing *features* supported by the peer for that role.
-%% This MUST be empty for WAMP Basic Profile implementations, and MUST
-%% be used by implementations implementing parts of the Advanced Profile
-%% to list the specific set of features they support.
--type uri()             ::  binary().
--type id()              ::  0..?MAX_ID.
 
 
 -define(HELLO, 1).
@@ -455,6 +487,10 @@
 -define(AUTHENTICATE, 5).
 -define(GOODBYE, 6).
 -define(ERROR, 8).
+
+%% -----------------------------------------------------------------------------
+%% PUSUB
+%% -----------------------------------------------------------------------------
 -define(PUBLISH, 16).
 -define(PUBLISHED, 17).
 -define(SUBSCRIBE, 32).
@@ -462,6 +498,12 @@
 -define(UNSUBSCRIBE, 34).
 -define(UNSUBSCRIBED, 35).
 -define(EVENT, 36).
+-define(EVENT_RECEIVED, 37).
+-define(SUBSCRIBER_RECEIVED, 38).
+
+%% -----------------------------------------------------------------------------
+%% RPC
+%% -----------------------------------------------------------------------------
 -define(CALL, 48).
 -define(CANCEL, 49).
 -define(RESULT, 50).
@@ -473,60 +515,109 @@
 -define(INTERRUPT, 69).
 -define(YIELD, 70).
 
--define(MSG_TYPES,[
-    ?HELLO,
-    ?WELCOME,
-    ?ABORT,
-    ?CHALLENGE,
-    ?AUTHENTICATE,
-    ?GOODBYE,
-    ?ERROR,
-    ?PUBLISH,
-    ?PUBLISHED,
-    ?SUBSCRIBE,
-    ?SUBSCRIBED,
-    ?UNSUBSCRIBE,
-    ?UNSUBSCRIBED,
-    ?EVENT,
-    ?CALL,
-    ?CANCEL,
-    ?RESULT,
-    ?REGISTER,
-    ?REGISTERED,
-    ?UNREGISTER,
-    ?UNREGISTERED,
-    ?INVOCATION,
-    ?INTERRUPT,
-    ?YIELD
+-type message_name()    ::  hello
+                            | welcome
+                            | abort
+                            | challenge
+                            | authenticate
+                            | goodbye
+                            | error
+                            | publish
+                            | published
+                            | subscribe
+                            | subscribed
+                            | unsubscribe
+                            | unsubscribed
+                            | event
+                            | event_received
+                            | subscriber_received
+                            | call
+                            | cancel
+                            | result
+                            | register
+                            | registered
+                            | unregister
+                            | unregistered
+                            | invocation
+                            | interrupt
+                            | yield.
+
+-type wamp_message()     ::  wamp_hello()
+                            | wamp_challenge()
+                            | wamp_authenticate()
+                            | wamp_welcome()
+                            | wamp_abort()
+                            | wamp_goodbye()
+                            | wamp_error()
+                            | wamp_publish()
+                            | wamp_published()
+                            | wamp_subscribe()
+                            | wamp_subscribed()
+                            | wamp_unsubscribe()
+                            | wamp_unsubscribed()
+                            | wamp_event()
+                            | wamp_event_received()
+                            | wamp_subscriber_received()
+                            | wamp_call()
+                            | wamp_cancel()
+                            | wamp_result()
+                            | wamp_register()
+                            | wamp_registered()
+                            | wamp_unregister()
+                            | wamp_unregistered()
+                            | wamp_invocation()
+                            | wamp_interrupt()
+                            | wamp_yield().
+
+
+-define(EXACT_MATCH, <<"exact">>).
+-define(PREFIX_MATCH, <<"prefix">>).
+-define(WILDCARD_MATCH, <<"wildcard">>).
+-define(MATCH_STRATEGIES, [
+    ?EXACT_MATCH,
+    ?PREFIX_MATCH,
+    ?WILDCARD_MATCH
 ]).
 
--type message_name() :: hello
-                        | welcome
-                        | abort
-                        | challenge
-                        | authenticate
-                        | goodbye
-                        | error
-                        | publish
-                        | published
-                        | subscribe
-                        | subscribed
-                        | unsubscribe
-                        | unsubscribed
-                        | event
-                        | call
-                        | cancel
-                        | result
-                        | register
-                        | registered
-                        | unregister
-                        | unregistered
-                        | invocation
-                        | interrupt
-                        | yield.
+-define(PAYLOAD_DETAILS_SPEC, #{
+    %% The encoding algorithm that was used to encode the payload.
+    enc_algo => #{
+        alias => <<"enc_algo">>,
+        required => false,
+        datatype => binary
+    },
+    %% The payload object serializer that was used when encoding the payload.
+    enc_serializer => #{
+        alias => <<"enc_serializer">>,
+        required => false,
+        datatype => binary
+    },
+    %% When using E2E Payload encryption, the public Cryptobox key of the
+    %% key pair used for encrypting the payload.
+    enc_key => #{
+        alias => <<"enc_key">>,
+        required => false,
+        datatype => binary
+    }
+}).
 
 
-%% maps_utils:map_spec()
+%% NOTICE: DO NOT CHANGE THE ORDER OF THE RECORD FIELDS as they map
+%% to the order in WAMP messages and we use list_to_tuple/1 to convert from
+%% WAMP list to Erlang tuple and vicecersa
+
+
+%% -----------------------------------------------------------------------------
+%% HELLO 1
+%% -----------------------------------------------------------------------------
+
+-record(hello, {
+    realm_uri       ::  uri(),
+    details         ::  map()
+}).
+
+-type wamp_hello()  ::  #hello{}.
+
 -define(HELLO_DETAILS_SPEC, #{
     authmethods => #{
         % description => Used by the client to announce the authentication methods it is prepared to perform.">>,
@@ -594,7 +685,113 @@
     }
 }).
 
-%% maps_utils:map_spec()
+
+%% -----------------------------------------------------------------------------
+%% WELCOME 2
+%% -----------------------------------------------------------------------------
+
+-record(welcome, {
+    session_id      ::  id(),
+    details         ::  map()
+}).
+
+-type wamp_welcome()       ::  #welcome{}.
+
+-define(WELCOME_DETAILS_SPEC, #{
+    realm => #{
+        alias => <<"realm">>,
+        required => true,
+        datatype => binary
+    },
+    roles => #{
+        alias => <<"roles">>,
+        required => true,
+        datatype => map,
+        validator => ?ROUTER_ROLES_SPEC
+    },
+    authid => #{
+        alias => <<"authid">>,
+        required => true,
+        datatype => binary
+    },
+    authrole => #{
+        alias => <<"authrole">>,
+        required => true,
+        datatype => [binary, atom]
+    },
+    authmethod => #{
+        alias => <<"authmethod">>,
+        required => false,
+        datatype => binary
+    },
+    authprovider => #{
+        alias => <<"authprovider">>,
+        required => false,
+        datatype => binary
+    },
+    authextra => #{
+        alias => <<"authextra">>,
+        required => false,
+        allow_undefined => true,
+        allow_null => false,
+        datatype => map
+    },
+    agent => #{
+        alias => <<"agent">>,
+        required => false,
+        datatype => binary
+    },
+    resumed => #{
+        alias => <<"resumed">>,
+        required => false,
+        datatype => boolean
+    },
+    resumable => #{
+        alias => <<"resumable">>,
+        required => false,
+        datatype => boolean
+    },
+    resume_token => #{
+        % description => <<"The secure token required to resume the session defined in 'resume_session'.">>,
+        alias => <<"resume_token">>,
+        required => false,
+        datatype => binary
+    }
+}).
+
+
+%% -----------------------------------------------------------------------------
+%% ABORT 3
+%% -----------------------------------------------------------------------------
+
+-record(abort, {
+    details         ::  map(),
+    reason_uri      ::  uri()
+}).
+
+-type wamp_abort()       ::  #abort{}.
+
+-define(ABORT_DETAILS_SPEC, #{
+    %% Optional human-readable closing message
+    message => #{
+        alias => <<"message">>,
+        required => false,
+        datatype => binary
+    }
+}).
+
+
+%% -----------------------------------------------------------------------------
+%% CHALLENGE 4
+%% -----------------------------------------------------------------------------
+
+-record(challenge, {
+    auth_method      ::  binary(),
+    extra            ::  map()
+}).
+-type wamp_challenge()       ::  #challenge{}.
+
+
 -define(CHALLENGE_DETAILS_SPEC, #{
     challenge => #{
         alias => <<"challenge">>,
@@ -635,80 +832,357 @@
     }
 }).
 
+%% -----------------------------------------------------------------------------
+%% AUTHENTICATE 5
+%% -----------------------------------------------------------------------------
 
-%% maps_utils:map_spec()
--define(WELCOME_DETAILS_SPEC, #{
-    authmethod => #{
-        alias => <<"authmethod">>,
-        required => false,
-        datatype => binary
-    },
-    authid => #{
-        % description => <<"The authentication ID (e.g. username) the client is authenticate as.">>,
-        alias => <<"authid">>,
-        required => false,
-        datatype => binary
-    },
-    authrole => #{
-        alias => <<"authrole">>,
-        required => false,
-        datatype => [binary, atom]
-    },
-    authprovider => #{
-        alias => <<"authprovider">>,
-        % description => <<"Not in RFC">>,
-        required => false,
-        datatype => binary
-    },
-    authextra => #{
-        alias => <<"authextra">>,
-        required => false,
-        allow_undefined => true,
-        allow_null => false,
-        datatype => map
-    },
-    roles => #{
-        alias => <<"roles">>,
-        required => true,
-        datatype => map,
-        validator => ?ROUTER_ROLES_SPEC
-    },
-    agent => #{
-        alias => <<"agent">>,
-        required => false,
-        datatype => binary
-    },
-    resumed => #{
-        alias => <<"resumed">>,
-        required => false,
-        datatype => boolean
-    },
+-record(authenticate, {
+    signature       ::  binary(),
+    extra           ::  map()
+}).
+
+-type wamp_authenticate()       ::  #authenticate{}.
+
+
+%% -----------------------------------------------------------------------------
+%% GOODBYE 6
+%% -----------------------------------------------------------------------------
+
+-record(goodbye, {
+    details         ::  map(),
+    reason_uri      ::  uri()
+}).
+
+-type wamp_goodbye()       ::  #goodbye{}.
+
+-define(GOODBYE_DETAILS_SPEC, #{
+    %% Router: Whether the session is able to be resumed or destroyed.
+    %% Client: Whether it should be resumable or destroyed.
     resumable => #{
         alias => <<"resumable">>,
         required => false,
         datatype => boolean
+    }
+}).
+
+%% -----------------------------------------------------------------------------
+%% ERROR 8
+%% -----------------------------------------------------------------------------
+
+-record(error, {
+    request_type    ::  pos_integer(),
+    request_id      ::  id(),
+    details         ::  map(),
+    error_uri       ::  uri(),
+    args            ::  maybe(list()),
+    kwargs          ::  maybe(map()),
+    payload         ::  maybe(binary())
+}).
+-type wamp_error()       ::  #error{}.
+
+-define(ERROR_DETAILS_SPEC, ?PAYLOAD_DETAILS_SPEC).
+
+%% -----------------------------------------------------------------------------
+%% PUBLISH 16
+%%
+%% -----------------------------------------------------------------------------
+
+-record(publish, {
+    request_id      ::  id(),
+    options         ::  map(),
+    topic_uri       ::  uri(),
+    args            ::  maybe(list()),
+    kwargs          ::  maybe(map()),
+    payload         ::  maybe(binary())
+}).
+
+-type wamp_publish()       ::  #publish{}.
+
+
+-define(PUBLISH_OPTS_SPEC, ?PAYLOAD_DETAILS_SPEC#{
+    %% resource key
+    acknowledge => #{
+        alias => <<"acknowledge">>,
+        required => false,
+        datatype => boolean
     },
-    resume_token => #{
-        % description => <<"The secure token required to resume the session defined in 'resume_session'.">>,
-        alias => <<"resume_token">>,
+    rkey => #{
+        alias => <<"rkey">>,
+        required => false,
+        datatype => binary
+    },
+    disclose_me => #{
+        alias => <<"disclose_me">>,
+        required => false,
+        datatype => boolean
+    },
+    %% blacklisting
+    exclude => #{
+        alias => <<"exclude">>,
+        required => false,
+        datatype => {list, integer}
+    },
+    exclude_authid => #{
+        alias => <<"exclude_authid">>,
+        required => false,
+        datatype => {list, binary}
+    },
+    exclude_authrole => #{
+        alias => <<"exclude_authrole">>,
+        required => false,
+        datatype => {list, binary}
+    },
+    exclude_me => #{
+        alias => <<"exclude_me">>,
+        required => false,
+        datatype => boolean
+    },
+    %% whitelisting
+    eligible => #{
+        alias => <<"eligible">>,
+        required => false,
+        datatype => {list, integer}
+    },
+    eligible_authid => #{
+        alias => <<"eligible_authid">>,
+        required => false,
+        datatype => {list, binary}
+    },
+    eligible_authrole => #{
+        alias => <<"eligible_authrole">>,
+        required => false,
+        datatype => {list, binary}
+    },
+    retain => #{
+        alias => <<"retain">>,
+        required => false,
+        datatype => boolean
+    }
+}).
+
+%% -----------------------------------------------------------------------------
+%% PUBLISHED 17
+%% -----------------------------------------------------------------------------
+
+-record(published, {
+    request_id      ::  id(),
+    publication_id  ::  id()
+}).
+-type wamp_published()       ::  #published{}.
+
+%% -----------------------------------------------------------------------------
+%% SUBSCRIBE 32
+%% -----------------------------------------------------------------------------
+
+-record(subscribe, {
+    request_id      ::  id(),
+    options         ::  map(),
+    topic_uri       ::  uri()
+}).
+
+-type wamp_subscribe()       ::  #subscribe{}.
+
+-define(SUBSCRIBE_OPTS_SPEC, #{
+    match => #{
+        alias => <<"match">>,
+        required => true,
+        default => ?EXACT_MATCH,
+        datatype => {in, ?MATCH_STRATEGIES}
+    },
+    %% node key
+    nkey => #{
+        alias => <<"nkey">>,
+        required => false,
+        datatype => binary
+    },
+    get_retained => #{
+        alias => <<"get_retained">>,
+        required => false,
+        datatype => boolean
+    }
+}).
+
+%% -----------------------------------------------------------------------------
+%% SUBSCRIBED 33
+%% -----------------------------------------------------------------------------
+
+-record(subscribed, {
+    request_id      ::  id(),
+    subscription_id ::  id()
+}).
+-type wamp_subscribed()       ::  #subscribed{}.
+
+%% -----------------------------------------------------------------------------
+%% UNSUBSCRIBE 34
+%% -----------------------------------------------------------------------------
+
+-record(unsubscribe, {
+    request_id      ::  id(),
+    subscription_id ::  id()
+}).
+-type wamp_unsubscribe()       ::  #unsubscribe{}.
+
+%% -----------------------------------------------------------------------------
+%% UNSUBSCRIBED 35
+%% -----------------------------------------------------------------------------
+
+-record(unsubscribed, {
+    request_id      ::  id()
+}).
+-type wamp_unsubscribed()       ::  #unsubscribed{}.
+
+%% -----------------------------------------------------------------------------
+%% EVENT 36
+%% -----------------------------------------------------------------------------
+
+-record(event, {
+    subscription_id ::  id(),
+    publication_id  ::  id(),
+    details         ::  map(),
+    args            ::  maybe(list()),
+    kwargs          ::  maybe(map()),
+    payload         ::  maybe(binary())
+}).
+
+-type wamp_event()       ::  #event{}.
+
+-define(EVENT_DETAILS_SPEC, ?PAYLOAD_DETAILS_SPEC#{
+    acknowledge => #{
+        alias => <<"acknowledge">>,
+        required => false,
+        datatype => boolean
+    },
+    topic => #{
+        alias => <<"topic">>,
+        required => false,
+        datatype => binary
+    },
+    %% Set when publisher is disclosed
+    publisher => #{
+        alias => <<"publisher">>,
+        required => false,
+        datatype => integer
+    },
+    %% Set when publisher is disclosed
+    publisher_authid => #{
+        alias => <<"publisher_authid">>,
+        required => false,
+        datatype => binary
+    },
+    %% Set when publisher is disclosed
+    publisher_authrole => #{
+        alias => <<"publisher_authrole">>,
+        required => false,
+        datatype => binary
+    },
+    retained => #{
+        alias => <<"retained">>,
+        required => false,
+        datatype => boolean
+    }
+}).
+
+
+%% -----------------------------------------------------------------------------
+%% EVENT_RECEIVED 37
+%% -----------------------------------------------------------------------------
+
+-record(event_received, {
+    publication_id  ::  id(),
+    details         ::  map(),
+    payload         ::  maybe(binary())
+}).
+
+-type wamp_event_received()  ::  #event_received{}.
+
+-define(EVENT_RECEIVED_DETAILS_SPEC, ?PAYLOAD_DETAILS_SPEC).
+
+%% -----------------------------------------------------------------------------
+%% EVENT_RECEIVED 38
+%% -----------------------------------------------------------------------------
+
+-record(subscriber_received, {
+    %% From #event_received.publication_id
+    publication_id  ::  id(),
+    details         ::  map(),
+    %% From #event_received.payload
+    payload         ::  maybe(binary())
+}).
+
+-type wamp_subscriber_received()  ::  #subscriber_received{}.
+
+-define(SUBSCRIBER_RECEIVED_DETAILS_SPEC, ?PAYLOAD_DETAILS_SPEC#{
+    %% Set when publisher is disclosed
+    subscriber => #{
+        alias => <<"subscriber">>,
+        required => false,
+        datatype => integer
+    },
+    %% Set when subscriber is disclosed
+    subscriber_authid => #{
+        alias => <<"subscriber_authid">>,
+        required => false,
+        datatype => binary
+    },
+    %% Set when subscriber is disclosed
+    subscriber_authrole => #{
+        alias => <<"subscriber_authrole">>,
         required => false,
         datatype => binary
     }
 }).
 
+%% -----------------------------------------------------------------------------
+%% CALL 48
+%% -----------------------------------------------------------------------------
 
-%% maps_utils:map_spec()
--define(CALL_CANCELLING_OPTS_SPEC, #{
-    mode => #{
-        alias => <<"mode">>,
+-record(call, {
+    request_id      ::  id(),
+    options         ::  map(),
+    procedure_uri   ::  uri(),
+    args            ::  maybe(list()),
+    kwargs          ::  maybe(map()),
+    payload         ::  maybe(binary())
+}).
+
+-type wamp_call()       ::  #call{}.
+
+-define(WAMP_CALL_OPTS_SPEC, ?PAYLOAD_DETAILS_SPEC#{
+    timeout => #{
+        alias => <<"timeout">>,
         required => false,
-        datatype => {in, [<<"skip">>, <<"kill">>, <<"killnowait">>]}
+        default => 0,
+        datatype => non_neg_integer
+    },
+    receive_progress => #{
+        alias => <<"receive_progress">>,
+        required => false,
+        datatype => boolean
+    },
+    disclose_me => #{
+        alias => <<"disclose_me">>,
+        required => false,
+        datatype => boolean
+    },
+    runmode => #{
+        alias => <<"runmode">>,
+        required => false,
+        datatype => {in, [<<"partition">>]}
+    },
+    %% if runmode is present then rkey should be present
+    rkey => #{
+        alias => <<"rkey">>,
+        required => false,
+        datatype => binary
+    },
+    %% 'all' invocation strategy (ALPHA)
+    yields => #{
+        alias => <<"yields">>,
+        required => false,
+        datatype => {in, [<<"first">>, <<"gather">>, <<"progressive">>]}
     }
 }).
 
-%% maps_utils:map_spec()
-
-%% BONDY ALPHA
 -define(CALL_OPTS_SPEC, ?WAMP_CALL_OPTS_SPEC#{
     retries => #{
         alias => <<"retries">>,
@@ -771,50 +1245,58 @@
     }
 }).
 
--define(WAMP_CALL_OPTS_SPEC, #{
-    timeout => #{
-        alias => <<"timeout">>,
+%% -----------------------------------------------------------------------------
+%% CANCEL 49
+%% -----------------------------------------------------------------------------
+
+-record(cancel, {
+    request_id      ::  id(),
+    options         ::  map()
+}).
+-type wamp_cancel()       ::  #cancel{}.
+
+-define(CALL_CANCELLING_OPTS_SPEC, #{
+    mode => #{
+        alias => <<"mode">>,
         required => false,
-        default => 0,
-        datatype => non_neg_integer
-    },
-    receive_progress => #{
-        alias => <<"receive_progress">>,
-        required => false,
-        datatype => boolean
-    },
-    disclose_me => #{
-        alias => <<"disclose_me">>,
-        required => false,
-        datatype => boolean
-    },
-    runmode => #{
-        alias => <<"runmode">>,
-        required => false,
-        datatype => {in, [<<"partition">>]}
-    },
-    %% if runmode is present then rkey should be present
-    rkey => #{
-        alias => <<"rkey">>,
-        required => false,
-        datatype => binary
-    },
-    %% 'all' invocation strategy (ALPHA)
-    yields => #{
-        alias => <<"yields">>,
-        required => false,
-        datatype => {in, [<<"first">>, <<"gather">>, <<"progressive">>]}
+        datatype => {in, [<<"skip">>, <<"kill">>, <<"killnowait">>]}
     }
 }).
 
--define(EXACT_MATCH, <<"exact">>).
--define(PREFIX_MATCH, <<"prefix">>).
--define(WILDCARD_MATCH, <<"wildcard">>).
--define(MATCH_STRATEGIES, [
-    ?EXACT_MATCH,
-    ?PREFIX_MATCH,
-    ?WILDCARD_MATCH
-]).
+%% -----------------------------------------------------------------------------
+%% RESULT 50
+%% -----------------------------------------------------------------------------
+
+-record(result, {
+    request_id      ::  id(),
+    details         ::  map(),
+    args            ::  maybe(list()),
+    kwargs          ::  maybe(map()),
+    payload         ::  maybe(binary())
+}).
+
+-type wamp_result()       ::  #result{}.
+
+-define(RESULT_DETAILS_SPEC, ?PAYLOAD_DETAILS_SPEC#{
+    progress => #{
+        alias => <<"progress">>,
+        required => false,
+        datatype => boolean
+    }
+}).
+
+%% -----------------------------------------------------------------------------
+%% REGISTER 64
+%% -----------------------------------------------------------------------------
+
+-record(register, {
+    request_id      ::  id(),
+    options         ::  map(),
+    procedure_uri   ::  uri()
+}).
+
+-type wamp_register()       ::  #register{}.
+
 -define(INVOKE_SINGLE, <<"single">>).
 -define(INVOKE_ROUND_ROBIN, <<"roundrobin">>).
 -define(INVOKE_RANDOM, <<"random">>).
@@ -823,8 +1305,6 @@
 %% ALPHA
 -define(INVOKE_ALL, <<"last">>).
 
-
-%% maps_utils:map_spec()
 -define(REGISTER_OPTS_SPEC, #{
     disclose_caller => #{
         alias => <<"disclose_caller">>,
@@ -849,96 +1329,95 @@
             ?INVOKE_LAST,
             ?INVOKE_ALL
         ]}
+    },
+    %% The (maximum) concurrency to be used for the registration.
+    concurrency => #{
+        alias => <<"concurrency">>,
+        required => false,
+        datatype => pos_integer
+    },
+    %% Force registration (revoking any existing registration).
+    force_reregister => #{
+        alias => <<"force_reregister">>,
+        required => false,
+        datatype => boolean
     }
 }).
 
+%% -----------------------------------------------------------------------------
+%% REGISTERED 65
+%% -----------------------------------------------------------------------------
 
-%% maps_utils:map_spec()
--define(SUBSCRIBE_OPTS_SPEC, #{
-    match => #{
-        alias => <<"match">>,
-        required => true,
-        default => ?EXACT_MATCH,
-        datatype => {in, ?MATCH_STRATEGIES}
-    },
-    %% node key
-    nkey => #{
-        alias => <<"nkey">>,
+-record(registered, {
+    request_id      ::  id(),
+    registration_id ::  id()
+}).
+-type wamp_registered()       ::  #registered{}.
+
+%% -----------------------------------------------------------------------------
+%% UNREGISTER 66
+%% -----------------------------------------------------------------------------
+
+-record(unregister, {
+    request_id      ::  id(),
+    registration_id ::  id()
+}).
+
+-type wamp_unregister()       ::  #unregister{}.
+
+
+%% -----------------------------------------------------------------------------
+%% UNREGISTERED 67
+%% -----------------------------------------------------------------------------
+
+-record(unregistered, {
+    request_id      ::  id()
+}).
+
+-type wamp_unregistered()       ::  #unregistered{}.
+
+
+%% -----------------------------------------------------------------------------
+%% UNREGISTERED 67
+%% -----------------------------------------------------------------------------
+
+-record(unregistered_2, {
+    request_id      ::  id(),
+    details         ::  map()
+}).
+
+-type wamp_unregister_ext()       ::  #unregister{}.
+
+-define(UNREGISTERED_DETAILS_SPEC, #{
+    %% The reason URI for revocation.
+    reason => #{
+        alias => <<"reason">>,
         required => false,
         datatype => binary
     },
-    get_retained => #{
-        alias => <<"get_retained">>,
+    registration => #{
+        alias => <<"registration">>,
         required => false,
-        datatype => boolean
+        datatype => integer
     }
 }).
 
+%% -----------------------------------------------------------------------------
+%% INVOCATION 68
+%% -----------------------------------------------------------------------------
 
-%% maps_utils:map_spec()
--define(PUBLISH_OPTS_SPEC, #{
-    %% resource key
-    acknowledge => #{
-        alias => <<"acknowledge">>,
-        required => false,
-        datatype => boolean
-    },
-    rkey => #{
-        alias => <<"rkey">>,
-        required => false,
-        datatype => binary
-    },
-    disclose_me => #{
-        alias => <<"disclose_me">>,
-        required => false,
-        datatype => boolean
-    },
-    %% blacklisting
-    exclude => #{
-        alias => <<"exclude">>,
-        required => false,
-        datatype => {list, integer}
-    },
-    exclude_authid => #{
-        alias => <<"exclude_authid">>,
-        required => false,
-        datatype => {list, binary}
-    },
-    exclude_authrole => #{
-        alias => <<"exclude_authrole">>,
-        required => false,
-        datatype => {list, binary}
-    },
-    exclude_me => #{
-        alias => <<"exclude_me">>,
-        required => false,
-        datatype => boolean
-    },
-    %% whitelisting
-    eligible => #{
-        alias => <<"eligible">>,
-        required => false,
-        datatype => {list, integer}
-    },
-    eligible_authid => #{
-        alias => <<"eligible_authid">>,
-        required => false,
-        datatype => {list, binary}
-    },
-    eligible_authrole => #{
-        alias => <<"eligible_authrole">>,
-        required => false,
-        datatype => {list, binary}
-    },
-    retain => #{
-        alias => <<"retain">>,
-        required => false,
-        datatype => boolean
-    }
+-record(invocation, {
+    request_id      ::  id(),
+    registration_id ::  id(),
+    details         ::  map(),
+    args            ::  maybe(list()),
+    kwargs          ::  maybe(map()),
+    payload         ::  maybe(binary())
 }).
 
-%% maps_utils:map_spec()
--define(INVOCATION_DETAILS_SPEC, #{
+-type wamp_invocation()       ::  #invocation{}.
+
+-define(INVOCATION_DETAILS_SPEC, ?PAYLOAD_DETAILS_SPEC#{
     trustlevel => #{
         alias => <<"trustlevel">>,
         required => false,
@@ -949,207 +1428,41 @@
         required => false,
         datatype => binary
     },
+    %% If present, let the callee automatically timeout the invocation
+    timeout => #{
+        alias => <<"timeout">>,
+        required => false,
+        datatype => non_neg_integer
+    },
+    %% Tells callee to produce progressive results
+    receive_progress => #{
+        alias => <<"receive_progress">>,
+        required => false,
+        datatype => boolean
+    },
+    %% Present when caller is disclosed
     caller => #{
         alias => <<"caller">>,
         required => false,
-        datatype => integer
-    }
-}).
-
--define(YIELD_OPTIONS_SPEC, #{
-    progress => #{
-        alias => <<"progress">>,
+        datatype => binary
+    },
+    %% Present when caller is disclosed
+    caller_authid => #{
+        alias => <<"caller_authid">>,
         required => false,
-        datatype => boolean
-    }
-}).
-
--define(RESULT_DETAILS_SPEC, #{
-    progress => #{
-        alias => <<"progress">>,
+        datatype => binary
+    },
+    %% Present when caller is disclosed
+    caller_authrole => #{
+        alias => <<"caller_authrole">>,
         required => false,
-        datatype => boolean
+        datatype => binary
     }
 }).
 
-%% maps_utils:map_spec()
--define(EVENT_DETAILS_SPEC, ?PUBLISH_OPTS_SPEC#{
-    retained => #{
-        alias => <<"retained">>,
-        required => false,
-        datatype => boolean
-    }
-}).
-
-
-
-
-
-%% =============================================================================
-%% RECORD DEFINITIONS
-%% =============================================================================
-
-
-
-%% NOTICE: DO NOT CHANGE THE ORDER OF THE RECORD FIELDS as it maps
-%% to the order in WAMP messages and we use list_to_tuple/1
--record(hello, {
-    realm_uri       ::  uri(),
-    details         ::  map()
-}).
--type wamp_hello()       ::  #hello{}.
-
--record(challenge, {
-    auth_method      ::  binary(),
-    extra            ::  map()
-}).
--type wamp_challenge()       ::  #challenge{}.
-
--record(authenticate, {
-    signature       ::  binary(),
-    extra           ::  map()
-}).
--type wamp_authenticate()       ::  #authenticate{}.
-
--record(welcome, {
-    session_id      ::  id(),
-    details         ::  map()
-}).
--type wamp_welcome()       ::  #welcome{}.
-
--record(abort, {
-    details         ::  map(),
-    reason_uri      ::  uri()
-}).
--type wamp_abort()       ::  #abort{}.
-
--record(goodbye, {
-    details         ::  map(),
-    reason_uri      ::  uri()
-}).
--type wamp_goodbye()       ::  #goodbye{}.
-
--record(error, {
-    request_type    ::  pos_integer(),
-    request_id      ::  id(),
-    details         ::  map(),
-    error_uri       ::  uri(),
-    arguments       ::  list() | undefined,
-    arguments_kw         ::  map() | undefined
-}).
--type wamp_error()       ::  #error{}.
-
--record(publish, {
-    request_id      ::  id(),
-    options         ::  map(),
-    topic_uri       ::  uri(),
-    arguments       ::  list() | undefined,
-    arguments_kw         ::  map() | undefined
-}).
--type wamp_publish()       ::  #publish{}.
-
--record(published, {
-    request_id      ::  id(),
-    publication_id  ::  id()
-}).
--type wamp_published()       ::  #published{}.
-
--record(subscribe, {
-    request_id      ::  id(),
-    options         ::  map(),
-    topic_uri       ::  uri()
-}).
--type wamp_subscribe()       ::  #subscribe{}.
-
--record(subscribed, {
-    request_id      ::  id(),
-    subscription_id ::  id()
-}).
--type wamp_subscribed()       ::  #subscribed{}.
-
--record(unsubscribe, {
-    request_id      ::  id(),
-    subscription_id ::  id()
-}).
--type wamp_unsubscribe()       ::  #unsubscribe{}.
-
--record(unsubscribed, {
-    request_id      ::  id()
-}).
--type wamp_unsubscribed()       ::  #unsubscribed{}.
-
--record(event, {
-    subscription_id ::  id(),
-    publication_id  ::  id(),
-    details         ::  map(),
-    arguments       ::  list() | undefined,
-    arguments_kw         ::  map() | undefined
-}).
--type wamp_event()       ::  #event{}.
-
--record(call, {
-    request_id      ::  id(),
-    options         ::  map(),
-    procedure_uri   ::  uri(),
-    arguments       ::  list() | undefined,
-    arguments_kw    ::  map() | undefined
-}).
--type wamp_call()       ::  #call{}.
-
--record(cancel, {
-    request_id      ::  id(),
-    options         ::  map()
-}).
--type wamp_cancel()       ::  #cancel{}.
-
--record(result, {
-    request_id      ::  id(),
-    details         ::  map(),
-    arguments       ::  list() | undefined,
-    arguments_kw         ::  map() | undefined
-}).
--type wamp_result()       ::  #result{}.
-
--record(register, {
-    request_id      ::  id(),
-    options         ::  map(),
-    procedure_uri   ::  uri()
-}).
--type wamp_register()       ::  #register{}.
-
--record(registered, {
-    request_id      ::  id(),
-    registration_id ::  id()
-}).
--type wamp_registered()       ::  #registered{}.
-
--record(unregister, {
-    request_id      ::  id(),
-    registration_id ::  id()
-}).
--type wamp_unregister()       ::  #unregister{}.
-
-%% Used for Registration Revocation feature
--record(unregister_ext, {
-    request_id      ::  id(),
-    registration_id ::  id(),
-    details         ::  map()
-}).
--type wamp_unregister_ext()       ::  #unregister{}.
-
--record(unregistered, {
-    request_id      ::  id()
-}).
--type wamp_unregistered()       ::  #unregistered{}.
-
--record(invocation, {
-    request_id      ::  id(),
-    registration_id ::  id(),
-    details         ::  map(),
-    arguments       ::  list() | undefined,
-    arguments_kw         ::  map() | undefined
-}).
--type wamp_invocation()       ::  #invocation{}.
+%% -----------------------------------------------------------------------------
+%% INTERRUPT 69
+%% -----------------------------------------------------------------------------
 
 -record(interrupt, {
     request_id      ::  id(),
@@ -1157,85 +1470,36 @@
 }).
 -type wamp_interrupt()       ::  #interrupt{}.
 
+
+-define(INTERRUPT_OPTIONS_SPEC, #{
+    mode => #{
+        alias => <<"mode">>,
+        required => false,
+        datatype => binary
+    }
+}).
+
+%% -----------------------------------------------------------------------------
+%% YIELD 70
+%% -----------------------------------------------------------------------------
+
 -record(yield, {
     request_id      ::  id(),
     options         ::  map(),
-    arguments       ::  list() | undefined,
-    arguments_kw         ::  map() | undefined
+    args            ::  maybe(list()),
+    kwargs          ::  maybe(map()),
+    payload         ::  maybe(binary())
 }).
+
 -type wamp_yield()  ::  #yield{}.
 
--type wamp_message()     ::  wamp_hello()
-                        | wamp_challenge()
-                        | wamp_authenticate()
-                        | wamp_welcome()
-                        | wamp_abort()
-                        | wamp_goodbye()
-                        | wamp_error()
-                        | wamp_publish()
-                        | wamp_published()
-                        | wamp_subscribe()
-                        | wamp_subscribed()
-                        | wamp_unsubscribe()
-                        | wamp_unsubscribed()
-                        | wamp_event()
-                        | wamp_call()
-                        | wamp_cancel()
-                        | wamp_result()
-                        | wamp_register()
-                        | wamp_registered()
-                        | wamp_unregister()
-                        | wamp_unregistered()
-                        | wamp_invocation()
-                        | wamp_interrupt()
-                        | wamp_yield().
+-define(YIELD_OPTIONS_SPEC, ?PAYLOAD_DETAILS_SPEC).
 
 
 
-
-% -type hello_details()           ::  roles
-%                                     | agent
-%                                     | transport
-%                                     | authmethods
-%                                     | authid.
-% -type result_details()          ::  progress.
-% -type challenge_details()       ::  challenge
-%                                     | salt
-%                                     | keylen
-%                                     | iterations.
-% -type invocation_details()      ::  caller
-%                                     | trustlevel | procedure.
-% -type event_details()           ::  publisher
-%                                     | trustlevel | topic.
-
-% %% <<"exact">> | <<"prefix">> | <<"wildcard">>.
-% -type match_policy()            ::  binary().
-
-% %% <<"single">> | <<"roundrobin">> | <<"random">> | <<"first">> | <<"last">>.
-% -type invocation_policy()       ::  binary().
-
-% -type subscribe_options()       ::  match
-%                                     | nkey
-%                                     | disclose_caller.
-% -type register_options()        ::  match | invoke | disclose_caller.
-% -type call_runmode()            ::  partition.
-% -type call_options()            ::  disclose_me
-%                                     | runmode
-%                                     | rkey
-%                                     | receive_progress
-%                                     | timeout.
-% -type cancel_options()          ::  mode.
-% -type yeild_options()           ::  progress.
-% -type publish_options()         ::  acknowledge
-%                                     | exclude
-%                                     | exclude_authid
-%                                     | exclude_authrole
-%                                     | exclude_me
-%                                     | disclose_me
-%                                     | eligible
-%                                     | eligible_authid
-%                                     | eligible_authrole
-%                                     | rkey.
+%% =============================================================================
+%% URIs
+%% =============================================================================
 
 
 

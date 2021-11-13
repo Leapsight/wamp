@@ -16,7 +16,9 @@
                     | goodbye
                     | event
                     | result
-                    | invocation.
+                    | invocation
+                    | event_received
+                    | subscriber_received.
 
 
 -export_type([type/0]).
@@ -83,8 +85,14 @@ spec(abort) ->
     undefined;
 spec(goodbye) ->
     undefined;
+spec(error) ->
+    ?ERROR_DETAILS_SPEC;
 spec(event) ->
     ?EVENT_DETAILS_SPEC;
+spec(event_received) ->
+    ?EVENT_RECEIVED_DETAILS_SPEC;
+spec(subscriber_received) ->
+    ?SUBSCRIBER_RECEIVED_DETAILS_SPEC;
 spec(result) ->
     ?RESULT_DETAILS_SPEC;
 spec(invocation) ->
