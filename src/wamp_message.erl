@@ -39,6 +39,8 @@
 -export([event/3]).
 -export([event/4]).
 -export([event/5]).
+-export([event_received/3]).
+-export([subscriber_received/3]).
 -export([goodbye/2]).
 -export([hello/2]).
 -export([interrupt/2]).
@@ -201,12 +203,20 @@ error(ReqType, ReqId, Details, ErrorUri) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec error(pos_integer(), id(), map(), uri(), list()) ->
+-spec error(pos_integer(), id(), map(), uri(), list() | binary()) ->
     wamp_error() | no_return().
 
-error(ReqType, ReqId, Details, ErrorUri, Args) ->
-    error(ReqType, ReqId, Details, ErrorUri, Args, undefined).
+error(ReqType, ReqId, Details, ErrorUri, Args) when is_list(Args) ->
+    error(ReqType, ReqId, Details, ErrorUri, Args, undefined);
 
+error(ReqType, ReqId, Details, ErrorUri, Payload) when is_binary(Payload) ->
+    #error{
+        request_type = ReqType,
+        request_id = wamp_utils:validate_id(ReqId),
+        details = wamp_details:new(error, Details),
+        error_uri = wamp_uri:validate(ErrorUri),
+        payload = Payload
+    }.
 
 %% -----------------------------------------------------------------------------
 %% @doc
@@ -221,15 +231,15 @@ error(ReqType, ReqId, Details, ErrorUri, Args) ->
     map() | undefined) ->
     wamp_error() | no_return().
 
-error(ReqType, ReqId, Details, ErrorUri, Args, Payload)
+error(ReqType, ReqId, Details, ErrorUri, Args, KWArgs)
 when is_map(Details) ->
     #error{
         request_type = ReqType,
         request_id = wamp_utils:validate_id(ReqId),
-        details = Details, % any
+        details = wamp_details:new(error, Details),
         error_uri = wamp_uri:validate(ErrorUri),
-        arguments = Args,
-        arguments_kw = Payload
+        args = Args,
+        kwargs = KWArgs
     }.
 
 
@@ -248,11 +258,11 @@ error_from(M, Details, ErrorUri) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec error_from(error_source(), map(), uri(), list()) ->
+-spec error_from(error_source(), map(), uri(), list() | binary()) ->
     wamp_error() | no_return().
 
-error_from(M, Details, ErrorUri, Args) ->
-    error_from(M, Details, ErrorUri, Args, undefined).
+error_from(M, Details, ErrorUri, Term) ->
+    error_from(M, Details, ErrorUri, Term, undefined).
 
 
 %% -----------------------------------------------------------------------------
@@ -268,30 +278,30 @@ error_from(M, Details, ErrorUri, Args) ->
     wamp_error() | no_return().
 
 
-error_from(#subscribe{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
-    error(?SUBSCRIBE, ReqId, Details, ErrorUri, Args, Payload);
+error_from(#subscribe{request_id = ReqId}, Details, ErrorUri, Args, KWArgs) ->
+    error(?SUBSCRIBE, ReqId, Details, ErrorUri, Args, KWArgs);
 
 error_from(
-    #unsubscribe{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
-    error(?UNSUBSCRIBE, ReqId, Details, ErrorUri, Args, Payload);
+    #unsubscribe{request_id = ReqId}, Details, ErrorUri, Args, KWArgs) ->
+    error(?UNSUBSCRIBE, ReqId, Details, ErrorUri, Args, KWArgs);
 
-error_from(#publish{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
-    error(?PUBLISH, ReqId, Details, ErrorUri, Args, Payload);
+error_from(#publish{request_id = ReqId}, Details, ErrorUri, Args, KWArgs) ->
+    error(?PUBLISH, ReqId, Details, ErrorUri, Args, KWArgs);
 
-error_from(#register{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
-    error(?REGISTER, ReqId, Details, ErrorUri, Args, Payload);
+error_from(#register{request_id = ReqId}, Details, ErrorUri, Args, KWArgs) ->
+    error(?REGISTER, ReqId, Details, ErrorUri, Args, KWArgs);
 
-error_from(#unregister{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
-    error(?UNREGISTER, ReqId, Details, ErrorUri, Args, Payload);
+error_from(#unregister{request_id = ReqId}, Details, ErrorUri, Args, KWArgs) ->
+    error(?UNREGISTER, ReqId, Details, ErrorUri, Args, KWArgs);
 
-error_from(#call{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
-    error(?CALL, ReqId, Details, ErrorUri, Args, Payload);
+error_from(#call{request_id = ReqId}, Details, ErrorUri, Args, KWArgs) ->
+    error(?CALL, ReqId, Details, ErrorUri, Args, KWArgs);
 
-error_from(#invocation{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
-    error(?INVOCATION, ReqId, Details, ErrorUri, Args, Payload);
+error_from(#invocation{request_id = ReqId}, Details, ErrorUri, Args, KWArgs) ->
+    error(?INVOCATION, ReqId, Details, ErrorUri, Args, KWArgs);
 
-error_from(#cancel{request_id = ReqId}, Details, ErrorUri, Args, Payload) ->
-    error(?CANCEL, ReqId, Details, ErrorUri, Args, Payload).
+error_from(#cancel{request_id = ReqId}, Details, ErrorUri, Args, KWArgs) ->
+    error(?CANCEL, ReqId, Details, ErrorUri, Args, KWArgs).
 
 
 %% -----------------------------------------------------------------------------
@@ -308,10 +318,18 @@ publish(ReqId, Options, TopicUri) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec publish(id(), map(), uri(), list()) -> wamp_publish() | no_return().
+-spec publish(id(), map(), uri(), list() | binary()) -> wamp_publish() | no_return().
 
-publish(ReqId, Options, TopicUri, Args) ->
-    publish(ReqId, Options, TopicUri, Args, undefined).
+publish(ReqId, Options, TopicUri, Args) when is_list(Args) ->
+    publish(ReqId, Options, TopicUri, Args, undefined);
+
+publish(ReqId, Options, TopicUri, Payload) when is_binary(Payload) ->
+    #publish{
+        request_id = wamp_utils:validate_id(ReqId),
+        options = wamp_options:new(publish, Options),
+        topic_uri = wamp_uri:validate(TopicUri),
+        payload = Payload
+    }.
 
 
 %% -----------------------------------------------------------------------------
@@ -321,13 +339,13 @@ publish(ReqId, Options, TopicUri, Args) ->
 -spec publish(id(), map(), uri(), list() | undefined, map() | undefined) ->
     wamp_publish() | no_return().
 
-publish(ReqId, Options, TopicUri, Args, Payload) ->
+publish(ReqId, Options, TopicUri, Args, KWArgs) ->
     #publish{
         request_id = wamp_utils:validate_id(ReqId),
         options = wamp_options:new(publish, Options),
         topic_uri = wamp_uri:validate(TopicUri),
-        arguments = Args,
-        arguments_kw = Payload
+        args = Args,
+        kwargs = KWArgs
     }.
 
 
@@ -413,10 +431,19 @@ event(SubsId, PubId, Details) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec event(id(), id(), map(), list()) -> wamp_event() | no_return().
+-spec event(id(), id(), map(), list() | binary()) -> wamp_event() | no_return().
 
-event(SubsId, PubId, Details, Args) ->
-    event(SubsId, PubId, Details, Args, undefined).
+event(SubsId, PubId, Details, Args) when is_list(Args) ->
+    event(SubsId, PubId, Details, Args, undefined);
+
+
+event(SubsId, PubId, Details, Payload) when is_binary(Payload) ->
+    #event{
+        subscription_id = wamp_utils:validate_id(SubsId),
+        publication_id = wamp_utils:validate_id(PubId),
+        details = wamp_details:new(event, Details),
+        payload = Payload
+    }.
 
 
 %% -----------------------------------------------------------------------------
@@ -426,15 +453,46 @@ event(SubsId, PubId, Details, Args) ->
 -spec event(id(), id(), map(), list() | undefined, map() | undefined) ->
     wamp_event() | no_return().
 
-event(SubsId, PubId, Details, Args, Payload) ->
+event(SubsId, PubId, Details, Args, KWArgs) ->
     #event{
         subscription_id = wamp_utils:validate_id(SubsId),
         publication_id = wamp_utils:validate_id(PubId),
         details = wamp_details:new(event, Details),
-        arguments = Args,
-        arguments_kw = Payload
+        args = Args,
+        kwargs = KWArgs
     }.
 
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec event_received(id(), map(), uri()) -> wamp_event_received() | no_return().
+
+event_received(PubId, Details0, Payload) when is_map(Details0) ->
+    Details = wamp_details:new(event_received, Details0),
+
+    #event_received{
+        publication_id = wamp_utils:validate_id(PubId),
+        details = Details,
+        payload = Payload
+    }.
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec subscriber_received(id(), map(), uri()) -> wamp_subscriber_received() | no_return().
+
+subscriber_received(PubId, Details0, Payload) when is_map(Details0) ->
+    Details = wamp_details:new(subscriber_received, Details0),
+
+    #subscriber_received{
+        publication_id = wamp_utils:validate_id(PubId),
+        details = Details,
+        payload = Payload
+    }.
 
 
 %% -----------------------------------------------------------------------------
@@ -451,10 +509,18 @@ call(ReqId, Options, ProcedureUri) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec call(id(), map(), uri(), list()) -> wamp_call() | no_return().
+-spec call(id(), map(), uri(), list() | binary()) -> wamp_call() | no_return().
 
-call(ReqId, Options, ProcedureUri, Args) ->
-    call(ReqId, Options, ProcedureUri, Args, undefined).
+call(ReqId, Options, ProcedureUri, Args) when is_list(Args) ->
+    call(ReqId, Options, ProcedureUri, Args, undefined);
+
+call(ReqId, Options, ProcedureUri, Payload) when is_binary(Payload) ->
+    #call{
+        request_id = wamp_utils:validate_id(ReqId),
+        options = wamp_options:new(call, Options),
+        procedure_uri = wamp_uri:validate(ProcedureUri),
+        payload = Payload
+    }.
 
 
 %% -----------------------------------------------------------------------------
@@ -464,13 +530,13 @@ call(ReqId, Options, ProcedureUri, Args) ->
 -spec call(id(), map(), uri(), list() | undefined, map() | undefined) ->
     wamp_call() | no_return().
 
-call(ReqId, Options, ProcedureUri, Args, Payload) ->
+call(ReqId, Options, ProcedureUri, Args, KWArgs) ->
     #call{
         request_id = wamp_utils:validate_id(ReqId),
         options = wamp_options:new(call, Options),
         procedure_uri = wamp_uri:validate(ProcedureUri),
-        arguments = Args,
-        arguments_kw = Payload
+        args = Args,
+        kwargs = KWArgs
     }.
 
 
@@ -501,10 +567,17 @@ result(ReqId, Details) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec result(id(), map(), list()) -> wamp_result() | no_return().
+-spec result(id(), map(), list() | binary()) -> wamp_result() | no_return().
 
-result(ReqId, Details, Args) ->
-    result(ReqId, Details, Args, undefined).
+result(ReqId, Details, Args) when is_list(Args) ->
+    result(ReqId, Details, Args, undefined);
+
+result(ReqId, Details, Payload) when is_binary(Payload) ->
+    #result{
+        request_id = wamp_utils:validate_id(ReqId),
+        details = wamp_details:new(result, Details),
+        payload = Payload
+    }.
 
 
 %% -----------------------------------------------------------------------------
@@ -514,12 +587,12 @@ result(ReqId, Details, Args) ->
 -spec result(id(), map(), list() | undefined, map() | undefined) ->
     wamp_result() | no_return().
 
-result(ReqId, Details, Args, Payload) when is_map(Details) ->
+result(ReqId, Details, Args, KWArgs) when is_map(Details) ->
     #result{
         request_id = wamp_utils:validate_id(ReqId),
         details = wamp_details:new(result, Details),
-        arguments = Args,
-        arguments_kw = Payload
+        args = Args,
+        kwargs = KWArgs
     }.
 
 
@@ -575,7 +648,7 @@ unregister(ReqId, RegId) ->
 
 % registration_revocation(RegId, Reason) when is_binary(Reason) ->
 %     Id = wamp_utils:validate_id(RegId),
-%     #unregister_ext{
+%     #unregister2{
 %         request_id = 0,
 %         details = #{registration => Id, reason => Reason}
 %     }.
@@ -607,10 +680,18 @@ invocation(ReqId, RegId, Details) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec invocation(id(), id(), map(), list()) -> wamp_invocation() | no_return().
+-spec invocation(id(), id(), map(), list() | binary()) -> wamp_invocation() | no_return().
 
-invocation(ReqId, RegId, Details, Args) ->
-    invocation(ReqId, RegId, Details, Args, undefined).
+invocation(ReqId, RegId, Details, Args) when is_list(Args) ->
+    invocation(ReqId, RegId, Details, Args, undefined);
+
+invocation(ReqId, RegId, Details, Payload) when is_binary(Payload) ->
+    #invocation{
+        request_id = wamp_utils:validate_id(ReqId),
+        registration_id = wamp_utils:validate_id(RegId),
+        details = wamp_details:new(invocation, Details),
+        payload = Payload
+    }.
 
 
 %% -----------------------------------------------------------------------------
@@ -620,13 +701,13 @@ invocation(ReqId, RegId, Details, Args) ->
 -spec invocation(id(), id(), map(), list() | undefined, map() | undefined) ->
     wamp_invocation() | no_return().
 
-invocation(ReqId, RegId, Details, Args, Payload) ->
+invocation(ReqId, RegId, Details, Args, KWArgs) ->
     #invocation{
         request_id = wamp_utils:validate_id(ReqId),
         registration_id = wamp_utils:validate_id(RegId),
         details = wamp_details:new(invocation, Details),
-        arguments = Args,
-        arguments_kw = Payload
+        args = Args,
+        kwargs = KWArgs
     }.
 
 
@@ -657,10 +738,17 @@ yield(ReqId, Options) ->
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec yield(id(), map(), list()) -> wamp_yield() | no_return().
+-spec yield(id(), map(), list() | binary()) -> wamp_yield() | no_return().
 
-yield(ReqId, Options, Args) ->
-    yield(ReqId, Options, Args, undefined).
+yield(ReqId, Options, Args) when is_list(Args) ->
+    yield(ReqId, Options, Args, undefined);
+
+yield(ReqId, Options, Payload) when is_binary(Payload) ->
+    #yield{
+        request_id = wamp_utils:validate_id(ReqId),
+        options = wamp_options:new(yield, Options),
+        payload = Payload
+    }.
 
 
 %% -----------------------------------------------------------------------------
@@ -670,12 +758,12 @@ yield(ReqId, Options, Args) ->
 -spec yield(id(), map(), list() | undefined, map() | undefined) ->
     wamp_yield() | no_return().
 
-yield(ReqId, Options, Args, Payload) ->
+yield(ReqId, Options, Args, KWArgs) ->
     #yield{
         request_id = wamp_utils:validate_id(ReqId),
         options = wamp_options:new(yield, Options),
-        arguments = Args,
-        arguments_kw = Payload
+        args = Args,
+        kwargs = KWArgs
     }.
 
 
@@ -711,6 +799,8 @@ options(_) ->
     | wamp_goodbye()
     | wamp_result()
     | wamp_invocation()
+    | wamp_event_received()
+    | wamp_subscriber_received()
     ) -> map() | no_return().
 
 details(#hello{details = Val}) -> Val;
@@ -719,6 +809,8 @@ details(#abort{details = Val}) -> Val;
 details(#goodbye{details = Val}) -> Val;
 details(#result{details = Val}) -> Val;
 details(#invocation{details = Val}) -> Val;
+details(#event_received{details = Val}) -> Val;
+details(#subscriber_received{details = Val}) -> Val;
 details(_) ->
     error(badarg).
 

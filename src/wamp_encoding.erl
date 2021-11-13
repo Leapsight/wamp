@@ -174,10 +174,11 @@ pack(#error{} = M) ->
         request_id = ReqId,
         details = Details,
         error_uri = ErrorUri,
-        arguments = Args,
-        arguments_kw = Payload
+        args = Args,
+        kwargs = KWArgs,
+        payload = Payload
     } = M,
-    T = pack_optionals(Args, Payload),
+    T = pack_optionals(Args, KWArgs, Payload),
     [?ERROR, ReqType, ReqId, Details, ErrorUri | T];
 
 pack(#publish{} = M) ->
@@ -185,10 +186,11 @@ pack(#publish{} = M) ->
         request_id = ReqId,
         options = Options,
         topic_uri = TopicUri,
-        arguments = Args,
-        arguments_kw = Payload
+        args = Args,
+        kwargs = KWArgs,
+        payload = Payload
     } = M,
-    T = pack_optionals(Args, Payload),
+    T = pack_optionals(Args, KWArgs, Payload),
     [?PUBLISH, ReqId, Options, TopicUri | T];
 
 pack(#event{} = M) ->
@@ -196,10 +198,11 @@ pack(#event{} = M) ->
         subscription_id = SubsId,
         publication_id = PubId,
         details = Details,
-        arguments = Args,
-        arguments_kw = Payload
+        args = Args,
+        kwargs = KWArgs,
+        payload = Payload
     } = M,
-    T = pack_optionals(Args, Payload),
+    T = pack_optionals(Args, KWArgs, Payload),
     [?EVENT, SubsId, PubId, Details | T];
 
 pack(#call{} = M) ->
@@ -207,20 +210,22 @@ pack(#call{} = M) ->
         request_id = ReqId,
         options = Options,
         procedure_uri = ProcedureUri,
-        arguments = Args,
-        arguments_kw = Payload
+        args = Args,
+        kwargs = KWArgs,
+        payload = Payload
     } = M,
-    T = pack_optionals(Args, Payload),
+    T = pack_optionals(Args, KWArgs, Payload),
     [?CALL, ReqId, Options, ProcedureUri | T];
 
 pack(#result{} = M) ->
     #result{
         request_id = ReqId,
         details = Details,
-        arguments = Args,
-        arguments_kw = Payload
+        args = Args,
+        kwargs = KWArgs,
+        payload = Payload
     } = M,
-    T = pack_optionals(Args, Payload),
+    T = pack_optionals(Args, KWArgs, Payload),
     [?RESULT, ReqId, Details | T];
 
 pack(#invocation{} = M) ->
@@ -228,20 +233,22 @@ pack(#invocation{} = M) ->
         request_id = ReqId,
         registration_id = RegId,
         details = Details,
-        arguments = Args,
-        arguments_kw = Payload
+        args = Args,
+        kwargs = KWArgs,
+        payload = Payload
     } = M,
-    T = pack_optionals(Args, Payload),
+    T = pack_optionals(Args, KWArgs, Payload),
     [?INVOCATION, ReqId, RegId, Details | T];
 
 pack(#yield{} = M) ->
     #yield{
         request_id = ReqId,
         options = Options,
-        arguments = Args,
-        arguments_kw = Payload
+        args = Args,
+        kwargs = KWArgs,
+        payload = Payload
     } = M,
-    T = pack_optionals(Args, Payload),
+    T = pack_optionals(Args, KWArgs, Payload),
     [?YIELD, ReqId, Options | T];
 
 pack(#hello{} = M) -> pack_generic(?HELLO, M);
@@ -255,6 +262,8 @@ pack(#subscribe{} = M) -> pack_generic(?SUBSCRIBE, M);
 pack(#subscribed{} = M) -> pack_generic(?SUBSCRIBED, M);
 pack(#unsubscribe{} = M) -> pack_generic(?UNSUBSCRIBE, M);
 pack(#unsubscribed{} = M) -> pack_generic(?UNSUBSCRIBED, M);
+pack(#event_received{} = M) -> pack_generic(?EVENT_RECEIVED, M);
+pack(#subscriber_received{} = M) -> pack_generic(?SUBSCRIBER_RECEIVED, M);
 pack(#cancel{} = M) -> pack_generic(?CANCEL, M);
 pack(#register{} = M) -> pack_generic(?REGISTER, M);
 pack(#registered{} = M) -> pack_generic(?REGISTERED, M);
@@ -308,6 +317,16 @@ unpack([?ERROR, ReqType, ReqId, Details, ErrorUri]) ->
         ErrorUri
     );
 
+unpack([?ERROR, ReqType, ReqId, Details, ErrorUri, Payload])
+when is_binary(Payload) ->
+    wamp_message:error(
+        ReqType,
+        ReqId,
+        Details,
+        ErrorUri,
+        Payload
+    );
+
 unpack([?ERROR, ReqType, ReqId, Details, ErrorUri, Args]) when is_list(Args) ->
     wamp_message:error(
         ReqType,
@@ -317,15 +336,15 @@ unpack([?ERROR, ReqType, ReqId, Details, ErrorUri, Args]) when is_list(Args) ->
         Args
     );
 
-unpack([?ERROR, ReqType, ReqId, Details, ErrorUri, Args, Payload])
- when is_list(Args), is_map(Payload) ->
+unpack([?ERROR, ReqType, ReqId, Details, ErrorUri, Args, KWArgs])
+ when is_list(Args), is_map(KWArgs) ->
     wamp_message:error(
         ReqType,
         ReqId,
         Details,
         ErrorUri,
         Args,
-        Payload
+        KWArgs
     );
 
 unpack([?PUBLISH, ReqId, Options, TopicUri]) ->
@@ -340,13 +359,13 @@ unpack([?PUBLISH, ReqId, Options, TopicUri, Args]) ->
         Args
     );
 
-unpack([?PUBLISH, ReqId, Options, TopicUri, Args, Payload]) ->
+unpack([?PUBLISH, ReqId, Options, TopicUri, Args, KWArgs]) ->
     wamp_message:publish(
         ReqId,
         Options,
         TopicUri,
         Args,
-        Payload
+        KWArgs
     );
 
 unpack([?PUBLISHED, ReqId, PubId]) ->
@@ -380,14 +399,23 @@ unpack([?EVENT, SubsId, PubId, Details, Args]) ->
         Args
     );
 
-unpack([?EVENT, SubsId, PubId, Details, Args, Payload]) ->
+unpack([?EVENT, SubsId, PubId, Details, Args, KWArgs]) ->
     wamp_message:event(
         SubsId,
         PubId,
         Details,
         Args,
-        Payload
+        KWArgs
     );
+
+% unpack([?EVENT_RECEIVED, PubId, Details, Payload]) ->
+%     wamp_message:event_received(
+%         SubsId,
+%         PubId,
+%         Details,
+%         Args,
+%         KWArgs
+%     );
 
 unpack([?CALL, ReqId, Options, ProcedureUri]) ->
     wamp_message:call(
@@ -404,13 +432,13 @@ unpack([?CALL, ReqId, Options, ProcedureUri, Args]) ->
         Args
     );
 
-unpack([?CALL, ReqId, Options, ProcedureUri, Args, Payload]) ->
+unpack([?CALL, ReqId, Options, ProcedureUri, Args, KWArgs]) ->
     wamp_message:call(
         ReqId,
         Options,
         ProcedureUri,
         Args,
-        Payload
+        KWArgs
     );
 
 unpack([?CANCEL, ReqId, Options]) ->
@@ -425,9 +453,9 @@ unpack([?RESULT, ReqId, Details]) ->
 unpack([?RESULT, ReqId, Details, Args]) ->
     wamp_message:result(ReqId, Details, Args);
 
-unpack([?RESULT, ReqId, Details, Args, Payload]) ->
+unpack([?RESULT, ReqId, Details, Args, KWArgs]) ->
     wamp_message:result(
-        ReqId, Details, Args, Payload);
+        ReqId, Details, Args, KWArgs);
 
 
 unpack([?REGISTER, ReqId, Options, ProcedureUri]) ->
@@ -458,13 +486,13 @@ unpack([?INVOCATION, ReqId, RegId, Details, Args]) ->
         Args
     );
 
-unpack([?INVOCATION, ReqId, RegId, Details, Args, Payload]) ->
+unpack([?INVOCATION, ReqId, RegId, Details, Args, KWArgs]) ->
     wamp_message:invocation(
         ReqId,
         RegId,
         Details,
         Args,
-        Payload
+        KWArgs
     );
 
 unpack([?YIELD, ReqId, Options]) ->
@@ -480,12 +508,12 @@ unpack([?YIELD, ReqId, Options, Args]) ->
         Args
     );
 
-unpack([?YIELD, ReqId, Options, Args, Payload]) ->
+unpack([?YIELD, ReqId, Options, Args, KWArgs]) ->
     wamp_message:yield(
         ReqId,
         Options,
         Args,
-        Payload
+        KWArgs
     );
 
 unpack(M) ->
@@ -672,6 +700,12 @@ request_info([?UNSUBSCRIBED, ReqId]) ->
 request_info([?EVENT | _]) ->
     #{request_type => ?EVENT, request_id => undefined};
 
+request_info([?EVENT_RECEIVED | _]) ->
+    #{request_type => ?EVENT_RECEIVED, request_id => undefined};
+
+request_info([?SUBSCRIBER_RECEIVED | _]) ->
+    #{request_type => ?SUBSCRIBER_RECEIVED, request_id => undefined};
+
 request_info([?CALL, ReqId | _]) ->
     #{request_type => ?CALL, request_id => ReqId};
 
@@ -718,9 +752,11 @@ request_info([?YIELD, ReqId | _]) ->
 %% RFC: Implementations SHOULD avoid sending empty ArgumentsKw dictionaries.
 %% @end
 %% -----------------------------------------------------------------------------
-pack_optionals(undefined, undefined) -> [];
-pack_optionals(Args, undefined) -> [Args];
-pack_optionals(Args, Payload) -> [Args, Payload].
+pack_optionals(undefined, undefined, undefined) -> [];
+pack_optionals(undefined, undefined, Payload) -> [Payload];
+pack_optionals(Args, undefined, undefined) -> [Args];
+pack_optionals(Args, KWArgs, undefined) -> [Args, KWArgs].
+
 
 
 -spec message_name(1..255) -> atom().
@@ -739,6 +775,8 @@ message_name(?SUBSCRIBED) -> subscribed;
 message_name(?UNSUBSCRIBE) -> unsubscribe;
 message_name(?UNSUBSCRIBED) -> unsubscribed;
 message_name(?EVENT) -> event;
+message_name(?EVENT_RECEIVED) -> event_received;
+message_name(?SUBSCRIBER_RECEIVED) -> subscriber_received;
 message_name(?CALL) -> call;
 message_name(?CANCEL) -> cancel;
 message_name(?RESULT) -> result;

@@ -46,6 +46,9 @@ hello_json_test(_) ->
 
 welcome_json_test(_) ->
     M = wamp_message:welcome(1, #{
+        <<"realm">> => <<"realm1">>,
+        <<"authid">> => <<"foo">>,
+        <<"authrole">> => <<"default">>,
         <<"roles">> => #{
             <<"dealer">> => #{},
             <<"broker">> => #{}
@@ -222,7 +225,7 @@ call_json_4_test(_) ->
     {[M1], <<>>} = wamp_encoding:decode({ws, text, json}, Bin),
     ?assertMatch(
         {call, 1, _, <<"foo">>, [#{<<"bar">> := _}],
-        #{}},
+        #{}, undefined},
         M1
     ).
 
@@ -353,6 +356,9 @@ hello_msgpack_test(_) ->
 
 welcome_msgpack_test(_) ->
     M = wamp_message:welcome(1, #{
+        <<"realm">> => <<"realm1">>,
+        <<"authid">> => <<"foo">>,
+        <<"authrole">> => <<"default">>,
         <<"roles">> => #{
             <<"dealer">> => #{},
             <<"broker">> => #{}
@@ -637,6 +643,9 @@ hello_bert_test(_) ->
 
 welcome_bert_test(_) ->
     M = wamp_message:welcome(1, #{
+        <<"realm">> => <<"realm1">>,
+        <<"authid">> => <<"foo">>,
+        <<"authrole">> => <<"default">>,
         <<"roles">> => #{
             <<"dealer">> => #{},
             <<"broker">> => #{}
@@ -811,6 +820,9 @@ hello_erl_test(_) ->
 
 welcome_erl_test(_) ->
     M = wamp_message:welcome(1, #{
+        <<"realm">> => <<"realm1">>,
+        <<"authid">> => <<"foo">>,
+        <<"authrole">> => <<"default">>,
         <<"roles">> => #{
             <<"dealer">> => #{},
             <<"broker">> => #{}
@@ -993,7 +1005,7 @@ call_erl_4_test(_) ->
     {[M1], <<>>} = wamp_encoding:decode({ws, binary, erl}, Bin),
     ?assertMatch(
         {call, 1, _, <<"foo">>, [#{<<"bar">> := _}],
-        #{}},
+        #{}, undefined},
         M1
     ).
 
