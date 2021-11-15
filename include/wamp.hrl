@@ -1442,7 +1442,7 @@
     caller => #{
         alias => <<"caller">>,
         required => false,
-        datatype => binary
+        datatype => integer
     },
     %% Present when caller is disclosed
     caller_authid => #{
