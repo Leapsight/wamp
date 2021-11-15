@@ -30,8 +30,6 @@
 
 -define(MAX_ID, 9007199254740993).
 
--type maybe(T)          ::  T | undefined.
-
 -type encoding()        ::  json
                             | msgpack
                             | bert
@@ -874,9 +872,9 @@
     request_id      ::  id(),
     details         ::  map(),
     error_uri       ::  uri(),
-    args            ::  maybe(list()),
-    kwargs          ::  maybe(map()),
-    payload         ::  maybe(binary())
+    args            ::  list() | undefined,
+    kwargs          ::  map() | undefined,
+    payload         ::  binary() | undefined
 }).
 -type wamp_error()       ::  #error{}.
 
@@ -891,9 +889,9 @@
     request_id      ::  id(),
     options         ::  map(),
     topic_uri       ::  uri(),
-    args            ::  maybe(list()),
-    kwargs          ::  maybe(map()),
-    payload         ::  maybe(binary())
+    args            ::  list() | undefined,
+    kwargs          ::  map() | undefined,
+    payload         ::  binary() | undefined
 }).
 
 -type wamp_publish()       ::  #publish{}.
@@ -1039,9 +1037,9 @@
     subscription_id ::  id(),
     publication_id  ::  id(),
     details         ::  map(),
-    args            ::  maybe(list()),
-    kwargs          ::  maybe(map()),
-    payload         ::  maybe(binary())
+    args            ::  list() | undefined,
+    kwargs          ::  map() | undefined,
+    payload         ::  binary() | undefined
 }).
 
 -type wamp_event()       ::  #event{}.
@@ -1090,7 +1088,7 @@
 -record(event_received, {
     publication_id  ::  id(),
     details         ::  map(),
-    payload         ::  maybe(binary())
+    payload         ::  binary() | undefined
 }).
 
 -type wamp_event_received()  ::  #event_received{}.
@@ -1106,7 +1104,7 @@
     publication_id  ::  id(),
     details         ::  map(),
     %% From #event_received.payload
-    payload         ::  maybe(binary())
+    payload         ::  binary() | undefined
 }).
 
 -type wamp_subscriber_received()  ::  #subscriber_received{}.
@@ -1140,9 +1138,9 @@
     request_id      ::  id(),
     options         ::  map(),
     procedure_uri   ::  uri(),
-    args            ::  maybe(list()),
-    kwargs          ::  maybe(map()),
-    payload         ::  maybe(binary())
+    args            ::  list() | undefined,
+    kwargs          ::  map() | undefined,
+    payload         ::  binary() | undefined
 }).
 
 -type wamp_call()       ::  #call{}.
@@ -1270,9 +1268,9 @@
 -record(result, {
     request_id      ::  id(),
     details         ::  map(),
-    args            ::  maybe(list()),
-    kwargs          ::  maybe(map()),
-    payload         ::  maybe(binary())
+    args            ::  list() | undefined,
+    kwargs          ::  map() | undefined,
+    payload         ::  binary() | undefined
 }).
 
 -type wamp_result()       ::  #result{}.
@@ -1410,9 +1408,9 @@
     request_id      ::  id(),
     registration_id ::  id(),
     details         ::  map(),
-    args            ::  maybe(list()),
-    kwargs          ::  maybe(map()),
-    payload         ::  maybe(binary())
+    args            ::  list() | undefined,
+    kwargs          ::  map() | undefined,
+    payload         ::  binary() | undefined
 }).
 
 -type wamp_invocation()       ::  #invocation{}.
@@ -1486,9 +1484,9 @@
 -record(yield, {
     request_id      ::  id(),
     options         ::  map(),
-    args            ::  maybe(list()),
-    kwargs          ::  maybe(map()),
-    payload         ::  maybe(binary())
+    args            ::  list() | undefined,
+    kwargs          ::  map() | undefined,
+    payload         ::  binary() | undefined
 }).
 
 -type wamp_yield()  ::  #yield{}.
