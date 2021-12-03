@@ -28,7 +28,7 @@
     erl_batched
 ]).
 
--define(MAX_ID, 9007199254740993).
+-define(MAX_ID, 9007199254740992).
 
 -type encoding()        ::  json
                             | msgpack
