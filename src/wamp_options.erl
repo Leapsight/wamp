@@ -53,9 +53,8 @@
 -spec new(MessageType :: type(), Opts :: map()) -> map() | no_return().
 
 new(Type, Opts) ->
-    Spec = spec(Type),
     Extensions = app_config:get(wamp, [extended_options, Type], []),
-    wamp_utils:validate_map(Opts, Spec, Extensions).
+    validate(Type, Opts, Extensions).
 
 
 
@@ -67,19 +66,33 @@ new(Type, Opts) ->
 
 
 %% @private
-spec(call) ->
-    ?CALL_OPTS_SPEC;
-spec(cancel) ->
-    ?CALL_CANCELLING_OPTS_SPEC;
-spec(interrupt) ->
-    ?CALL_CANCELLING_OPTS_SPEC;
-spec(publish) ->
-    ?PUBLISH_OPTS_SPEC;
-spec(register) ->
-    ?REGISTER_OPTS_SPEC;
-spec(subscribe) ->
-    ?SUBSCRIBE_OPTS_SPEC;
-spec(yield) ->
-    ?YIELD_OPTIONS_SPEC;
-spec(_) ->
+validate(call, Opts, Extensions) ->
+    Spec = ?CALL_OPTS_SPEC,
+    wamp_utils:validate_map(Opts, Spec, Extensions);
+
+validate(cancel, Opts, Extensions) ->
+    Spec = ?CALL_CANCELLING_OPTS_SPEC,
+    wamp_utils:validate_map(Opts, Spec, Extensions);
+
+validate(interrupt, Opts, Extensions) ->
+    Spec = ?CALL_CANCELLING_OPTS_SPEC,
+    wamp_utils:validate_map(Opts, Spec, Extensions);
+
+validate(publish, Opts, Extensions) ->
+    Spec = ?PUBLISH_OPTS_SPEC,
+    wamp_utils:validate_map(Opts, Spec, Extensions);
+
+validate(register, Opts, Extensions) ->
+    Spec = ?REGISTER_OPTS_SPEC,
+    wamp_utils:validate_map(Opts, Spec, Extensions);
+
+validate(subscribe, Opts, Extensions) ->
+    Spec = ?SUBSCRIBE_OPTS_SPEC,
+    wamp_utils:validate_map(Opts, Spec, Extensions);
+
+validate(yield, Opts, Extensions) ->
+    Spec = ?YIELD_OPTIONS_SPEC,
+    wamp_utils:validate_map(Opts, Spec, Extensions);
+
+validate(_, _, _) ->
     error(badarg).
