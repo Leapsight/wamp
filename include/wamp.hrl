@@ -101,12 +101,42 @@
 %% =============================================================================
 
 
+-define(ROUTER_ROLES_SPEC, #{
+    broker => #{
+        alias => <<"broker">>,
+        required => false,
+        datatype => map,
+        validator => #{
+            features => #{
+                alias => <<"features">>,
+                required => false,
+                datatype => map,
+                validator => ?BROKER_FEATURES_SPEC
+            }
+        }
+    },
+    dealer => #{
+        alias => <<"dealer">>,
+        required => false,
+        datatype => map,
+        validator => #{
+            features => #{
+                alias => <<"features">>,
+                required => false,
+                datatype => map,
+                validator => ?DEALER_FEATURES_SPEC
+            }
+        }
+    }
+}).
+
 
 -define(DEALER_FEATURES_SPEC, ?WAMP_DEALER_FEATURES_SPEC#{
     call_retries => #{
         alias => <<"call_retries">>,
         required => false,
-        datatype => boolean}
+        datatype => boolean
+    }
 }).
 
 
@@ -114,361 +144,389 @@
     progressive_call_results => #{
         alias => <<"progressive_call_results">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     progressive_calls => #{
         alias => <<"progressive_calls">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     call_timeout => #{
         alias => <<"call_timeout">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     call_canceling => #{
         alias => <<"call_canceling">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     caller_identification=> #{
         alias => <<"caller_identification">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     call_trustlevels => #{
         alias => <<"call_trustlevels">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     registration_meta_api => #{
         alias => <<"registration_meta_api">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     registration_revocation => #{
         alias => <<"registration_revocation">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     session_meta_api => #{
         alias => <<"session_meta_api">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     pattern_based_registration => #{
         alias => <<"pattern_based_registration">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     procedure_reflection => #{
         alias => <<"procedure_reflection">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     shared_registration => #{
         alias => <<"shared_registration">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     sharded_registration => #{
         alias => <<"sharded_registration">>,
         required => false,
-        datatype => boolean}
+        datatype => boolean
+    }
 }).
 
 -define(BROKER_FEATURES_SPEC, #{
     event_retention => #{
         alias => <<"event_retention">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     event_history => #{
         alias => <<"event_history">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     pattern_based_subscription => #{
         alias => <<"pattern_based_subscription">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     publication_trustlevels => #{
         alias => <<"publication_trustlevels">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     publisher_exclusion => #{
         alias => <<"publisher_exclusion">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     publisher_identification => #{
         alias => <<"publisher_identification">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     session_meta_api => #{
         alias => <<"session_meta_api">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     sharded_subscription => #{
         alias => <<"sharded_subscription">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     subscriber_blackwhite_listing => #{
         alias => <<"subscriber_blackwhite_listing">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     subscription_meta_api => #{
         alias => <<"subscription_meta_api">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     topic_reflection => #{
         alias => <<"topic_reflection">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     payload_transparency => #{
         alias => <<"payload_transparency">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     payload_encryption_cryptobox => #{
         alias => <<"payload_encryption_cryptobox">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     acknowledge_event_received => #{
         alias => <<"acknowledge_event_received">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     acknowledge_subscriber_received => #{
         alias => <<"acknowledge_subscriber_received">>,
         required => false,
-        datatype => boolean},
+        datatype => boolean
+    },
     subscription_revocation => #{
         alias => <<"subscription_revocation">>,
         required => false,
-        datatype => boolean}
-}).
-
--define(BROKER_ROLE_SPEC, #{
-    features => #{
-        alias => <<"features">>,
-        required => false,
-        datatype => map,
-        validator => ?BROKER_FEATURES_SPEC
+        datatype => boolean
     }
 }).
 
--define(DEALER_ROLE_SPEC, #{
-    features => #{
-        alias => <<"features">>,
-        required => false,
-        datatype => map,
-        validator => ?DEALER_FEATURES_SPEC
-    }
-}).
 
--define(ROUTER_ROLES_SPEC, #{
-    broker => #{
-        alias => <<"broker">>,
-        required => false,
-        datatype => map,
-        validator => ?BROKER_ROLE_SPEC},
-    dealer => #{
-        alias => <<"dealer">>,
-        required => false,
-        datatype => map,
-        validator => ?DEALER_ROLE_SPEC}
-}).
-
--define(CALLEE_FEATURES_SPEC, #{
-    progressive_call_results => #{
-        alias => <<"progressive_call_results">>,
-        required => false,
-        datatype => boolean},
-    progressive_calls => #{
-        alias => <<"progressive_calls">>,
-        required => false,
-        datatype => boolean},
-    call_timeout => #{
-        alias => <<"call_timeout">>,
-        required => false,
-        datatype => boolean},
-    call_canceling => #{
-        alias => <<"call_canceling">>,
-        required => false,
-        datatype => boolean},
-    caller_identification => #{
-        alias => <<"caller_identification">>,
-        required => false,
-        datatype => boolean},
-    call_trustlevels => #{
-        alias => <<"call_trustlevels">>,
-        required => false,
-        datatype => boolean},
-    registration_revocation => #{
-        alias => <<"registration_revocation">>,
-        required => false,
-        datatype => boolean},
-    session_meta_api => #{
-        alias => <<"session_meta_api">>,
-        required => false,
-        datatype => boolean},
-    pattern_based_registration => #{
-        alias => <<"pattern_based_registration">>,
-        required => false,
-        datatype => boolean},
-    shared_registration => #{
-        alias => <<"shared_registration">>,
-        required => false,
-        datatype => boolean},
-    sharded_registration => #{
-        alias => <<"sharded_registration">>,
-        required => false,
-        datatype => boolean}
-}).
-
--define(CALLER_FEATURES_SPEC, ?WAMP_CALLER_FEATURES_SPEC#{
-    call_retries => #{
-        alias => <<"call_retries">>,
-        required => false,
-        datatype => boolean}
-}).
-
--define(WAMP_CALLER_FEATURES_SPEC, #{
-    progressive_call_results => #{
-        alias => <<"progressive_call_results">>,
-        required => false,
-        datatype => boolean},
-    progressive_calls => #{
-        alias => <<"progressive_calls">>,
-        required => false,
-        datatype => boolean},
-    call_timeout => #{
-        alias => <<"call_timeout">>,
-        required => false,
-        datatype => boolean},
-    call_canceling => #{
-        alias => <<"call_canceling">>,
-        required => false,
-        datatype => boolean},
-    caller_identification=> #{
-        alias => <<"caller_identification">>,
-        required => false,
-        datatype => boolean}
-}).
-
--define(SUBSCRIBER_FEATURES_SPEC, #{
-    event_history => #{
-        alias => <<"event_history">>,
-        required => false,
-        datatype => boolean},
-    pattern_based_subscription => #{
-        alias => <<"pattern_based_subscription">>,
-        required => false,
-        datatype => boolean},
-    publication_trustlevels => #{
-        alias => <<"publication_trustlevels">>,
-        required => false,
-        datatype => boolean},
-    publisher_identification => #{
-        alias => <<"publisher_identification">>,
-        required => false,
-        datatype => boolean},
-    sharded_subscription => #{
-        alias => <<"sharded_subscription">>,
-        required => false,
-        datatype => boolean},
-    payload_transparency => #{
-        alias => <<"payload_transparency">>,
-        required => false,
-        datatype => boolean},
-    payload_encryption_cryptobox => #{
-        alias => <<"payload_encryption_cryptobox">>,
-        required => false,
-        datatype => boolean},
-    acknowledge_subscriber_received => #{
-        alias => <<"acknowledge_subscriber_received">>,
-        required => false,
-        datatype => boolean},
-    subscription_revocation => #{
-        alias => <<"subscription_revocation">>,
-        required => false,
-        datatype => boolean}
-}).
-
--define(PUBLISHER_FEATURES_SPEC, #{
-    event_retention => #{
-        alias => <<"event_retention">>,
-        required => false,
-        datatype => boolean},
-    publisher_exclusion => #{
-        alias => <<"publisher_exclusion">>,
-        required => false,
-        datatype => boolean},
-    publisher_identification => #{
-        alias => <<"publisher_identification">>,
-        required => false,
-        datatype => boolean},
-    subscriber_blackwhite_listing => #{
-        alias => <<"subscriber_blackwhite_listing">>,
-        required => false,
-        datatype => boolean},
-    payload_transparency => #{
-        alias => <<"payload_transparency">>,
-        required => false,
-        datatype => boolean},
-    payload_encryption_cryptobox => #{
-        alias => <<"payload_encryption_cryptobox">>,
-        required => false,
-        datatype => boolean},
-    acknowledge_event_received => #{
-        alias => <<"acknowledge_event_received">>,
-        required => false,
-        datatype => boolean}
-}).
-
--define(PUBLISHER_ROLE_SPEC, #{
-    features => #{
-        alias => <<"features">>,
-        required => false,
-        datatype => map,
-        validator => ?PUBLISHER_FEATURES_SPEC
-    }
-}).
-
--define(SUBSCRIBER_ROLE_SPEC, #{
-    features => #{
-        alias => <<"features">>,
-        required => false,
-        datatype => map,
-        validator => ?SUBSCRIBER_FEATURES_SPEC
-    }
-}).
-
--define(CALLER_ROLE_SPEC, #{
-    features => #{
-        alias => <<"features">>,
-        required => false,
-        datatype => map,
-        validator => ?CALLER_FEATURES_SPEC
-    }
-}).
-
--define(CALLEE_ROLE_SPEC, #{
-    features => #{
-        alias => <<"features">>,
-        required => false,
-        datatype => map,
-        validator => ?CALLEE_FEATURES_SPEC
-    }
-}).
 
 -define(CLIENT_ROLES_SPEC, #{
     publisher => #{
         alias => <<"publisher">>,
         required => false,
         datatype => map,
-        validator => ?PUBLISHER_ROLE_SPEC},
+        validator => #{
+            features => #{
+                alias => <<"features">>,
+                required => false,
+                datatype => map,
+                validator => ?PUBLISHER_FEATURES_SPEC
+            }
+        }
+    },
     subscriber => #{
         alias => <<"subscriber">>,
         required => false,
         datatype => map,
-        validator => ?SUBSCRIBER_ROLE_SPEC},
+        validator => #{
+            features => #{
+                alias => <<"features">>,
+                required => false,
+                datatype => map,
+                validator => ?SUBSCRIBER_FEATURES_SPEC
+            }
+        }
+    },
     caller => #{
         alias => <<"caller">>,
         required => false,
         datatype => map,
-        validator => ?CALLER_ROLE_SPEC},
+        validator => #{
+            features => #{
+                alias => <<"features">>,
+                required => false,
+                datatype => map,
+                validator => ?CALLER_FEATURES_SPEC
+            }
+        }
+    },
     callee => #{
         alias => <<"callee">>,
         required => false,
         datatype => map,
-        validator => ?CALLEE_ROLE_SPEC}
+        validator => #{
+            features => #{
+                alias => <<"features">>,
+                required => false,
+                datatype => map,
+                validator => ?CALLEE_FEATURES_SPEC
+            }
+        }
+    }
 }).
 
+-define(CALLEE_FEATURES_SPEC, #{
+    progressive_call_results => #{
+        alias => <<"progressive_call_results">>,
+        required => false,
+        datatype => boolean
+    },
+    progressive_calls => #{
+        alias => <<"progressive_calls">>,
+        required => false,
+        datatype => boolean
+    },
+    call_timeout => #{
+        alias => <<"call_timeout">>,
+        required => false,
+        datatype => boolean
+    },
+    call_canceling => #{
+        alias => <<"call_canceling">>,
+        required => false,
+        datatype => boolean
+    },
+    caller_identification => #{
+        alias => <<"caller_identification">>,
+        required => false,
+        datatype => boolean
+    },
+    call_trustlevels => #{
+        alias => <<"call_trustlevels">>,
+        required => false,
+        datatype => boolean
+    },
+    registration_revocation => #{
+        alias => <<"registration_revocation">>,
+        required => false,
+        datatype => boolean
+    },
+    session_meta_api => #{
+        alias => <<"session_meta_api">>,
+        required => false,
+        datatype => boolean
+    },
+    pattern_based_registration => #{
+        alias => <<"pattern_based_registration">>,
+        required => false,
+        datatype => boolean
+    },
+    shared_registration => #{
+        alias => <<"shared_registration">>,
+        required => false,
+        datatype => boolean
+    },
+    sharded_registration => #{
+        alias => <<"sharded_registration">>,
+        required => false,
+        datatype => boolean
+    }
+}).
+
+-define(CALLER_FEATURES_SPEC, ?WAMP_CALLER_FEATURES_SPEC#{
+    call_retries => #{
+        alias => <<"call_retries">>,
+        required => false,
+        datatype => boolean
+    }
+}).
+
+-define(WAMP_CALLER_FEATURES_SPEC, #{
+    progressive_call_results => #{
+        alias => <<"progressive_call_results">>,
+        required => false,
+        datatype => boolean
+    },
+    progressive_calls => #{
+        alias => <<"progressive_calls">>,
+        required => false,
+        datatype => boolean
+    },
+    call_timeout => #{
+        alias => <<"call_timeout">>,
+        required => false,
+        datatype => boolean
+    },
+    call_canceling => #{
+        alias => <<"call_canceling">>,
+        required => false,
+        datatype => boolean
+    },
+    caller_identification=> #{
+        alias => <<"caller_identification">>,
+        required => false,
+        datatype => boolean
+    }
+}).
+
+-define(SUBSCRIBER_FEATURES_SPEC, #{
+    event_history => #{
+        alias => <<"event_history">>,
+        required => false,
+        datatype => boolean
+    },
+    pattern_based_subscription => #{
+        alias => <<"pattern_based_subscription">>,
+        required => false,
+        datatype => boolean
+    },
+    publication_trustlevels => #{
+        alias => <<"publication_trustlevels">>,
+        required => false,
+        datatype => boolean
+    },
+    publisher_identification => #{
+        alias => <<"publisher_identification">>,
+        required => false,
+        datatype => boolean
+    },
+    sharded_subscription => #{
+        alias => <<"sharded_subscription">>,
+        required => false,
+        datatype => boolean
+    },
+    payload_transparency => #{
+        alias => <<"payload_transparency">>,
+        required => false,
+        datatype => boolean
+    },
+    payload_encryption_cryptobox => #{
+        alias => <<"payload_encryption_cryptobox">>,
+        required => false,
+        datatype => boolean
+    },
+    acknowledge_subscriber_received => #{
+        alias => <<"acknowledge_subscriber_received">>,
+        required => false,
+        datatype => boolean
+    },
+    subscription_revocation => #{
+        alias => <<"subscription_revocation">>,
+        required => false,
+        datatype => boolean
+    }
+}).
+
+-define(PUBLISHER_FEATURES_SPEC, #{
+    event_retention => #{
+        alias => <<"event_retention">>,
+        required => false,
+        datatype => boolean
+    },
+    publisher_exclusion => #{
+        alias => <<"publisher_exclusion">>,
+        required => false,
+        datatype => boolean
+    },
+    publisher_identification => #{
+        alias => <<"publisher_identification">>,
+        required => false,
+        datatype => boolean
+    },
+    subscriber_blackwhite_listing => #{
+        alias => <<"subscriber_blackwhite_listing">>,
+        required => false,
+        datatype => boolean
+    },
+    payload_transparency => #{
+        alias => <<"payload_transparency">>,
+        required => false,
+        datatype => boolean
+    },
+    payload_encryption_cryptobox => #{
+        alias => <<"payload_encryption_cryptobox">>,
+        required => false,
+        datatype => boolean
+    },
+    acknowledge_event_received => #{
+        alias => <<"acknowledge_event_received">>,
+        required => false,
+        datatype => boolean
+    }
+}).
 
 
 

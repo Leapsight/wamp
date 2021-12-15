@@ -56,16 +56,7 @@
 
 new(Type, Details) ->
     Extensions = app_config:get(wamp, [extended_details, Type], []),
-    case spec(Type) of
-        undefined ->
-            Opts = #{
-                keep_unknown => true
-            },
-            wamp_utils:validate_map(Details, #{}, Extensions, Opts);
-        Spec ->
-
-            wamp_utils:validate_map(Details, Spec, Extensions)
-    end.
+    validate(Type, Details, Extensions).
 
 
 
@@ -77,25 +68,57 @@ new(Type, Details) ->
 
 
 %% @private
-spec(hello) ->
-    ?HELLO_DETAILS_SPEC;
-spec(welcome) ->
-    ?WELCOME_DETAILS_SPEC;
-spec(abort) ->
-    undefined;
-spec(goodbye) ->
-    undefined;
-spec(error) ->
-    ?ERROR_DETAILS_SPEC;
-spec(event) ->
-    ?EVENT_DETAILS_SPEC;
-spec(event_received) ->
-    ?EVENT_RECEIVED_DETAILS_SPEC;
-spec(subscriber_received) ->
-    ?SUBSCRIBER_RECEIVED_DETAILS_SPEC;
-spec(result) ->
-    ?RESULT_DETAILS_SPEC;
-spec(invocation) ->
-    ?INVOCATION_DETAILS_SPEC;
-spec(_) ->
+validate(hello, Details0, Extensions) ->
+    Spec = ?HELLO_DETAILS_SPEC,
+    Details = wamp_utils:validate_map(Details0, Spec, Extensions),
+    Roles =  maps:get(roles, Details),
+
+    maps:size(Roles) > 0
+        orelse error(#{
+            code => missing_required_value,
+            message => <<"No WAMP peer roles defined.">>,
+            description => <<"At least one WAMP peer role is required in the HELLO.Details.roles dictionary">>
+        }),
+
+    Details;
+
+validate(welcome, Details, Extensions) ->
+    Spec = ?WELCOME_DETAILS_SPEC,
+    wamp_utils:validate_map(Details, Spec, Extensions);
+
+validate(abort, Details, Extensions) ->
+    Spec = #{},
+    Opts = #{keep_unknown => true},
+    wamp_utils:validate_map(Details, Spec, Extensions, Opts);
+
+validate(goodbye, Details, Extensions) ->
+    Spec = #{},
+    Opts = #{keep_unknown => true},
+    wamp_utils:validate_map(Details, Spec, Extensions, Opts);
+
+validate(error, Details, Extensions) ->
+    Spec = ?ERROR_DETAILS_SPEC,
+    wamp_utils:validate_map(Details, Spec, Extensions);
+
+validate(event, Details, Extensions) ->
+    Spec = ?EVENT_DETAILS_SPEC,
+    wamp_utils:validate_map(Details, Spec, Extensions);
+
+validate(event_received, Details, Extensions) ->
+    Spec = ?EVENT_RECEIVED_DETAILS_SPEC,
+    wamp_utils:validate_map(Details, Spec, Extensions);
+
+validate(subscriber_received, Details, Extensions) ->
+    Spec = ?SUBSCRIBER_RECEIVED_DETAILS_SPEC,
+    wamp_utils:validate_map(Details, Spec, Extensions);
+
+validate(result, Details, Extensions) ->
+    Spec = ?RESULT_DETAILS_SPEC,
+    wamp_utils:validate_map(Details, Spec, Extensions);
+
+validate(invocation, Details, Extensions) ->
+    Spec = ?INVOCATION_DETAILS_SPEC,
+    wamp_utils:validate_map(Details, Spec, Extensions);
+
+validate(_, _, _) ->
     error(badarg).

@@ -84,27 +84,29 @@
 %% -----------------------------------------------------------------------------
 -spec is_message(any()) -> boolean().
 
-is_message(Term) when is_record(Term, hello) -> true;
-is_message(Term) when is_record(Term, welcome) -> true;
 is_message(Term) when is_record(Term, abort) -> true;
-is_message(Term) when is_record(Term, challenge) -> true;
 is_message(Term) when is_record(Term, authenticate) -> true;
-is_message(Term) when is_record(Term, goodbye) -> true;
+is_message(Term) when is_record(Term, call) -> true;
+is_message(Term) when is_record(Term, cancel) -> true;
+is_message(Term) when is_record(Term, challenge) -> true;
 is_message(Term) when is_record(Term, error) -> true;
+is_message(Term) when is_record(Term, event) -> true;
+is_message(Term) when is_record(Term, goodbye) -> true;
+is_message(Term) when is_record(Term, hello) -> true;
+is_message(Term) when is_record(Term, interrupt) -> true;
+is_message(Term) when is_record(Term, invocation) -> true;
 is_message(Term) when is_record(Term, publish) -> true;
 is_message(Term) when is_record(Term, published) -> true;
-is_message(Term) when is_record(Term, subscribe) -> true;
-is_message(Term) when is_record(Term, subscribed) -> true;
-is_message(Term) when is_record(Term, unsubscribe) -> true;
-is_message(Term) when is_record(Term, unsubscribed) -> true;
-is_message(Term) when is_record(Term, event) -> true;
-is_message(Term) when is_record(Term, call) -> true;
-is_message(Term) when is_record(Term, result) -> true;
 is_message(Term) when is_record(Term, register) -> true;
 is_message(Term) when is_record(Term, registered) -> true;
+is_message(Term) when is_record(Term, result) -> true;
+is_message(Term) when is_record(Term, subscribe) -> true;
+is_message(Term) when is_record(Term, subscribed) -> true;
 is_message(Term) when is_record(Term, unregister) -> true;
 is_message(Term) when is_record(Term, unregistered) -> true;
-is_message(Term) when is_record(Term, invocation) -> true;
+is_message(Term) when is_record(Term, unsubscribe) -> true;
+is_message(Term) when is_record(Term, unsubscribed) -> true;
+is_message(Term) when is_record(Term, welcome) -> true;
 is_message(Term) when is_record(Term, yield) -> true;
 is_message(_) -> false.
 
@@ -134,6 +136,7 @@ welcome(SessionId, Details)   ->
         session_id = wamp_utils:validate_id(SessionId),
         details = wamp_details:new(welcome, Details)
     }.
+
 
 %% -----------------------------------------------------------------------------
 %% @doc
