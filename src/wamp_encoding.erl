@@ -752,10 +752,20 @@ request_info([?YIELD, ReqId | _]) ->
 %% RFC: Implementations SHOULD avoid sending empty ArgumentsKw dictionaries.
 %% @end
 %% -----------------------------------------------------------------------------
-pack_optionals(undefined, undefined, undefined) -> [];
-pack_optionals(undefined, undefined, Payload) -> [Payload];
-pack_optionals(Args, undefined, undefined) -> [Args];
-pack_optionals(Args, KWArgs, undefined) -> [Args, KWArgs].
+pack_optionals(undefined, undefined, undefined) ->
+    [];
+
+pack_optionals(undefined, undefined, Payload) ->
+    [Payload];
+
+pack_optionals(Args, undefined, undefined) when length(Args) > 0 ->
+    [Args];
+
+pack_optionals(Args, KWArgs, undefined) when map_size(KWArgs) > 0 ->
+    [Args, KWArgs];
+
+pack_optionals(_, _, _) ->
+    [].
 
 
 
