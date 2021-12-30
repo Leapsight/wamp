@@ -234,8 +234,9 @@ error(ReqType, ReqId, Details, ErrorUri, Payload) when is_binary(Payload) ->
     map() | undefined) ->
     wamp_error() | no_return().
 
-error(ReqType, ReqId, Details, ErrorUri, Args, KWArgs)
+error(ReqType, ReqId, Details, ErrorUri, Args0, KWArgs0)
 when is_map(Details) ->
+    {Args, KWArgs} = maybe_undefined(Args0, KWArgs0),
     #error{
         request_type = ReqType,
         request_id = wamp_utils:validate_id(ReqId),
@@ -342,7 +343,8 @@ publish(ReqId, Options, TopicUri, Payload) when is_binary(Payload) ->
 -spec publish(id(), map(), uri(), list() | undefined, map() | undefined) ->
     wamp_publish() | no_return().
 
-publish(ReqId, Options, TopicUri, Args, KWArgs) ->
+publish(ReqId, Options, TopicUri, Args0, KWArgs0) ->
+    {Args, KWArgs} = maybe_undefined(Args0, KWArgs0),
     #publish{
         request_id = wamp_utils:validate_id(ReqId),
         options = wamp_options:new(publish, Options),
@@ -456,7 +458,8 @@ event(SubsId, PubId, Details, Payload) when is_binary(Payload) ->
 -spec event(id(), id(), map(), list() | undefined, map() | undefined) ->
     wamp_event() | no_return().
 
-event(SubsId, PubId, Details, Args, KWArgs) ->
+event(SubsId, PubId, Details, Args0, KWArgs0) ->
+    {Args, KWArgs} = maybe_undefined(Args0, KWArgs0),
     #event{
         subscription_id = wamp_utils:validate_id(SubsId),
         publication_id = wamp_utils:validate_id(PubId),
@@ -533,7 +536,8 @@ call(ReqId, Options, ProcedureUri, Payload) when is_binary(Payload) ->
 -spec call(id(), map(), uri(), list() | undefined, map() | undefined) ->
     wamp_call() | no_return().
 
-call(ReqId, Options, ProcedureUri, Args, KWArgs) ->
+call(ReqId, Options, ProcedureUri, Args0, KWArgs0) ->
+    {Args, KWArgs} = maybe_undefined(Args0, KWArgs0),
     #call{
         request_id = wamp_utils:validate_id(ReqId),
         options = wamp_options:new(call, Options),
@@ -590,7 +594,8 @@ result(ReqId, Details, Payload) when is_binary(Payload) ->
 -spec result(id(), map(), list() | undefined, map() | undefined) ->
     wamp_result() | no_return().
 
-result(ReqId, Details, Args, KWArgs) when is_map(Details) ->
+result(ReqId, Details, Args0, KWArgs0) when is_map(Details) ->
+    {Args, KWArgs} = maybe_undefined(Args0, KWArgs0),
     #result{
         request_id = wamp_utils:validate_id(ReqId),
         details = wamp_details:new(result, Details),
@@ -704,7 +709,8 @@ invocation(ReqId, RegId, Details, Payload) when is_binary(Payload) ->
 -spec invocation(id(), id(), map(), list() | undefined, map() | undefined) ->
     wamp_invocation() | no_return().
 
-invocation(ReqId, RegId, Details, Args, KWArgs) ->
+invocation(ReqId, RegId, Details, Args0, KWArgs0) ->
+    {Args, KWArgs} = maybe_undefined(Args0, KWArgs0),
     #invocation{
         request_id = wamp_utils:validate_id(ReqId),
         registration_id = wamp_utils:validate_id(RegId),
@@ -761,7 +767,8 @@ yield(ReqId, Options, Payload) when is_binary(Payload) ->
 -spec yield(id(), map(), list() | undefined, map() | undefined) ->
     wamp_yield() | no_return().
 
-yield(ReqId, Options, Args, KWArgs) ->
+yield(ReqId, Options, Args0, KWArgs0) ->
+    {Args, KWArgs} = maybe_undefined(Args0, KWArgs0),
     #yield{
         request_id = wamp_utils:validate_id(ReqId),
         options = wamp_options:new(yield, Options),
@@ -858,3 +865,18 @@ request_id(#unsubscribed{request_id = Val}) -> Val;
 request_id(#yield{request_id = Val}) -> Val;
 request_id(_) ->
     error(badarg).
+
+
+maybe_undefined([], undefined) ->
+    {undefined, undefined};
+
+maybe_undefined([], KWArgs)
+when is_map(KWArgs) andalso map_size(KWArgs) =:= 0 ->
+    {undefined, undefined};
+
+maybe_undefined(Args, KWArgs)
+when is_map(KWArgs) andalso map_size(KWArgs) =:= 0 ->
+    {Args, undefined};
+
+maybe_undefined(Args, KWArgs) ->
+    {Args, KWArgs}.

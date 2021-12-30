@@ -118,13 +118,14 @@ error_json_3_test(_) ->
     {[M], <<>>} = wamp_encoding:decode({ws, text, json}, Bin).
 
 publish_json_test(_) ->
-    M = wamp_message:publish(1, #{}, <<"com.leapsight.topic1">>),Bin = wamp_encoding:encode(M, json),
+    M = wamp_message:publish(1, #{}, <<"com.leapsight.topic1">>),
+    Bin = wamp_encoding:encode(M, json),
     publish = wamp_encoding:decode_message_name(
         {ws, text, json}, Bin),
     {[M], <<>>} = wamp_encoding:decode({ws, text, json}, Bin).
 
 publish_json_2_test(_) ->
-    M = wamp_message:publish(1, #{}, <<"com.leapsight.topic1">>, []),
+    M = wamp_message:publish(1, #{}, <<"com.leapsight.topic1">>),
     Bin = wamp_encoding:encode(M, json),
     publish = wamp_encoding:decode_message_name(
         {ws, text, json}, Bin),
@@ -225,7 +226,7 @@ call_json_4_test(_) ->
     {[M1], <<>>} = wamp_encoding:decode({ws, text, json}, Bin),
     ?assertMatch(
         {call, 1, _, <<"foo">>, [#{<<"bar">> := _}],
-        #{}, undefined},
+        undefined, undefined},
         M1
     ).
 
@@ -1005,7 +1006,7 @@ call_erl_4_test(_) ->
     {[M1], <<>>} = wamp_encoding:decode({ws, binary, erl}, Bin),
     ?assertMatch(
         {call, 1, _, <<"foo">>, [#{<<"bar">> := _}],
-        #{}, undefined},
+        undefined, undefined},
         M1
     ).
 
