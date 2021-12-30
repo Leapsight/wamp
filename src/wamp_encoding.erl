@@ -758,14 +758,26 @@ pack_optionals(undefined, undefined, undefined) ->
 pack_optionals(undefined, undefined, Payload) ->
     [Payload];
 
-pack_optionals(Args, undefined, undefined) when length(Args) > 0 ->
+pack_optionals([], undefined, undefined) ->
+    [];
+
+pack_optionals(Args, undefined, undefined) ->
     [Args];
 
-pack_optionals(Args, KWArgs, undefined) when map_size(KWArgs) > 0 ->
+pack_optionals([], KWArgs, undefined) when map_size(KWArgs) =:= 0 ->
+    [];
+
+pack_optionals([], KWArgs, Payload) when map_size(KWArgs) =:= 0 ->
+    [Payload];
+
+pack_optionals(Args, KWArgs, undefined) when map_size(KWArgs) =:= 0 ->
+    [Args];
+
+pack_optionals(Args, KWArgs, undefined) ->
     [Args, KWArgs];
 
 pack_optionals(_, _, _) ->
-    [].
+    error(badarg).
 
 
 
