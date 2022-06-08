@@ -36,6 +36,7 @@
 -export([error_from/3]).
 -export([error_from/4]).
 -export([error_from/5]).
+-export([copy_event/2]).
 -export([event/3]).
 -export([event/4]).
 -export([event/5]).
@@ -467,6 +468,16 @@ event(SubsId, PubId, Details, Args0, KWArgs0) ->
         args = Args,
         kwargs = KWArgs
     }.
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec copy_event(wamp_event(), SubsId :: id()) ->  wamp_event() | no_return().
+
+copy_event(#event{} = Event, SubsId) ->
+    Event#event{subscription_id = wamp_utils:validate_id(SubsId)}.
 
 
 %% -----------------------------------------------------------------------------
