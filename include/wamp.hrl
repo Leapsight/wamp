@@ -1559,10 +1559,13 @@
 
 
 
+-define(WAMP_CLOSE_LOGOUT, <<"wamp.close.logout">>).
+-define(WAMP_CLOSE_NORMAL, <<"wamp.close.normal">>).
+-define(WAMP_CLOSE_REALM, <<"wamp.close.close_realm">>).
+
 -define(WAMP_AUTHENTICATION_FAILED, <<"wamp.error.authentication_failed">>).
 -define(WAMP_AUTHORIZATION_FAILED, <<"wamp.error.authorization_failed">>).
 -define(WAMP_CANCELLED, <<"wamp.error.canceled">>).
--define(WAMP_CLOSE_REALM, <<"wamp.close.close_realm">>).
 -define(WAMP_COUNT_CALLEES,             <<"wamp.registration.count_callees">>).
 -define(WAMP_DISCLOSE_ME_NOT_ALLOWED, <<"wamp.error.disclose_me.not_allowed">>).
 -define(WAMP_ERROR_INVALID_URI,         <<"wamp.error.invalid_uri">>).
