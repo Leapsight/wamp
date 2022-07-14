@@ -15,3 +15,4 @@ erl_crash.dump
 logs
 _build
 /.tags
+/erlang_ls.config
