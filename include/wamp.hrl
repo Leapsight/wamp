@@ -1386,13 +1386,17 @@
             ?INVOKE_ALL
         ]}
     },
-    %% The (maximum) concurrency to be used for the registration.
+    %% The (maximum) concurrency to be used for the registration. A value of 0
+    %% disables it.
     concurrency => #{
         alias => <<"concurrency">>,
-        required => false,
-        datatype => pos_integer
+        required => true,
+        default => 0,
+        datatype => non_neg_integer
     },
-    %% Force registration (revoking any existing registration).
+    %% When set to true this allows subsequent sessions to “kick out” any
+    %% current registrations; those previous registration must have also
+    %% specified force_reregister=true.
     force_reregister => #{
         alias => <<"force_reregister">>,
         required => false,
