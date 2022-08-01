@@ -45,12 +45,8 @@
 %% -----------------------------------------------------------------------------
 -spec is_valid(uri()) -> boolean().
 
-is_valid(Uri) when is_binary(Uri) andalso byte_size(Uri) > 0 ->
-    is_valid(Uri, wamp_config:get(uri_strictness));
-
-is_valid(_) ->
-    false.
-
+is_valid(Uri) ->
+    is_valid(Uri, wamp_config:get(uri_strictness)).
 
 
 %% -----------------------------------------------------------------------------
@@ -63,7 +59,10 @@ is_valid(_) ->
 is_valid(Uri, Strategy) when is_binary(Strategy) ->
     is_valid(Uri, rule_for_strategy(Strategy));
 
-is_valid(Uri, Rule) when is_binary(Uri) andalso byte_size(Uri) > 0 ->
+is_valid(<<>>, Rule) when is_atom(Rule) ->
+    loose_prefix == Rule;
+
+is_valid(Uri, Rule) when is_binary(Uri), is_atom(Rule) ->
     re:run(Uri, uri_regex(Rule)) =/= nomatch;
 
 is_valid(_, _) ->
@@ -77,29 +76,24 @@ is_valid(_, _) ->
 %% -----------------------------------------------------------------------------
 -spec validate(Uri :: binary()) -> Uri :: t().
 
-validate(Uri) when is_binary(Uri) andalso byte_size(Uri) > 0 ->
-    maybe_error(is_valid(Uri), Uri);
-
 validate(Uri) ->
-    error({invalid_uri, Uri}).
+    maybe_error(is_valid(Uri), Uri).
 
 
 %% -----------------------------------------------------------------------------
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
--spec validate(Uri :: binary(), RuleOrStrategy :: rule() | match_strategy()) ->
+-spec validate(Uri :: binary(), Arg :: rule() | match_strategy()) ->
     Uri :: t().
 
-validate(Uri, Rule) when is_binary(Uri) andalso byte_size(Uri) > 0  ->
-    maybe_error(is_valid(Uri, Rule), Uri);
-
-validate(Uri, _) ->
-    error({invalid_uri, Uri}).
+validate(Uri, Arg) ->
+    maybe_error(is_valid(Uri, Arg), Uri).
 
 
 %% -----------------------------------------------------------------------------
-%% @doc
+%% @doc Matches a ground uri `Uri' with `Pattern'. `Uri' cannot be the empty
+%% uri.
 %% @end
 %% -----------------------------------------------------------------------------
 -spec match(Uri :: t(), Pattern :: t(), Strategy :: match_strategy()) -> any().
@@ -250,9 +244,9 @@ rule_for_strategy(Strategy) ->
     rule_for_strategy(Strategy, wamp_config:get(uri_strictness)).
 
 
-rule_for_strategy(?EXACT_MATCH, Rule) -> Rule;
-rule_for_strategy(?PREFIX_MATCH, loose) -> strict_prefix;
-rule_for_strategy(?PREFIX_MATCH, strict) -> loose_prefix;
+rule_for_strategy(?EXACT_MATCH, Rule) -> Rule; %% loose | strict
+rule_for_strategy(?PREFIX_MATCH, loose) -> loose_prefix;
+rule_for_strategy(?PREFIX_MATCH, strict) -> strict_prefix;
 rule_for_strategy(?WILDCARD_MATCH, loose) -> loose_allow_empty;
 rule_for_strategy(?WILDCARD_MATCH, strict) -> strict_allow_empty;
 rule_for_strategy(_, _) -> error(badstrategy).

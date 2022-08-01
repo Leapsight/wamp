@@ -13,6 +13,8 @@ all() ->
         validate_prefix,
         validate_prefix_error,
         validate_wildcard,
+        validate_wildcard_error,
+        empty_uri,
         match
     ].
 
@@ -62,6 +64,7 @@ validate_exact(_) ->
 
 validate_exact_error(_) ->
     List = [
+        <<>>,
         <<"a.">>,
         <<"a.foo.">>,
         <<"a.foo.c.">>,
@@ -86,6 +89,7 @@ validate_exact_error(_) ->
 
 validate_prefix(_) ->
     List = [
+        <<>>,
         <<"a">>,
         <<"a.">>,
         <<"a.foo.">>,
@@ -145,14 +149,60 @@ validate_wildcard(_) ->
     ).
 
 
-match(_) ->
+validate_wildcard_error(_) ->
+    List = [
+        <<>>
+    ],
+    lists:foreach(
+        fun(URI) ->
+          ?assertError(
+                {invalid_uri, URI},
+                wamp_uri:validate(URI, ?WILDCARD_MATCH)
+            )
+        end,
+        List
+    ).
+
+
+empty_uri(_) ->
+    wamp_config:set(uri_strictness, strict),
+    ?assertEqual(false, wamp_uri:is_valid(<<>>)),
+    ?assertEqual(false, wamp_uri:is_valid(<<>>, ?PREFIX_MATCH)),
+    ?assertEqual(false, wamp_uri:is_valid(<<>>, ?EXACT_MATCH)),
+    ?assertEqual(false, wamp_uri:is_valid(<<>>, ?WILDCARD_MATCH)),
+
+    wamp_config:set(uri_strictness, loose),
+    ?assertEqual(false, wamp_uri:is_valid(<<>>)),
+    ?assertEqual(true, wamp_uri:is_valid(<<>>, ?PREFIX_MATCH)),
+    ?assertEqual(false, wamp_uri:is_valid(<<>>, ?EXACT_MATCH)),
+    ?assertEqual(false, wamp_uri:is_valid(<<>>, ?WILDCARD_MATCH)),
+
+    %% Irrespective of uri_strictness setting
+    ?assertEqual(true, wamp_uri:is_valid(<<>>, loose_prefix)),
+    ?assertEqual(false, wamp_uri:is_valid(<<>>, loose)),
+    ?assertEqual(false, wamp_uri:is_valid(<<>>, strict)),
+    ?assertEqual(false, wamp_uri:is_valid(<<>>, strict_prefix)),
+    ?assertEqual(false, wamp_uri:is_valid(<<>>, loose_allow_empty)),
+    ?assertEqual(false, wamp_uri:is_valid(<<>>, strict_allow_empty)),
+
+    ok.
+
+
+
+match(Config) ->
+    wamp_config:set(uri_strictness, strict),
+    do_match(Config),
+
+    wamp_config:set(uri_strictness, loose),
+    do_match(Config).
+
+
+do_match(_) ->
     ?assertError(badarg, wamp_uri:match(<<>>, <<"a">>, ?EXACT_MATCH)),
     ?assertError(badarg, wamp_uri:match(<<>>, <<"a">>, ?PREFIX_MATCH)),
     ?assertError(badarg, wamp_uri:match(<<>>, <<"a">>, ?WILDCARD_MATCH)),
-
     ?assertEqual(false, wamp_uri:match(<<"a">>, <<"b">>, ?EXACT_MATCH)),
     ?assert(wamp_uri:match(<<"a">>, <<"a">>, ?EXACT_MATCH)),
-
     ?assert(wamp_uri:match(<<"a">>, <<"a">>, ?PREFIX_MATCH)),
     ?assert(wamp_uri:match(<<"a.">>, <<"a">>, ?PREFIX_MATCH)),
     ?assert(wamp_uri:match(<<"a.b">>, <<"a">>, ?PREFIX_MATCH)),
