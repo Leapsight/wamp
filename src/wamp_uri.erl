@@ -102,8 +102,12 @@ match(Uri, Uri, ?EXACT_MATCH)
 when is_binary(Uri) andalso byte_size(Uri) > 0 ->
     true;
 
+match(_, <<>>, ?PREFIX_MATCH) ->
+    %% The any prefix matches everything
+    true;
+
 match(Uri, Pattern, ?PREFIX_MATCH)
-when is_binary(Uri) andalso byte_size(Uri) > 0 ->
+when is_binary(Uri) ->
     binary:longest_common_prefix([Uri, Pattern]) >= byte_size(Pattern);
 
 match(Uri, Pattern, ?WILDCARD_MATCH)
