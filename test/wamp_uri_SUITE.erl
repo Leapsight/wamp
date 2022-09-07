@@ -199,8 +199,9 @@ match(Config) ->
 
 do_match(_) ->
     ?assertError(badarg, wamp_uri:match(<<>>, <<"a">>, ?EXACT_MATCH)),
-    ?assertError(badarg, wamp_uri:match(<<>>, <<"a">>, ?PREFIX_MATCH)),
     ?assertError(badarg, wamp_uri:match(<<>>, <<"a">>, ?WILDCARD_MATCH)),
+    ?assertEqual(false, wamp_uri:match(<<>>, <<"a">>, ?PREFIX_MATCH)),
+    ?assertEqual(true, wamp_uri:match(<<>>, <<>>, ?PREFIX_MATCH)),
     ?assertEqual(false, wamp_uri:match(<<"a">>, <<"b">>, ?EXACT_MATCH)),
     ?assert(wamp_uri:match(<<"a">>, <<"a">>, ?EXACT_MATCH)),
     ?assert(wamp_uri:match(<<"a">>, <<"a">>, ?PREFIX_MATCH)),

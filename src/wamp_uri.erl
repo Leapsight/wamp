@@ -98,6 +98,9 @@ validate(Uri, Arg) ->
 %% -----------------------------------------------------------------------------
 -spec match(Uri :: t(), Pattern :: t(), Strategy :: match_strategy()) -> any().
 
+match(<<>>, _, Strategy) when Strategy =/= ?PREFIX_MATCH ->
+    error(badarg);
+
 match(Uri, Uri, ?EXACT_MATCH)
 when is_binary(Uri) andalso byte_size(Uri) > 0 ->
     true;
