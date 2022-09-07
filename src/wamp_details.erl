@@ -77,8 +77,43 @@ validate(hello, Details0, Extensions) ->
         orelse error(#{
             code => missing_required_value,
             message => <<"No WAMP peer roles defined.">>,
-            description => <<"At least one WAMP peer role is required in the HELLO.Details.roles dictionary">>
+            description => <<
+                "At least one WAMP peer role is required in the "
+                "HELLO.Details.roles dictionary"
+            >>
         }),
+
+    case key_value:get([caller, progressive_call_results], Details, false) of
+        true ->
+            key_value:get([caller, call_canceling], Details, false)
+            orelse error(#{
+                code => invalid_feature_request,
+                message => <<"Invalid feature requested for Caller role">>,
+                description => <<
+                    "The feature progressive_call_results was requested "
+                    "but the feature call_canceling was not, both need to be "
+                    "requested for progressive_call_results to be enabled."
+                >>
+            });
+        false ->
+            ok
+    end,
+
+    case key_value:get([callee, progressive_call_results], Details, false) of
+        true ->
+            key_value:get([callee, call_canceling], Details, false)
+            orelse error(#{
+                code => invalid_feature_request,
+                message => <<"Invalid feature requested for Callee role">>,
+                description => <<
+                    "The feature progressive_call_results was requested "
+                    "but the feature call_canceling was not, both need to be "
+                    "requested for progressive_call_results to be enabled."
+                >>
+            });
+        false ->
+            ok
+    end,
 
     Details;
 

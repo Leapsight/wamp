@@ -226,7 +226,7 @@ call_json_4_test(_) ->
     {[M1], <<>>} = wamp_encoding:decode({ws, text, json}, Bin),
     ?assertMatch(
         {call, 1, _, <<"foo">>, [#{<<"bar">> := _}],
-        undefined, undefined},
+        undefined},
         M1
     ).
 
@@ -1006,7 +1006,7 @@ call_erl_4_test(_) ->
     {[M1], <<>>} = wamp_encoding:decode({ws, binary, erl}, Bin),
     ?assertMatch(
         {call, 1, _, <<"foo">>, [#{<<"bar">> := _}],
-        undefined, undefined},
+        undefined},
         M1
     ).
 
