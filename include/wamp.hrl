@@ -130,17 +130,16 @@
     }
 }).
 
-
--define(DEALER_FEATURES_SPEC, ?WAMP_DEALER_FEATURES_SPEC#{
-    call_retries => #{
-        alias => <<"call_retries">>,
+-define(WAMP_COMMON_FEATURES_SPEC, #{
+    payload_passthru_mode => #{
+        alias => <<"payload_passthru_mode">>,
         required => false,
         datatype => boolean
     }
 }).
 
 
--define(WAMP_DEALER_FEATURES_SPEC, #{
+-define(WAMP_RPC_FEATURES_SPEC, (?WAMP_COMMON_FEATURES_SPEC)#{
     progressive_call_results => #{
         alias => <<"progressive_call_results">>,
         required => false,
@@ -166,23 +165,22 @@
         required => false,
         datatype => boolean
     },
+    sharded_registration => #{
+        alias => <<"sharded_registration">>,
+        required => false,
+        datatype => boolean
+    }
+}).
+
+
+-define(WAMP_DEALER_FEATURES_SPEC, (?WAMP_RPC_FEATURES_SPEC)#{
+    call_reroute => #{
+        alias => <<"call_reroute">>,
+        required => false,
+        datatype => boolean
+    },
     call_trustlevels => #{
         alias => <<"call_trustlevels">>,
-        required => false,
-        datatype => boolean
-    },
-    registration_meta_api => #{
-        alias => <<"registration_meta_api">>,
-        required => false,
-        datatype => boolean
-    },
-    registration_revocation => #{
-        alias => <<"registration_revocation">>,
-        required => false,
-        datatype => boolean
-    },
-    session_meta_api => #{
-        alias => <<"session_meta_api">>,
         required => false,
         datatype => boolean
     },
@@ -191,51 +189,18 @@
         required => false,
         datatype => boolean
     },
-    procedure_reflection => #{
-        alias => <<"procedure_reflection">>,
-        required => false,
-        datatype => boolean
-    },
     shared_registration => #{
         alias => <<"shared_registration">>,
         required => false,
         datatype => boolean
     },
-    sharded_registration => #{
-        alias => <<"sharded_registration">>,
-        required => false,
-        datatype => boolean
-    }
-}).
-
--define(BROKER_FEATURES_SPEC, #{
-    event_retention => #{
-        alias => <<"event_retention">>,
+    registration_revocation => #{
+        alias => <<"registration_revocation">>,
         required => false,
         datatype => boolean
     },
-    event_history => #{
-        alias => <<"event_history">>,
-        required => false,
-        datatype => boolean
-    },
-    pattern_based_subscription => #{
-        alias => <<"pattern_based_subscription">>,
-        required => false,
-        datatype => boolean
-    },
-    publication_trustlevels => #{
-        alias => <<"publication_trustlevels">>,
-        required => false,
-        datatype => boolean
-    },
-    publisher_exclusion => #{
-        alias => <<"publisher_exclusion">>,
-        required => false,
-        datatype => boolean
-    },
-    publisher_identification => #{
-        alias => <<"publisher_identification">>,
+    testament_meta_api => #{
+        alias => <<"testament_meta_api">>,
         required => false,
         datatype => boolean
     },
@@ -244,13 +209,78 @@
         required => false,
         datatype => boolean
     },
+    registration_meta_api => #{
+        alias => <<"registration_meta_api">>,
+        required => false,
+        datatype => boolean
+    },
+    reflection => #{
+        alias => <<"reflection">>,
+        required => false,
+        datatype => boolean
+    }
+}).
+
+
+-define(DEALER_FEATURES_SPEC, ?WAMP_DEALER_FEATURES_SPEC#{
+    call_retries => #{
+        alias => <<"call_retries">>,
+        required => false,
+        datatype => boolean
+    }
+}).
+
+-define(WAMP_PUBSUB_FEATURES_SPEC, (?WAMP_COMMON_FEATURES_SPEC)#{
+    publisher_identification => #{
+        alias => <<"publisher_identification">>,
+        required => false,
+        datatype => boolean
+    },
     sharded_subscription => #{
         alias => <<"sharded_subscription">>,
         required => false,
         datatype => boolean
-    },
+    }
+}).
+
+-define(BROKER_FEATURES_SPEC, (?WAMP_PUBSUB_FEATURES_SPEC)#{
     subscriber_blackwhite_listing => #{
         alias => <<"subscriber_blackwhite_listing">>,
+        required => false,
+        datatype => boolean
+    },
+    publisher_exclusion => #{
+        alias => <<"publisher_exclusion">>,
+        required => false,
+        datatype => boolean
+    },
+    publication_trustlevels => #{
+        alias => <<"publication_trustlevels">>,
+        required => false,
+        datatype => boolean
+    },
+    pattern_based_subscription => #{
+        alias => <<"pattern_based_subscription">>,
+        required => false,
+        datatype => boolean
+    },
+    event_history => #{
+        alias => <<"event_history">>,
+        required => false,
+        datatype => boolean
+    },
+    event_retention => #{
+        alias => <<"event_retention">>,
+        required => false,
+        datatype => boolean
+    },
+    subscription_revocation => #{
+        alias => <<"subscription_revocation">>,
+        required => false,
+        datatype => boolean
+    },
+    session_meta_api => #{
+        alias => <<"session_meta_api">>,
         required => false,
         datatype => boolean
     },
@@ -259,21 +289,12 @@
         required => false,
         datatype => boolean
     },
-    topic_reflection => #{
-        alias => <<"topic_reflection">>,
+    reflection => #{
+        alias => <<"reflection">>,
         required => false,
         datatype => boolean
     },
-    payload_transparency => #{
-        alias => <<"payload_transparency">>,
-        required => false,
-        datatype => boolean
-    },
-    payload_encryption_cryptobox => #{
-        alias => <<"payload_encryption_cryptobox">>,
-        required => false,
-        datatype => boolean
-    },
+    %% Non-standard
     acknowledge_event_received => #{
         alias => <<"acknowledge_event_received">>,
         required => false,
@@ -283,14 +304,8 @@
         alias => <<"acknowledge_subscriber_received">>,
         required => false,
         datatype => boolean
-    },
-    subscription_revocation => #{
-        alias => <<"subscription_revocation">>,
-        required => false,
-        datatype => boolean
     }
 }).
-
 
 
 -define(CLIENT_ROLES_SPEC, #{
@@ -348,44 +363,14 @@
     }
 }).
 
--define(CALLEE_FEATURES_SPEC, #{
-    progressive_call_results => #{
-        alias => <<"progressive_call_results">>,
-        required => false,
-        datatype => boolean
-    },
-    progressive_calls => #{
-        alias => <<"progressive_calls">>,
-        required => false,
-        datatype => boolean
-    },
-    call_timeout => #{
-        alias => <<"call_timeout">>,
-        required => false,
-        datatype => boolean
-    },
-    call_canceling => #{
-        alias => <<"call_canceling">>,
-        required => false,
-        datatype => boolean
-    },
-    caller_identification => #{
-        alias => <<"caller_identification">>,
+-define(CALLEE_FEATURES_SPEC, (?WAMP_RPC_FEATURES_SPEC)#{
+    call_reroute => #{
+        alias => <<"call_reroute">>,
         required => false,
         datatype => boolean
     },
     call_trustlevels => #{
         alias => <<"call_trustlevels">>,
-        required => false,
-        datatype => boolean
-    },
-    registration_revocation => #{
-        alias => <<"registration_revocation">>,
-        required => false,
-        datatype => boolean
-    },
-    session_meta_api => #{
-        alias => <<"session_meta_api">>,
         required => false,
         datatype => boolean
     },
@@ -399,8 +384,28 @@
         required => false,
         datatype => boolean
     },
-    sharded_registration => #{
-        alias => <<"sharded_registration">>,
+    registration_revocation => #{
+        alias => <<"registration_revocation">>,
+        required => false,
+        datatype => boolean
+    },
+    testament_meta_api => #{
+        alias => <<"testament_meta_api">>,
+        required => false,
+        datatype => boolean
+    },
+    session_meta_api => #{
+        alias => <<"session_meta_api">>,
+        required => false,
+        datatype => boolean
+    },
+    registration_meta_api => #{
+        alias => <<"registration_meta_api">>,
+        required => false,
+        datatype => boolean
+    },
+    reflection => #{
+        alias => <<"reflection">>,
         required => false,
         datatype => boolean
     }
@@ -414,37 +419,13 @@
     }
 }).
 
--define(WAMP_CALLER_FEATURES_SPEC, #{
-    progressive_call_results => #{
-        alias => <<"progressive_call_results">>,
-        required => false,
-        datatype => boolean
-    },
-    progressive_calls => #{
-        alias => <<"progressive_calls">>,
-        required => false,
-        datatype => boolean
-    },
-    call_timeout => #{
-        alias => <<"call_timeout">>,
-        required => false,
-        datatype => boolean
-    },
-    call_canceling => #{
-        alias => <<"call_canceling">>,
-        required => false,
-        datatype => boolean
-    },
-    caller_identification=> #{
-        alias => <<"caller_identification">>,
-        required => false,
-        datatype => boolean
-    }
+-define(WAMP_CALLER_FEATURES_SPEC, (?WAMP_RPC_FEATURES_SPEC)#{
 }).
 
--define(SUBSCRIBER_FEATURES_SPEC, #{
-    event_history => #{
-        alias => <<"event_history">>,
+
+-define(SUBSCRIBER_FEATURES_SPEC, (?WAMP_PUBSUB_FEATURES_SPEC)#{
+    publication_trustlevels => #{
+        alias => <<"publication_trustlevels">>,
         required => false,
         datatype => boolean
     },
@@ -453,33 +434,8 @@
         required => false,
         datatype => boolean
     },
-    publication_trustlevels => #{
-        alias => <<"publication_trustlevels">>,
-        required => false,
-        datatype => boolean
-    },
-    publisher_identification => #{
-        alias => <<"publisher_identification">>,
-        required => false,
-        datatype => boolean
-    },
-    sharded_subscription => #{
-        alias => <<"sharded_subscription">>,
-        required => false,
-        datatype => boolean
-    },
-    payload_transparency => #{
-        alias => <<"payload_transparency">>,
-        required => false,
-        datatype => boolean
-    },
-    payload_encryption_cryptobox => #{
-        alias => <<"payload_encryption_cryptobox">>,
-        required => false,
-        datatype => boolean
-    },
-    acknowledge_subscriber_received => #{
-        alias => <<"acknowledge_subscriber_received">>,
+    event_history => #{
+        alias => <<"event_history">>,
         required => false,
         datatype => boolean
     },
@@ -487,12 +443,18 @@
         alias => <<"subscription_revocation">>,
         required => false,
         datatype => boolean
+    },
+    %% Non-standard
+    acknowledge_subscriber_received => #{
+        alias => <<"acknowledge_subscriber_received">>,
+        required => false,
+        datatype => boolean
     }
 }).
 
--define(PUBLISHER_FEATURES_SPEC, #{
-    event_retention => #{
-        alias => <<"event_retention">>,
+-define(PUBLISHER_FEATURES_SPEC, (?WAMP_PUBSUB_FEATURES_SPEC)#{
+    subscriber_blackwhite_listing => #{
+        alias => <<"subscriber_blackwhite_listing">>,
         required => false,
         datatype => boolean
     },
@@ -501,26 +463,7 @@
         required => false,
         datatype => boolean
     },
-    publisher_identification => #{
-        alias => <<"publisher_identification">>,
-        required => false,
-        datatype => boolean
-    },
-    subscriber_blackwhite_listing => #{
-        alias => <<"subscriber_blackwhite_listing">>,
-        required => false,
-        datatype => boolean
-    },
-    payload_transparency => #{
-        alias => <<"payload_transparency">>,
-        required => false,
-        datatype => boolean
-    },
-    payload_encryption_cryptobox => #{
-        alias => <<"payload_encryption_cryptobox">>,
-        required => false,
-        datatype => boolean
-    },
+    %% Non-standard
     acknowledge_event_received => #{
         alias => <<"acknowledge_event_received">>,
         required => false,
@@ -635,23 +578,46 @@
     ?WILDCARD_MATCH
 ]).
 
--define(PAYLOAD_DETAILS_SPEC, #{
-    %% The encoding algorithm that was used to encode the payload.
-    enc_algo => #{
-        alias => <<"enc_algo">>,
+-define(PPT_DETAILS_SPEC, #{
+    %% The ppt_scheme identifies the Key Management Schema. It is a required
+    %% string attribute. This attribute can contain the name or identifier of a
+    %% key management provider that is known to the target peer, so it can be
+    %% used to obtain information about encryption keys. A Router can recognize
+    %% that Payload Passthru Mode is in use by checking the existence and
+    %% non-empty value of this attribute within the options of CALL, PUBLISH
+    %% and YIELD messages.
+    ppt_scheme => #{
+        alias => <<"ppt_scheme">>,
         required => false,
         datatype => binary
     },
-    %% The payload object serializer that was used when encoding the payload.
-    enc_serializer => #{
-        alias => <<"enc_serializer">>,
+    %% The ppt_serializer attribute is optional. It specifies what serializer
+    %% was used to encode the payload. It can be a value a such as mqtt, amqp,
+    %% stomp to indicate that the incoming data is tunneling through such
+    %% technologies, or it can be ordinary json, msgpack, cbor, flatbuffers
+    %% data serializers.
+    ppt_serializer => #{
+        alias => <<"ppt_serializer">>,
         required => false,
         datatype => binary
     },
-    %% When using E2E Payload encryption, the public Cryptobox key of the
-    %% key pair used for encrypting the payload.
-    enc_key => #{
-        alias => <<"enc_key">>,
+    %% The ppt_cipher attribute is optional. It is required if the payload is
+    %% encrypted. This attribute specifies the cryptographic algorithm that was
+    %% used to encrypt the payload. It can be xsalsa20poly1305, aes256gcm for
+    %% now.
+    ppt_cipher => #{
+        alias => <<"ppt_cipher">>,
+        required => false,
+        datatype => binary
+    },
+    %% The ppt_keyid attribute is optional. This attribute can contain the
+    %% encryption key id that was used to encrypt the payload. The ppt_keyid
+    %% attribute is a string type. The value can be a hex-encoded string, URI,
+    %% DNS name, Ethereum address, UUID identifier - any meaningful value which
+    %% allows the target peer to choose a private key without guessing. The
+    %% format of the value may depend on the ppt_scheme attribute.
+    ppt_keyid => #{
+        alias => <<"ppt_keyid">>,
         required => false,
         datatype => binary
     }
@@ -931,12 +897,11 @@
     details         ::  map(),
     error_uri       ::  uri(),
     args            ::  list() | undefined,
-    kwargs          ::  map() | undefined,
-    payload         ::  binary() | undefined
+    kwargs          ::  map() | undefined
 }).
 -type wamp_error()       ::  #error{}.
 
--define(ERROR_DETAILS_SPEC, ?PAYLOAD_DETAILS_SPEC).
+-define(ERROR_DETAILS_SPEC, ?PPT_DETAILS_SPEC).
 
 %% -----------------------------------------------------------------------------
 %% PUBLISH 16
@@ -948,14 +913,13 @@
     options         ::  map(),
     topic_uri       ::  uri(),
     args            ::  list() | undefined,
-    kwargs          ::  map() | undefined,
-    payload         ::  binary() | undefined
+    kwargs          ::  map() | undefined
 }).
 
 -type wamp_publish()       ::  #publish{}.
 
 
--define(PUBLISH_OPTS_SPEC, ?PAYLOAD_DETAILS_SPEC#{
+-define(PUBLISH_OPTS_SPEC, ?PPT_DETAILS_SPEC#{
     %% resource key
     acknowledge => #{
         alias => <<"acknowledge">>,
@@ -1096,13 +1060,12 @@
     publication_id  ::  id(),
     details         ::  map(),
     args            ::  list() | undefined,
-    kwargs          ::  map() | undefined,
-    payload         ::  binary() | undefined
+    kwargs          ::  map() | undefined
 }).
 
 -type wamp_event()       ::  #event{}.
 
--define(EVENT_DETAILS_SPEC, ?PAYLOAD_DETAILS_SPEC#{
+-define(EVENT_DETAILS_SPEC, ?PPT_DETAILS_SPEC#{
     acknowledge => #{
         alias => <<"acknowledge">>,
         required => false,
@@ -1151,7 +1114,7 @@
 
 -type wamp_event_received()  ::  #event_received{}.
 
--define(EVENT_RECEIVED_DETAILS_SPEC, ?PAYLOAD_DETAILS_SPEC).
+-define(EVENT_RECEIVED_DETAILS_SPEC, ?PPT_DETAILS_SPEC).
 
 %% -----------------------------------------------------------------------------
 %% EVENT_RECEIVED 38
@@ -1167,7 +1130,7 @@
 
 -type wamp_subscriber_received()  ::  #subscriber_received{}.
 
--define(SUBSCRIBER_RECEIVED_DETAILS_SPEC, ?PAYLOAD_DETAILS_SPEC#{
+-define(SUBSCRIBER_RECEIVED_DETAILS_SPEC, ?PPT_DETAILS_SPEC#{
     %% Set when publisher is disclosed
     subscriber => #{
         alias => <<"subscriber">>,
@@ -1197,13 +1160,12 @@
     options         ::  map(),
     procedure_uri   ::  uri(),
     args            ::  list() | undefined,
-    kwargs          ::  map() | undefined,
-    payload         ::  binary() | undefined
+    kwargs          ::  map() | undefined
 }).
 
 -type wamp_call()       ::  #call{}.
 
--define(WAMP_CALL_OPTS_SPEC, ?PAYLOAD_DETAILS_SPEC#{
+-define(WAMP_CALL_OPTS_SPEC, ?PPT_DETAILS_SPEC#{
     timeout => #{
         alias => <<"timeout">>,
         required => false,
@@ -1327,13 +1289,12 @@
     request_id      ::  id(),
     details         ::  map(),
     args            ::  list() | undefined,
-    kwargs          ::  map() | undefined,
-    payload         ::  binary() | undefined
+    kwargs          ::  map() | undefined
 }).
 
 -type wamp_result()       ::  #result{}.
 
--define(RESULT_DETAILS_SPEC, ?PAYLOAD_DETAILS_SPEC#{
+-define(RESULT_DETAILS_SPEC, ?PPT_DETAILS_SPEC#{
     progress => #{
         alias => <<"progress">>,
         required => false,
@@ -1431,7 +1392,8 @@
 %% -----------------------------------------------------------------------------
 
 -record(unregistered, {
-    request_id      ::  id()
+    request_id      ::  id(),
+    details         ::  map() | undefined
 }).
 
 -type wamp_unregistered()       ::  #unregistered{}.
@@ -1471,13 +1433,12 @@
     registration_id ::  id(),
     details         ::  map(),
     args            ::  list() | undefined,
-    kwargs          ::  map() | undefined,
-    payload         ::  binary() | undefined
+    kwargs          ::  map() | undefined
 }).
 
 -type wamp_invocation()       ::  #invocation{}.
 
--define(INVOCATION_DETAILS_SPEC, ?PAYLOAD_DETAILS_SPEC#{
+-define(INVOCATION_DETAILS_SPEC, ?PPT_DETAILS_SPEC#{
     trustlevel => #{
         alias => <<"trustlevel">>,
         required => false,
@@ -1547,13 +1508,12 @@
     request_id      ::  id(),
     options         ::  map(),
     args            ::  list() | undefined,
-    kwargs          ::  map() | undefined,
-    payload         ::  binary() | undefined
+    kwargs          ::  map() | undefined
 }).
 
 -type wamp_yield()  ::  #yield{}.
 
--define(YIELD_OPTIONS_SPEC, ?PAYLOAD_DETAILS_SPEC).
+-define(YIELD_OPTIONS_SPEC, ?PPT_DETAILS_SPEC).
 
 
 
@@ -1567,6 +1527,9 @@
 -define(WAMP_CLOSE_NORMAL, <<"wamp.close.normal">>).
 -define(WAMP_CLOSE_REALM, <<"wamp.close.close_realm">>).
 
+-define(WAMP_UNAVAILABLE, <<"wamp.error.unavailable">>).
+-define(WAMP_NO_AVAILABLE_CALLEE, <<"wamp.error.no_available_callee">>).
+-define(WAMP_FEATURE_NOT_SUPPORTED, <<"wamp.error.no_available_callee">>).
 -define(WAMP_AUTHENTICATION_FAILED, <<"wamp.error.authentication_failed">>).
 -define(WAMP_AUTHORIZATION_FAILED, <<"wamp.error.authorization_failed">>).
 -define(WAMP_CANCELLED, <<"wamp.error.canceled">>).
