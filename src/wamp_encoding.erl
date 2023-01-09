@@ -745,23 +745,24 @@ request_info([?YIELD, ReqId | _]) ->
 %% -----------------------------------------------------------------------------
 %% @private
 %% @doc
-%% RFC: Implementations SHOULD avoid sending empty Arguments lists.
-%% RFC: Implementations SHOULD avoid sending empty ArgumentsKw dictionaries.
+%% RFC: https://wamp-proto.org/wamp_latest_ietf.html#name-empty-arguments-and-keyword
+%%  - Implementations SHOULD avoid sending empty Arguments lists.
+%%  - Implementations SHOULD avoid sending empty ArgumentsKw dictionaries.
 %% @end
 %% -----------------------------------------------------------------------------
 pack_optionals(undefined, undefined, _) ->
     [];
 
-pack_optionals([], undefined, _) ->
-    [];
+pack_optionals([], KWArgs, Details) ->
+    pack_optionals(undefined, KWArgs, Details);
+
+pack_optionals(Args, KWArgs, Details) when map_size(KWArgs) =:= 0 ->
+    pack_optionals(Args, undefined, Details);
+
+pack_optionals(undefined, KWArgs, _) ->
+    [[], KWArgs];
 
 pack_optionals(Args, undefined, _) ->
-    [Args];
-
-pack_optionals([], KWArgs, _) when map_size(KWArgs) =:= 0 ->
-    [];
-
-pack_optionals(Args, KWArgs, _) when map_size(KWArgs) =:= 0 ->
     [Args];
 
 pack_optionals(Args, KWArgs, _) ->
