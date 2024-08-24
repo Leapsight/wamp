@@ -760,6 +760,22 @@ result_bert_3_test(_) ->
     M = wamp_message:result(1, #{}, [], #{}),
     {[M], <<>>} = wamp_encoding:decode({ws, binary, bert}, wamp_encoding:encode(M, bert)).
 
+result_bert_4_test(_) ->
+    M = wamp_message:result(1, #{}, [true], #{}),
+    {[M], <<>>} = wamp_encoding:decode({ws, binary, bert}, wamp_encoding:encode(M, bert)).
+
+result_bert_5_test(_) ->
+    M = wamp_message:result(1, #{}, [false], #{}),
+    {[M], <<>>} = wamp_encoding:decode({ws, binary, bert}, wamp_encoding:encode(M, bert)).
+
+result_bert_6_test(_) ->
+    M = wamp_message:result(1, #{}, [undefined], #{}),
+    {[M], <<>>} = wamp_encoding:decode({ws, binary, bert}, wamp_encoding:encode(M, bert)).
+
+result_bert_7_test(_) ->
+    M = wamp_message:result(1, #{}, [#{foo => true, bar => baz}], #{}),
+    {[M], <<>>} = wamp_encoding:decode({ws, binary, bert}, wamp_encoding:encode(M, bert)).
+
 register_bert_test(_) ->
     M = wamp_message:register(1, #{}, <<"com.leapsight.myprocedure1">>),
     {[M], <<>>} = wamp_encoding:decode({ws, binary, bert}, wamp_encoding:encode(M, bert)).
@@ -1037,6 +1053,55 @@ result_erl_3_test(_) ->
     result = wamp_encoding:decode_message_name(
         {ws, binary, erl}, Bin),
     {[M], <<>>} = wamp_encoding:decode({ws, binary, erl}, Bin).
+
+
+result_erl_4_test(_) ->
+    Arg = #{
+        a => undefined,
+        b => true,
+        c => false,
+        d => hello,
+        e => #{
+            a => undefined,
+            b => true,
+            c => false,
+            d => hello,
+            e => #{
+                a => undefined,
+                b => true,
+                c => false,
+                d => hello
+            }
+        }
+    },
+    M = wamp_message:result(1, #{}, [Arg], #{}),
+    Bin = wamp_encoding:encode(M, erl),
+    ExpectedArg = #{
+        <<"a">> => undefined,
+        <<"b">> => true,
+        <<"c">> => false,
+        <<"d">> => <<"hello">>,
+        <<"e">> => #{
+            <<"a">> => undefined,
+            <<"b">> => true,
+            <<"c">> => false,
+            <<"d">> => <<"hello">>,
+            <<"e">> => #{
+                <<"a">> => undefined,
+                <<"b">> => true,
+                <<"c">> => false,
+                <<"d">> => <<"hello">>
+            }
+        }
+    },
+    {[{result, 1, #{}, [ResultArg], undefined}], <<>>} = wamp_encoding:decode(
+        {ws, binary, erl}, Bin
+    ),
+
+    ?assertEqual(
+        ExpectedArg,
+        ResultArg
+    ).
 
 register_erl_test(_) ->
     M = wamp_message:register(1, #{}, <<"com.leapsight.myprocedure1">>),

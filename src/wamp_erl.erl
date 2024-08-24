@@ -1,18 +1,16 @@
 -module(wamp_erl).
 
 -record(wamp_erl, {
-    keys = binary           ::  binary | atom | existing_atom | attempt_atom,
-    undefined_as_null = true    ::  boolean(),
+    keys = binary               ::  binary
+                                    | atom | existing_atom | attempt_atom,
     tuple_as_list = true        ::  boolean(),
-    level = 0                   ::  non_neg_integer(),
-    message_format = list       ::  tuple | list
+    message_format = list       ::  tuple | list,
+    level = 0                   ::  non_neg_integer()
 }).
 
 -type encode_opts() ::  [encode_opt()].
--type encode_opt()  ::  undefined_as_null
-                        |{keys, binary | atom | existing_atom | attempt_atom}.
--type decode_opts() ::  [decode_opt()].
--type decode_opt()   ::  undefined_as_null.
+-type encode_opt()  ::  {keys, binary | atom | existing_atom | attempt_atom}.
+-type decode_opts() ::  [].
 
 
 -export([encode/1]).
@@ -54,11 +52,11 @@ decode(Bin, Opts) ->
 %% -----------------------------------------------------------------------------
 -spec encode_term(term(), encode_opts()) -> term().
 
-encode_term(undefined, #wamp_erl{level = Level, undefined_as_null = true})
-when Level > 1 ->
-    <<"null">>;
 
-encode_term(Term, #wamp_erl{level = Level}) when is_atom(Term), Level > 1 ->
+encode_term(Term, #wamp_erl{level = Level})
+when is_atom(Term), Term =/= undefined, not is_boolean(Term), Level > 1 ->
+    %% Level 1 atoms are the keys of the WAMP messages so we key them
+    %% Level 2+ are keys of the payload and details. It is dangerous for
     atom_to_binary(Term);
 
 encode_term(Term, Opts0) when is_map(Term) ->
@@ -128,16 +126,15 @@ encode_term(Term, _) ->
 -spec decode_term(term(), decode_opts()) -> term().
 
 decode_term(<<"true">>, _) ->
+    %% Just in case
     true;
 
 decode_term(<<"false">>, _) ->
+    %% Just in case
     false;
 
-decode_term(<<"null">>, #wamp_erl{undefined_as_null = true}) ->
+decode_term(<<"null">>, _) ->
     undefined;
-
-decode_term(<<"null">>, #wamp_erl{undefined_as_null = false}) ->
-    null;
 
 decode_term(Term, Opts0) when is_map(Term) ->
     Opts = incr(Opts0),
@@ -199,9 +196,6 @@ parse_option([], Opt) ->
 parse_option([{keys, K}|T], Opt)
   when K =:= binary; K =:= atom; K =:= existing_atom; K =:= attempt_atom ->
     parse_option(T, Opt#wamp_erl{keys = K});
-
-parse_option([undefined_as_null|T], Opt) ->
-    parse_option(T, Opt#wamp_erl{undefined_as_null = true});
 
 parse_option(List, Opt) ->
     error(badarg, [List, Opt]).
