@@ -279,7 +279,6 @@ pack_generic(Type, M) when is_tuple(M) ->
     [Type | T].
 
 
-
 %% -----------------------------------------------------------------------------
 %% @doc
 %% Converts a message from a WAMP list external format to
@@ -615,7 +614,6 @@ decode_binary(Data, Enc, Opts, Acc) ->
     {decode_message(Data, Enc, Opts, Acc), <<>>}.
 
 
-
 %% @private
 -spec decode_message(binary(), encoding(), Opts :: list(), [wamp_message()]) ->
     [wamp_message()] | no_return().
@@ -634,14 +632,17 @@ decode_message(Data, bert, _, Acc) ->
     unpack(M, Acc);
 
 decode_message(Bin, erl, Opts, Acc) ->
-    M = wamp_erl:decode(binary_to_term(Bin), Opts),
+    %% We use the safe option to avoid atom exhaustion
+    %% Check Preventing atom exhaustion guide https://bit.ly/3X2QygH
+    Term = binary_to_term(Bin, [safe]),
+    M = wamp_erl:decode(Term, Opts),
     unpack(M, Acc);
 
 decode_message(_Data, Enc, _, _Acc) ->
     error({unsupported_encoding, Enc}).
 
 
-
+%% @private
 unpack(M, Acc) ->
     try
         [unpack(M) | Acc]
@@ -653,8 +654,7 @@ unpack(M, Acc) ->
     end.
 
 
-
-
+%% @private
 request_info([?HELLO, _, _]) ->
     #{request_type => ?HELLO, request_id => undefined};
 
@@ -769,7 +769,7 @@ pack_optionals(Args, KWArgs, _) ->
     [Args, KWArgs].
 
 
-
+%% @private
 -spec message_name(1..255) -> atom().
 
 message_name(?HELLO) -> hello;
