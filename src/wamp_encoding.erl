@@ -152,7 +152,7 @@ encode(Message, bert, _) when is_list(Message) ->
     bert:encode(Message);
 
 encode(Message, json, Opts) when is_list(Message) ->
-    jsone:encode(Message, Opts);
+    wamp_json:encode(Message, Opts);
 
 encode(Message, msgpack, Opts) when is_list(Message) ->
     msgpack:pack(Message, Opts);
@@ -620,7 +620,7 @@ decode_binary(Data, Enc, Opts, Acc) ->
 
 decode_message(Data, json, Opts, Acc) ->
     %% Decode might failed with badarg exception if not a proper JSON
-    M = jsone:decode(Data, Opts),
+    M = wamp_json:decode(Data, Opts),
     unpack(M, Acc);
 
 decode_message(Data, msgpack, Opts, Acc) ->

@@ -25,13 +25,9 @@
 
 -define(APP, wamp).
 -define(JSON_ENCODE_OPTS, [
-    undefined_as_null,
-    {datetime_format, iso8601},
-    {object_key_type, string}
 ]).
 
 -define(JSON_DECODE_OPTS, [
-    undefined_as_null
 ]).
 
 -export([get/1]).
