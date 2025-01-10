@@ -133,7 +133,8 @@ validate(goodbye, Details, Extensions) ->
 
 validate(error, Details, Extensions) ->
     Spec = ?ERROR_DETAILS_SPEC,
-    wamp_utils:validate_map(Details, Spec, Extensions);
+    Opts = #{keep_unknown => true},
+    wamp_utils:validate_map(Details, Spec, Extensions, Opts);
 
 validate(event, Details, Extensions) ->
     Spec = ?EVENT_DETAILS_SPEC,
@@ -149,7 +150,8 @@ validate(subscriber_received, Details, Extensions) ->
 
 validate(result, Details, Extensions) ->
     Spec = ?RESULT_DETAILS_SPEC,
-    wamp_utils:validate_map(Details, Spec, Extensions);
+    Opts = #{keep_unknown => true},
+    wamp_utils:validate_map(Details, Spec, Extensions, Opts);
 
 validate(invocation, Details, Extensions) ->
     Spec = ?INVOCATION_DETAILS_SPEC,
