@@ -13,7 +13,7 @@
   0},
  {<<"jsone">>,{pkg,<<"jsone">>,<<"1.8.1">>},0},
  {<<"key_value">>,
-  {git,"https://gitlab.com/leapsight/key_value.git",
+  {git,"https://github.com/leapsight/key_value.git",
        {ref,"414fb19cd067b368666ceb5a2a63f1f24109562b"}},
   1},
  {<<"ksuid">>,
@@ -27,7 +27,7 @@
  {<<"msgpack">>,{pkg,<<"msgpack">>,<<"0.8.1">>},0},
  {<<"utils">>,
   {git,"https://github.com/leapsight/utils.git",
-       {ref,"641bd36d997970d355a700009bbaa6b84f0bd987"}},
+       {ref,"cd1de141f8816803b65072d318d6a735aaccd601"}},
   0}]}.
 [
 {pkg_hash,[
