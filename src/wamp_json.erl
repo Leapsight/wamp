@@ -17,22 +17,15 @@
 %% =============================================================================
 
 %% -----------------------------------------------------------------------------
-%% @doc A utility module use to customised the JSON encoding for 3rd-party libs
-%% e.g. erlang_jose
+%% @doc A utility module that offers some customisation options over the jsone
+%% module.
 %% @end
 %% -----------------------------------------------------------------------------
 -module(wamp_json).
 
-%% Handle version compatibility for crypto
--ifdef(OTP_RELEASE).
-  -if(?OTP_RELEASE >= 27).
-    -define(JSON_MOD, json).
-  -else.
-    -define(JSON_MOD, jsone).
-  -endif.
--endif.
-
-%% -define(IS_STR(X), (is_binary(X) orelse is_atom(X))).
+%% For backwards compat with jsx lib used in previous versions
+-define(DEFAULT_FLOAT_FORMAT, [{decimals, 16}]).
+-define(DEFAULT_ENCODE_OPTS, [{float_format, ?DEFAULT_FLOAT_FORMAT}]).
 -define(IS_UINT(X), (is_integer(X) andalso X >= 0)).
 -define(IS_PNUM(X), (is_number(X) andalso X >= 0)).
 -define(IS_DATETIME(Y, M, D, H, Mi, S),
@@ -45,11 +38,12 @@
         ?IS_PNUM(S)
     )
 ).
-
 -define(SECONDS_PER_MINUTE, 60).
 -define(SECONDS_PER_HOUR, 3600).
 
--type encode_opt()  ::  {float_format, [float_format()]}.
+
+-type encode_opt()  ::  {float_format, [float_format()]}
+                        | {check_duplicate_keys, boolean()}.
 
 %% idem erlang:float_to_binary/2 options
 -type float_format()    ::  {scientific, Decimals :: 0..249}
@@ -61,7 +55,9 @@
 -export([decode/2]).
 -export([encode/1]).
 -export([encode/2]).
-
+-export([try_decode/1]).
+-export([try_decode/2]).
+-export([validate_opts/1]).
 
 
 %% =============================================================================
@@ -70,55 +66,38 @@
 -spec encode(any()) -> binary().
 
 encode(Term) ->
-    encode(Term, []).
+    encode(Term, wamp_config:get(json, ?DEFAULT_ENCODE_OPTS)).
 
 
 -spec encode(any(), [encode_opt()]) -> iodata() | binary().
 
 encode(Term, Opts) ->
-    FloatOpts = float_opts(Opts),
-
-    case ?JSON_MOD of
-        json ->
-            ?JSON_MOD:encode(Term, fun
-                (undefined, _Encode) ->
-                    <<"null">>;
-
-                (Value, _Encode) when is_float(Value) ->
-                    float_to_binary(Value, FloatOpts);
-
-                ({{Y, M, D}, {H, Mi, S}}, _Encode)
-                when ?IS_DATETIME(Y, M, D, H, Mi, S) ->
-                    encode_datetime({{Y, M, D}, {H, Mi, S}});
-
-                (Value, Encode) ->
-                    ?JSON_MOD:encode_value(Value, Encode)
-            end);
-
-        jsone ->
-            ?JSON_MOD:encode(Term, [
-                undefined_as_null,
-                {float_format, FloatOpts},
-                {datetime_format, iso8601},
-                {object_key_type, string}
-            ])
-    end.
+    do_encode(Term, Opts).
 
 
 decode(Term) ->
     decode(Term, []).
 
 
-decode(Term, _Opts) ->
-     case ?JSON_MOD of
-        json ->
-            ?JSON_MOD:decode(Term);
+decode(Term, Opts) ->
+     do_decode(Term, Opts).
 
-        jsone ->
-            ?JSON_MOD:decode(Term, [undefined_as_null])
+
+try_decode(Term) ->
+    try_decode(Term, []).
+
+
+try_decode(Term, Opts) ->
+    try
+        {ok, decode(Term, Opts)}
+    catch
+        _:Reason ->
+            {error, Reason}
     end.
 
 
+validate_opts(List) when is_list(List) ->
+    lists:map(fun validate_opt/1, List).
 
 
 
@@ -126,14 +105,90 @@ decode(Term, _Opts) ->
 %% PRIVATE
 %% =============================================================================
 
+
+%% @private
 float_opts(Opts) ->
     case lists:keyfind(float_format, 1, Opts) of
         {float_format, FloatOpts} when is_list(FloatOpts) ->
             FloatOpts;
         false ->
-            [{decimals, 4}, compact]
+            ?DEFAULT_FLOAT_FORMAT
     end.
 
+
+validate_opt({float_format, Opts}) ->
+    {float_format, validate_float_opts(Opts)};
+
+validate_opt({check_duplicate_keys, Arg} = Term) ->
+    is_boolean(Arg) orelse
+    error(badarg, {check_duplicate_keys, Arg}),
+    Term;
+
+validate_opt({datetime_format, _Opts} = Term) ->
+    %% TODO
+    Term.
+
+
+validate_float_opts(Opts) ->
+    lists:map(fun validate_float_opt/1, Opts).
+
+validate_float_opt({scientific, Decimals} = Term)
+when is_integer(Decimals), Decimals >= 0, Decimals =< 249 ->
+    Term;
+
+validate_float_opt({scientific, Decimals})
+when is_integer(Decimals), Decimals >= 0 ->
+    %% Coerce to max
+    {scientific, 249};
+
+validate_float_opt({decimals, Decimals} = Term)
+when is_integer(Decimals), Decimals >= 0, Decimals =< 253 ->
+    Term;
+
+validate_float_opt(compact = Term) ->
+    Term;
+
+validate_float_opt(short = Term) ->
+    Term;
+
+validate_float_opt(Arg) ->
+    error(badarg, {float_format, Arg}).
+
+
+%% @private
+do_encode(Term, Opts) ->
+    FloatOpts = float_opts(validate_opts(Opts)),
+    Checked = key_value:get(check_duplicate_keys, Opts, false),
+
+    Fun =  fun
+        (undefined, _Encode) ->
+            <<"null">>;
+
+        (Value, _Encode) when is_float(Value) ->
+            float_to_binary(Value, FloatOpts);
+
+        ({{Y, M, D}, {H, Mi, S}}, _Encode)
+        when ?IS_DATETIME(Y, M, D, H, Mi, S) ->
+            encode_datetime({{Y, M, D}, {H, Mi, S}});
+
+        ([{_, _} | _] = Value, Encode) when is_list(Value), Checked == true ->
+            json:encode_key_value_list_checked(Value, Encode);
+
+        ([{_, _} | _] = Value, Encode) when is_list(Value), Checked == false ->
+            json:encode_key_value_list(Value, Encode);
+
+        (Value, Encode) ->
+            json:encode_value(Value, Encode)
+    end,
+
+    iolist_to_binary(json:encode(Term, Fun)).
+
+%% @private
+do_decode(Term, _Opts) ->
+    json:decode(Term).
+
+
+-if(?OTP_RELEASE >= 27).
 
 %% =============================================================================
 %% PRIVATE - BORROWED FROM JSONE LIBRARY
@@ -220,9 +275,11 @@ format_seconds(S) when is_float(S) ->
     io_lib:format("~6.3.0f", [S]).
 
 
--spec format_tz_(integer()) -> iolist().
-format_tz_(S) ->
-    H = S div ?SECONDS_PER_HOUR,
-    S1 = S rem ?SECONDS_PER_HOUR,
-    M = S1 div ?SECONDS_PER_MINUTE,
-    [format2digit(H), $:, format2digit(M)].
+%% -spec format_tz_(integer()) -> iolist().
+%% format_tz_(S) ->
+%%     H = S div ?SECONDS_PER_HOUR,
+%%     S1 = S rem ?SECONDS_PER_HOUR,
+%%     M = S1 div ?SECONDS_PER_MINUTE,
+%%     [format2digit(H), $:, format2digit(M)].
+
+-endif.
