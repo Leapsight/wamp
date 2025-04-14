@@ -188,8 +188,6 @@ do_decode(Term, _Opts) ->
     json:decode(Term).
 
 
--if(?OTP_RELEASE >= 27).
-
 %% =============================================================================
 %% PRIVATE - BORROWED FROM JSONE LIBRARY
 %%
@@ -275,11 +273,3 @@ format_seconds(S) when is_float(S) ->
     io_lib:format("~6.3.0f", [S]).
 
 
-%% -spec format_tz_(integer()) -> iolist().
-%% format_tz_(S) ->
-%%     H = S div ?SECONDS_PER_HOUR,
-%%     S1 = S rem ?SECONDS_PER_HOUR,
-%%     M = S1 div ?SECONDS_PER_MINUTE,
-%%     [format2digit(H), $:, format2digit(M)].
-
--endif.

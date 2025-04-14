@@ -1,12 +1,11 @@
 {application, wamp,
  [{description, "An OTP library implementing WAMP message encoding and decoding."},
-  {vsn, "1.2.0"},
+  {vsn, "1.3.0"},
   {registered, []},
   {mod, {wamp_app, []}},
   {applications,
    [kernel,
     stdlib,
-    jsone,
     msgpack,
     bert,
     utils
