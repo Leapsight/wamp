@@ -167,6 +167,9 @@ do_encode(Term, Opts) ->
         (nil, _Encode) ->
             <<"null">>;
 
+        (<<"nil">>, _Encode) ->
+            <<"null">>;
+
         (Value, _Encode) when is_float(Value) ->
             float_to_binary(Value, FloatOpts);
 

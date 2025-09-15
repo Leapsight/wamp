@@ -8,7 +8,8 @@
 all() ->
     [
         test_float,
-        test_datetime
+        test_datetime,
+        test_nil_encoding
     ].
 
 
@@ -63,5 +64,39 @@ test_float(_) ->
 
 test_datetime(_) ->
     ok.
+
+
+test_nil_encoding(_) ->
+    %% Test that the atom 'nil' encodes to JSON null
+    ?assertEqual(<<"null">>, wamp_json:encode(nil)),
+    
+    %% Test that the binary string "nil" encodes to JSON null
+    ?assertEqual(<<"null">>, wamp_json:encode(<<"nil">>)),
+    
+    %% Test that 'undefined' also encodes to JSON null (existing behavior)
+    ?assertEqual(<<"null">>, wamp_json:encode(undefined)),
+    
+    %% Test encoding with custom options still works
+    Opts = [{float_format, [{decimals, 4}]}],
+    ?assertEqual(<<"null">>, wamp_json:encode(nil, Opts)),
+    ?assertEqual(<<"null">>, wamp_json:encode(<<"nil">>, Opts)),
+    ?assertEqual(<<"null">>, wamp_json:encode(undefined, Opts)),
+    
+    %% Test in a complex data structure
+    Map = #{<<"after">> => nil, <<"before">> => <<"nil">>},
+    Result = wamp_json:encode(Map),
+    %% Both should encode to null
+    ?assert(binary:match(Result, <<"null">>) =/= nomatch),
+    
+    %% Test in a list
+    List = [nil, <<"nil">>, undefined],
+    ListResult = wamp_json:encode(List),
+    %% Should contain three null values
+    Nulls = binary:matches(ListResult, <<"null">>),
+    ?assertEqual(3, length(Nulls)),
+    
+    %% Test that regular "nil" string (not the special case) still works as a string
+    RegularNil = <<"normal_nil_string">>,
+    ?assertNotEqual(<<"null">>, wamp_json:encode(RegularNil)).
 
 
